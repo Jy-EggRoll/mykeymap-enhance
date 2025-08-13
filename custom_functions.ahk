@@ -151,30 +151,62 @@ ResizeWindow() {
  * @returns {void} 
  */
 PerCenterAndResizeWindow(percentage) {
-  if NotActiveWin() {
-    return
-  }
+    if NotActiveWin() {
+        return
+    }
 
-  ; 在 mousemove 时需要 PER_MONITOR_AWARE (-3), 否则当两个显示器有不同的缩放比例时, mousemove 会有诡异的漂移
-  ; 在 winmove 时需要 UNAWARE (-1), 这样即使写死了窗口大小为 1200x800, 系统会帮你缩放到合适的大小
-  DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+    ; 在 mousemove 时需要 PER_MONITOR_AWARE (-3), 否则当两个显示器有不同的缩放比例时, mousemove 会有诡异的漂移
+    ; 在 winmove 时需要 UNAWARE (-1), 这样即使写死了窗口大小为 1200x800, 系统会帮你缩放到合适的大小
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
-  WinExist("A")
-  if (WindowMaxOrMin())
-    WinRestore
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
 
-  WinGetPos(&x, &y, &w, &h)
+    WinGetPos(&x, &y, &w, &h)
 
-  ms := GetMonitorAt(x + w / 2, y + h / 2)
-  MonitorGetWorkArea(ms, &l, &t, &r, &b)
-  w := r - l
-  h := b - t
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
 
-  winW := percentage * w
-  winH := percentage * h
-  winX := l + (w - winW) / 2
-  winY := t + (h - winH) / 2
+    winW := percentage * w
+    winH := percentage * h
+    winX := l + (w - winW) / 2
+    winY := t + (h - winH) / 2
 
-  WinMove(winX, winY, winW, winH)
-  DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+; 全局变量用于跟踪自动激活功能的状态
+global autoActivateEnabled := false
+
+; 无参数切换函数：未激活则启动，已激活则停止
+AutoActivateWindow() {
+    global autoActivateEnabled
+
+    if (!autoActivateEnabled) {
+        ; 当前未激活，执行启动逻辑
+        SetTimer(ActivateWindowUnderMouse, 100)  ; 启动定时器，每 100ms 检查一次
+        autoActivateEnabled := true
+        ToolTip("已启动")
+        SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
+    } else {
+        ; 当前已激活，执行停止逻辑
+        SetTimer(ActivateWindowUnderMouse, 0)  ; 停止定时器
+        autoActivateEnabled := false
+        ToolTip("已停止")
+        SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
+    }
+}
+
+; 实际执行激活操作的函数
+ActivateWindowUnderMouse() {
+    MouseGetPos &x, &y, &targetWindow
+
+    ; 如果获取到有效窗口且不是当前活动窗口，则激活它
+    if (targetWindow && targetWindow != WinActive("A")) {
+        WinActivate(targetWindow)
+    }
 }

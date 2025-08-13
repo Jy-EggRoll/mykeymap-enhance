@@ -152,9 +152,8 @@
         "*w": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 3,
-            "comment": "label:2",
-            "actionValueID": 2
+            "actionTypeID": 8,
+            "ahkCode": "AutoActivateWindow()"
           }
         ],
         "*x": [
