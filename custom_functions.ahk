@@ -3,8 +3,8 @@
 ; 使用如下写法，来加载当前目录下的其他 AutoHotKey v2 脚本
 ; #Include ../data/test.ahk
 
-; 设置窗口操作的延迟时间为 1 ms，拖动可以达到 60 帧
-SetWinDelay 1
+; 设置窗口操作的延迟时间为 1 ms，拖动可以达到 100 帧
+SetWinDelay 10
 
 ; 设置鼠标坐标模式为相对于屏幕（而非活动窗口）
 CoordMode "Mouse"
