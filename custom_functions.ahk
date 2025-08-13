@@ -3,7 +3,7 @@
 ; 使用如下写法，来加载当前目录下的其他 AutoHotKey v2 脚本
 ; #Include ../data/test.ahk
 
-; 设置窗口操作的延迟时间为 1 msD
+; 设置窗口操作的延迟时间为 1 ms，拖动可以达到 60 帧
 SetWinDelay 1
 
 ; 设置鼠标坐标模式为相对于屏幕（而非活动窗口）
@@ -143,4 +143,38 @@ ResizeWindow() {
         X1 := X2
         Y1 := Y2
     }
+}
+
+/**
+ * 窗口居中并修改其大小
+ * @param percentage
+ * @returns {void} 
+ */
+PerCenterAndResizeWindow(percentage) {
+  if NotActiveWin() {
+    return
+  }
+
+  ; 在 mousemove 时需要 PER_MONITOR_AWARE (-3), 否则当两个显示器有不同的缩放比例时, mousemove 会有诡异的漂移
+  ; 在 winmove 时需要 UNAWARE (-1), 这样即使写死了窗口大小为 1200x800, 系统会帮你缩放到合适的大小
+  DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+  WinExist("A")
+  if (WindowMaxOrMin())
+    WinRestore
+
+  WinGetPos(&x, &y, &w, &h)
+
+  ms := GetMonitorAt(x + w / 2, y + h / 2)
+  MonitorGetWorkArea(ms, &l, &t, &r, &b)
+  w := r - l
+  h := b - t
+
+  winW := percentage * w
+  winH := percentage * h
+  winX := l + (w - winW) / 2
+  winY := t + (h - winH) / 2
+
+  WinMove(winX, winY, winW, winH)
+  DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
 }

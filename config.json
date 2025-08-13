@@ -29,16 +29,14 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "comment": "设置窗口大小 2304 1296",
-            "ahkCode": "CenterAndResizeWindow(2304, 1296)"
+            "ahkCode": "PerCenterAndResizeWindow(0.95)"
           }
         ],
         "*d": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "comment": "设置窗口大小 1280 720",
-            "ahkCode": "CenterAndResizeWindow(1280, 720)"
+            "ahkCode": "PerCenterAndResizeWindow(0.8)"
           }
         ],
         "*e": [
@@ -53,8 +51,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "comment": "设置窗口大小 720 720",
-            "ahkCode": "CenterAndResizeWindow(720, 720)"
+            "ahkCode": "PerCenterAndResizeWindow(0.7)"
           }
         ],
         "*i": [
@@ -133,8 +130,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "comment": "设置窗口大小 1920 1080",
-            "ahkCode": "CenterAndResizeWindow(1920, 1080)"
+            "ahkCode": "PerCenterAndResizeWindow(0.9)"
           }
         ],
         "*u": [
