@@ -1,0 +1,59 @@
+---
+title: MyKeymap 自定义函数
+description: 
+date: 2025-08-14
+lastmod: 2025-08-14
+image: 
+categories:
+    - 技术
+tags:
+    - MyKeymap
+weight: 
+---
+
+## 仓库链接
+
+https://github.com/Jy-EggRoll/my-keymap/
+
+## 使用方法
+
+将本仓库中各子文件放入 MyKeymap 的 `data` 目录下即可，之后各个函数可以根据您的需要被 MyKeymap 调用。
+
+如果您不希望自己的设置被覆盖为我的设置，请勿替换 `config.json` 文件。
+
+## 引言
+
+使用 [MyKeymap](https://github.com/xianyukang/MyKeymap) 已经有相当长一段时间了，学习了一部分 [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey) 后，我也能独立编写一些脚本了。目前，这些脚本大都无需搭配 MyKeymap，可以直接由 AHK 调用。
+
+## DragWindow & ResizeWindow
+
+两款函数支持“前置键 + 鼠标键”灵活绑定（如 Caps、鼠标侧键），核心功能对标经典工具 [AltSnap](https://github.com/RamonUnch/AltSnap)。
+
+- **DragWindow()**：按下 `Caps + 左键`，可直接拖动任意非最大化窗口（无需点击标题栏）
+- **ResizeWindow()**：触发 `Caps + 右键` 后，窗口被分割为 9 个区域，右键拖动对应分区即可快捷调整大小，效率远超手动拉伸
+
+## PerCenterAndResizeWindow
+
+针对官方函数“硬编码像素值（如 800 × 600）”的小缺陷，该函数通过“比例参数”实现智能适配。
+
+**核心改进**：传入小数（如 0.95, 0.9），窗口将按当前显示器的长宽自动计算尺寸并移动窗口。使用 4k 屏，原参数显小，而 1366×768 屏幕，原参数显大。设置比例即可实现视觉效果统一。
+
+### 分屏与定位的 8 个拓展函数
+
+为替代 Windows 原生分屏，新增 8 个窗口控制函数，支持命令框快捷调用。
+
+- **调用逻辑**：通过缩写指令或热键定位窗口，如 `ru`（右上角）、`tu`（顶部）；原 `ld` 因与亮度命令冲突，请调整亮度为 `br`
+- **当前问题**：Windows 存在“不可见边框”，导致窗口无法完美贴边，后续将探索解决方案
+
+## AutoActivateWindow
+
+解决“激活窗口的心智负担”：鼠标悬停处自动激活窗口，无需纠结“点链接会误触、点资源管理器怕选到文件”。
+
+- **防误触**：仅当鼠标**静置 500 ms** 时激活窗口，移动过程中绝不触发，彻底避免操作干扰
+- **全场景兼容**：修复桌面、浏览器、文件资源管理器和开始菜单中的右键菜单 Bug，实现“露出边边角角就能激活”
+
+## 关于作者
+
+个人网站：https://eggroll.pages.com/
+
+祝您使用愉快。
