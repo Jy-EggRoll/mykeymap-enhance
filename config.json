@@ -39,14 +39,6 @@
             "ahkCode": "PerCenterAndResizeWindow(0.8)"
           }
         ],
-        "*e": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 3,
-            "comment": "label:4",
-            "actionValueID": 4
-          }
-        ],
         "*f": [
           {
             "windowGroupID": 0,
@@ -118,14 +110,6 @@
             "actionValueID": 9
           }
         ],
-        "*r": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 3,
-            "comment": "label:14",
-            "actionValueID": 12
-          }
-        ],
         "*s": [
           {
             "windowGroupID": 0,
@@ -152,8 +136,9 @@
         "*w": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "AutoActivateWindow()"
+            "actionTypeID": 3,
+            "comment": "label:4",
+            "actionValueID": 4
           }
         ],
         "*x": [
