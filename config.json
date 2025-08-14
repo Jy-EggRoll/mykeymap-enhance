@@ -25,6 +25,22 @@
             "ahkCode": "ResizeWindow()"
           }
         ],
+        "*WheelDown": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:10",
+            "actionValueID": 8
+          }
+        ],
+        "*WheelUp": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:11",
+            "actionValueID": 9
+          }
+        ],
         "*a": [
           {
             "windowGroupID": 0,
@@ -37,6 +53,13 @@
             "windowGroupID": 0,
             "actionTypeID": 8,
             "ahkCode": "PerCenterAndResizeWindow(0.8, 0.8)"
+          }
+        ],
+        "*e": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "AutoActivateWindow()"
           }
         ],
         "*f": [
