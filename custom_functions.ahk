@@ -6,7 +6,6 @@
 ; 设置窗口操作的延迟时间为 10 ms，拖动可以达到 100 帧
 SetWinDelay 10
 
-; 设置鼠标坐标模式为相对于屏幕（而非活动窗口）
 CoordMode "Mouse"
 
 ; 窗口拖动函数：按住指定按键时拖动窗口
@@ -51,11 +50,11 @@ ResizeWindow() {
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
-    ; 计算窗口的1/3宽度和高度，用于划分9个区域
+    ; 计算窗口的 1 / 3 宽度和高度，用于划分 9 个区域
     thirdW := WinW / 3
     thirdH := WinH / 3
 
-    ; 确定鼠标所在的水平区域 (1=左, 2=中, 3=右)
+    ; 确定鼠标所在的水平区域 (1 = 左, 2 = 中, 3 = 右)
     if (X1 < WinX1 + thirdW)
         horizontalRegion := 1
     else if (X1 < WinX1 + 2 * thirdW)
@@ -63,7 +62,7 @@ ResizeWindow() {
     else
         horizontalRegion := 3
 
-    ; 确定鼠标所在的垂直区域 (1=上, 2=中, 3=下)
+    ; 确定鼠标所在的垂直区域 (1 = 上, 2 = 中, 3 = 下)
     if (Y1 < WinY1 + thirdH)
         verticalRegion := 1
     else if (Y1 < WinY1 + 2 * thirdH)
@@ -77,7 +76,7 @@ ResizeWindow() {
         if !GetKeyState("RButton", "P")
             break
 
-        ; 获取当前鼠标位置（X2,Y2）
+        ; 获取当前鼠标位置
         MouseGetPos &X2, &Y2
         ; 获取窗口当前的位置和大小（避免因其他操作导致的位置偏差）
         WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
@@ -92,7 +91,7 @@ ResizeWindow() {
         newW := WinW
         newH := WinH
 
-        ; 根据9个区域的不同逻辑进行调整
+        ; 根据 9 个区域的不同逻辑进行调整
         if (horizontalRegion = 1) {
             ; 左区域：调整左边框
             newX := WinX1 + deltaX
@@ -102,7 +101,6 @@ ResizeWindow() {
             ; 右区域：调整右边框
             newW := WinW + deltaX
         }
-        ; 中间水平区域不调整宽度（除非是中间区域使用四区逻辑）
 
         if (verticalRegion = 1) {
             ; 上区域：调整上边框
@@ -113,9 +111,8 @@ ResizeWindow() {
             ; 下区域：调整下边框
             newH := WinH + deltaY
         }
-        ; 中间垂直区域不调整高度（除非是中间区域使用四区逻辑）
 
-        ; 中间区域(2,2)使用原有的四区逻辑
+        ; 中间区域四区逻辑
         if (horizontalRegion = 2 && verticalRegion = 2) {
             ; 判断鼠标在中间区域的左右（用于确定宽度调整方向）
             if (X1 < WinX1 + WinW / 2)
@@ -147,10 +144,11 @@ ResizeWindow() {
 
 /**
  * 窗口居中并修改其大小
- * @param percentage
+ * @param percentageW
+ * @param percentageH
  * @returns {void} 
  */
-PerCenterAndResizeWindow(percentage) {
+PerCenterAndResizeWindow(percentageW, percentageH) {
     if NotActiveWin() {
         return
     }
@@ -170,11 +168,278 @@ PerCenterAndResizeWindow(percentage) {
     w := r - l
     h := b - t
 
-    winW := percentage * w
-    winH := percentage * h
+    winW := percentageW * w
+    winH := percentageH * h
     winX := l + (w - winW) / 2
     winY := t + (h - winH) / 2
 
     WinMove(winX, winY, winW, winH)
     DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
 }
+
+/**
+ * 窗口左上并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerLeftUpAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    ; 在 mousemove 时需要 PER_MONITOR_AWARE (-3), 否则当两个显示器有不同的缩放比例时, mousemove 会有诡异的漂移
+    ; 在 winmove 时需要 UNAWARE (-1), 这样即使写死了窗口大小为 1200x800, 系统会帮你缩放到合适的大小
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := l  ; 左对齐
+    winY := t  ; 上对齐
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+/**
+ * 窗口左下并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerLeftDownAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := l  ; 左对齐
+    winY := b - winH  ; 下对齐
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+/**
+ * 窗口右上并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerRightUpAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := r - winW  ; 右对齐
+    winY := t  ; 上对齐
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+/**
+ * 窗口右下并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerRightDownAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := r - winW  ; 右对齐
+    winY := b - winH  ; 下对齐
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+/**
+ * 窗口上中并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerUpAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := l + (w - winW) / 2  ; 水平居中
+    winY := t  ; 上对齐
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+/**
+ * 窗口右中并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerRightAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := r - winW  ; 右对齐
+    winY := t + (h - winH) / 2  ; 垂直居中
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+/**
+ * 窗口下中并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerDownAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := l + (w - winW) / 2  ; 水平居中
+    winY := b - winH  ; 下对齐
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+
+/**
+ * 窗口左中并修改其大小
+ * @param percentageW
+ * @param percentageH
+ * @returns {void} 
+ */
+PerLeftAndResizeWindow(percentageW, percentageH) {
+    if NotActiveWin() {
+        return
+    }
+
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
+
+    WinExist("A")
+    if (WindowMaxOrMin())
+        WinRestore
+
+    WinGetPos(&x, &y, &w, &h)
+
+    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+    w := r - l
+    h := b - t
+
+    winW := percentageW * w
+    winH := percentageH * h
+    winX := l  ; 左对齐
+    winY := t + (h - winH) / 2  ; 垂直居中
+
+    WinMove(winX, winY, winW, winH)
+    DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+}
+

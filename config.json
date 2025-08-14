@@ -29,21 +29,21 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.95)"
+            "ahkCode": "PerCenterAndResizeWindow(0.95, 0.95)"
           }
         ],
         "*d": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.8)"
+            "ahkCode": "PerCenterAndResizeWindow(0.8, 0.8)"
           }
         ],
         "*f": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.7)"
+            "ahkCode": "PerCenterAndResizeWindow(0.7, 0.8)"
           }
         ],
         "*i": [
@@ -114,7 +114,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.9)"
+            "ahkCode": "PerCenterAndResizeWindow(0.9, 0.9)"
           }
         ],
         "*u": [
@@ -137,8 +137,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 3,
-            "comment": "label:4",
-            "actionValueID": 4
+            "comment": "label:10",
+            "actionValueID": 8
           }
         ],
         "*x": [
@@ -270,6 +270,14 @@
       "delay": 0,
       "disableAt": "",
       "hotkeys": {
+        "br": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 2,
+            "comment": "label:22",
+            "actionValueID": 6
+          }
+        ],
         "cc": [
           {
             "windowGroupID": 0,
@@ -290,9 +298,8 @@
         "ld": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 2,
-            "comment": "label:22",
-            "actionValueID": 6
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftDownAndResizeWindow(0.5, 0.5)"
           }
         ],
         "lj": [
@@ -303,12 +310,33 @@
             "target": "shell:RecycleBinFolder"
           }
         ],
+        "lu": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftUpAndResizeWindow(0.5, 0.5)"
+          }
+        ],
         "pd": [
           {
             "windowGroupID": 0,
             "actionTypeID": 2,
             "comment": "label:2402",
             "actionValueID": 10
+          }
+        ],
+        "rd": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightDownAndResizeWindow(0.5, 0.5)"
+          }
+        ],
+        "ru": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightUpAndResizeWindow(0.5, 0.5)"
           }
         ],
         "se": [
@@ -326,12 +354,40 @@
             "target": "C:\\Soft\\quick-modern-standby\\quick-modern-standby.exe"
           }
         ],
+        "td": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerDownAndResizeWindow(1, 0.5)"
+          }
+        ],
+        "tl": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftAndResizeWindow(0.7, 1)"
+          }
+        ],
         "tm": [
           {
             "windowGroupID": 0,
             "actionTypeID": 6,
             "comment": "Ctrl + Shift + Esc ( Task Manager )",
             "keysToSend": "^+{esc}"
+          }
+        ],
+        "tr": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightAndResizeWindow(0.7, 1)"
+          }
+        ],
+        "tu": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerUpAndResizeWindow(1, 0.5)"
           }
         ],
         "wt": [
