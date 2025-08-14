@@ -1,5 +1,5 @@
 ---
-title: MyKeymap 自定义函数
+title: MyKeymap 自定义功能
 description: 
 date: 2025-08-14
 lastmod: 2025-08-14
