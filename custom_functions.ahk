@@ -142,6 +142,9 @@ ResizeWindow() {
     }
 }
 
+; 注意：一下各函数不能保证窗口的边框紧贴显示器边框，这是 Windows 的已知问题
+; 修复是可行的，请查找 WinMoveEx()，但是受限于各种窗口的实现方式有区别，缩放的处理也不太统一，这不是完美的解决方案
+
 /**
  * 窗口居中并修改其大小
  * @param percentageW
@@ -153,8 +156,6 @@ PerCenterAndResizeWindow(percentageW, percentageH) {
         return
     }
 
-    ; 在 mousemove 时需要 PER_MONITOR_AWARE (-3), 否则当两个显示器有不同的缩放比例时, mousemove 会有诡异的漂移
-    ; 在 winmove 时需要 UNAWARE (-1), 这样即使写死了窗口大小为 1200x800, 系统会帮你缩放到合适的大小
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
@@ -188,8 +189,6 @@ PerLeftUpAndResizeWindow(percentageW, percentageH) {
         return
     }
 
-    ; 在 mousemove 时需要 PER_MONITOR_AWARE (-3), 否则当两个显示器有不同的缩放比例时, mousemove 会有诡异的漂移
-    ; 在 winmove 时需要 UNAWARE (-1), 这样即使写死了窗口大小为 1200x800, 系统会帮你缩放到合适的大小
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
@@ -442,4 +441,3 @@ PerLeftAndResizeWindow(percentageW, percentageH) {
     WinMove(winX, winY, winW, winH)
     DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
 }
-

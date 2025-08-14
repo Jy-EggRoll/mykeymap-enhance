@@ -258,6 +258,62 @@
             "comment": "label:77",
             "actionValueID": 7
           }
+        ],
+        "#!Down": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftDownAndResizeWindow(0.7, 0.7)"
+          }
+        ],
+        "#!Left": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftUpAndResizeWindow(0.7, 0.7)"
+          }
+        ],
+        "#!Right": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightDownAndResizeWindow(0.7, 0.7)"
+          }
+        ],
+        "#!Up": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightUpAndResizeWindow(0.7, 0.7)"
+          }
+        ],
+        "#Down": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerDownAndResizeWindow(1, 0.8)"
+          }
+        ],
+        "#Left": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftAndResizeWindow(0.7, 1)"
+          }
+        ],
+        "#Right": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightAndResizeWindow(0.7, 1)"
+          }
+        ],
+        "#Up": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerUpAndResizeWindow(1, 0.8)"
+          }
         ]
       }
     },
@@ -358,7 +414,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerDownAndResizeWindow(1, 0.5)"
+            "ahkCode": "PerDownAndResizeWindow(1, 0.7)"
           }
         ],
         "tl": [
@@ -387,7 +443,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerUpAndResizeWindow(1, 0.5)"
+            "ahkCode": "PerUpAndResizeWindow(1, 0.7)"
           }
         ],
         "wt": [
