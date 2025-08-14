@@ -9,6 +9,13 @@
       "delay": 0,
       "disableAt": "",
       "hotkeys": {
+        "*0": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "StartSpy()"
+          }
+        ],
         "*LButton": [
           {
             "windowGroupID": 0,
