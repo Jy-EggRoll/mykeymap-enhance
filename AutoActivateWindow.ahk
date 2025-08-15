@@ -28,7 +28,7 @@ AutoActivateWindow() {
  */
 ActivateWindowUnderMouse() {
     MouseGetPos , , &targetID
-    if (A_TimeIdleMouse >= 500) {
+    if (A_TimeIdlePhysical >= 500) {
 
         condition :=
             WinExist("A") &&  ; 确保有活动窗口，修复按下 Win 键时的报错问题
