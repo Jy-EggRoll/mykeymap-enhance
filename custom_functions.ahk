@@ -4,6 +4,5 @@
 ; #Include ../data/test.ahk
 
 #Include ../data/AutoActivateWindow.ahk
-#Include ../data/Spy.ahk
 #Include  ../data/DragAndResizeWindow.ahk
 #Include ../data/PerResizeWindow.ahk
