@@ -30,12 +30,14 @@ ActivateWindowUnderMouse() {
     MouseGetPos , , &targetID
     if (A_TimeIdleMouse >= 500) {
 
-        condition := targetID &&  ; 确保有 ID
+        condition :=
+            WinExist("A") &&  ; 确保有活动窗口，修复按下 Win 键时的报错问题
+            targetID &&  ; 确保有 ID
             targetID != WinActive("A") &&  ; 确保当前未激活
             WinGetTitle(targetID) &&  ; 确保有 title，用于排除右键菜单，避免右键菜单点击后就消失
             WinGetProcessName(targetID) != "StartMenuExperienceHost.exe" &&  ; 排除开始菜单，开始菜单在窗口自动激活时极易出现难以逆转的问题
             WinGetProcessName("A") != "MyKeymap.exe"  ; 排除 MyKeymap 本身，主要保证亮度调整窗口不会消失
-
+    
         if (condition) {
             WinActivate(targetID)
         }
