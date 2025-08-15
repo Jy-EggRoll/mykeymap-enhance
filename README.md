@@ -30,7 +30,7 @@ https://github.com/Jy-EggRoll/my-keymap/
 两款函数支持“前置键 + 鼠标键”灵活绑定（如 Caps、鼠标侧键），核心功能对标经典工具 [AltSnap](https://github.com/RamonUnch/AltSnap)。
 
 - **DragWindow()**：按下 `Caps + 左键`，可直接拖动任意非最大化窗口（无需点击标题栏）
-- **ResizeWindow()**：触发 `Caps + 右键` 后，窗口被分割为 9 个区域，右键拖动对应分区即可快捷调整大小，效率远超手动拉伸
+- **ResizeWindow()**：触发 `Caps + 右键` 后，窗口被分割为 9 个区域，右键拖动对应分区即可快捷调整大小，效率远超手动拉伸边框和边角
 
 ## PerCenterAndResizeWindow
 
