@@ -37,7 +37,8 @@ ActivateWindowUnderMouse() {
             WinGetTitle(targetID) &&  ; 确保有 title，用于排除右键菜单，避免右键菜单点击后就消失
             WinGetProcessName(targetID) != "StartMenuExperienceHost.exe" &&  ; 排除开始菜单，开始菜单在窗口自动激活时极易出现难以逆转的问题
             WinGetProcessName("A") != "MyKeymap.exe" &&  ; 排除 MyKeymap 本身，主要保证亮度调整窗口不会消失
-            WinGetProcessName("A") != "Listary.exe"  ; 排除 Listary 的弹出窗口
+            WinGetProcessName("A") != "Listary.exe" &&  ; 排除 Listary 的弹出窗口
+            WinGetClass("A") != "Qt691QWindowPopupDropShadowSaveBits"  ; 排除 Sandboxie Plus 右键菜单
 
         if (condition) {
             WinActivate(targetID)
