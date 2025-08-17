@@ -34,6 +34,7 @@ ActivateWindowUnderMouse() {
             WinExist("A") &&  ; 确保有活动窗口，修复按下 Win 键时的报错问题
             targetID &&  ; 确保有 ID
             targetID != WinActive("A") &&  ; 确保当前未激活
+            WinGetTitle(targetID) &&  ; 确保有 title，用于排除桌面右键菜单、浏览器右键菜单、浏览器小窗口（如 Ctrl + F 的搜索框），避免右键菜单点击后就消失、搜索框不聚焦
             WinGetTitle("A") &&  ; 确保有 title，用于排除桌面右键菜单、浏览器右键菜单、浏览器小窗口（如 Ctrl + F 的搜索框），避免右键菜单点击后就消失、搜索框不聚焦
             WinGetProcessName("A") != "SearchApp.exe" &&  ; 排除开始菜单
             WinGetProcessName(targetID) != "StartMenuExperienceHost.exe" &&  ; 进一步排除开始菜单，开始菜单在窗口自动激活时极易出现难以逆转的问题
