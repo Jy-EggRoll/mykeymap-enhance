@@ -41,6 +41,7 @@ ActivateWindowUnderMouse() {
             WinGetProcessName("A") != "MyKeymap.exe" &&  ; 排除 MyKeymap 本身，主要保证亮度调整窗口不会消失
             WinGetProcessName("A") != "Listary.exe" &&  ; 排除 Listary 的弹出窗口
             WinGetClass("A") != "Qt691QWindowPopupDropShadowSaveBits" &&  ; 排除 Sandboxie Plus 右键菜单
+            WinGetClass("A") != "CabinetWClass" &&  ; 排除 Win 11 右键菜单
             WinGetClass(targetID) != "Progman"  ; 排除桌面，防止鼠标指针移到桌面上激活桌面
 
         if (condition) {
