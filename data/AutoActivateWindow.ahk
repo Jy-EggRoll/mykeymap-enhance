@@ -40,7 +40,8 @@ ActivateWindowUnderMouse() {
             WinGetProcessName(targetID) != "StartMenuExperienceHost.exe" &&  ; 进一步排除开始菜单，开始菜单在窗口自动激活时极易出现难以逆转的问题
             WinGetProcessName("A") != "MyKeymap.exe" &&  ; 排除 MyKeymap 本身，主要保证亮度调整窗口不会消失
             WinGetProcessName("A") != "Listary.exe" &&  ; 排除 Listary 的弹出窗口
-            WinGetClass("A") != "Qt691QWindowPopupDropShadowSaveBits"  ; 排除 Sandboxie Plus 右键菜单
+            WinGetClass("A") != "Qt691QWindowPopupDropShadowSaveBits" &&  ; 排除 Sandboxie Plus 右键菜单
+            WinGetClass(targetID) != "Progman"  ; 排除桌面，防止鼠标指针移到桌面上激活桌面
 
         if (condition) {
             WinActivate(targetID)
