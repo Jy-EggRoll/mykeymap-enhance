@@ -42,6 +42,7 @@ ActivateWindowUnderMouse() {
             WinGetProcessName("A") != "Listary.exe" &&  ; 排除 Listary 的弹出窗口
             WinGetClass("A") != "Qt691QWindowPopupDropShadowSaveBits" &&  ; 排除 Sandboxie Plus 右键菜单
             WinGetClass(targetID) != "Microsoft.UI.Content.PopupWindowSiteBridge" &&  ; 排除 Win 11 右键菜单
+            WinGetClass(targetID) != "Sandbox:wechat:Qt51514QWindowToolSaveBits" &&  ; 排除新版微信右键菜单
             WinGetClass(targetID) != "Progman"  ; 排除桌面，防止鼠标指针移到桌面上激活桌面
 
         if (condition) {
