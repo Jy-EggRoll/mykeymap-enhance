@@ -59,6 +59,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
+            "comment": "开启窗口自动激活模式",
             "ahkCode": "AutoActivateWindow()"
           }
         ],
@@ -176,8 +177,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 3,
-            "comment": "label:15",
-            "actionValueID": 13
+            "comment": "label:14",
+            "actionValueID": 12
           }
         ],
         "singlePress": [
