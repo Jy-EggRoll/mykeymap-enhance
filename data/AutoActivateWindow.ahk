@@ -23,30 +23,47 @@ AutoActivateWindow() {
         SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
     }
 }
+
 /**
- * 实际执行激活操作的函数，内置了排除列表
+ * 实际执行激活操作的函数
+ * @param timeout 激活的触发等待时间，默认为 500 ms
  */
-ActivateWindowUnderMouse() {
+ActivateWindowUnderMouse(timeout := 500) {
     MouseGetPos , , &targetID
-    if (A_TimeIdlePhysical >= 500) {
+    if (A_TimeIdlePhysical >= timeout && JudgeActivate(targetID)) {
+        WinActivate(targetID)
+    }
+}
 
-        condition :=
-            WinExist("A") &&  ; 确保有活动窗口，修复按下 Win 键时的报错问题
-            targetID &&  ; 确保有 ID
-            targetID != WinActive("A") &&  ; 确保当前未激活
-            WinGetTitle(targetID) &&  ; 确保有 title，用于排除桌面右键菜单、浏览器右键菜单、浏览器小窗口（如 Ctrl + F 的搜索框），避免右键菜单点击后就消失、搜索框不聚焦
-            WinGetTitle("A") &&  ; 确保有 title，用于排除桌面右键菜单、浏览器右键菜单、浏览器小窗口（如 Ctrl + F 的搜索框），避免右键菜单点击后就消失、搜索框不聚焦
-            WinGetProcessName("A") != "SearchApp.exe" &&  ; 排除开始菜单
-            WinGetProcessName(targetID) != "StartMenuExperienceHost.exe" &&  ; 进一步排除开始菜单，开始菜单在窗口自动激活时极易出现难以逆转的问题
-            WinGetProcessName("A") != "MyKeymap.exe" &&  ; 排除 MyKeymap 本身，主要保证亮度调整窗口不会消失
-            WinGetProcessName("A") != "Listary.exe" &&  ; 排除 Listary 的弹出窗口
-            WinGetClass("A") != "Qt691QWindowPopupDropShadowSaveBits" &&  ; 排除 Sandboxie Plus 右键菜单
-            WinGetClass(targetID) != "Microsoft.UI.Content.PopupWindowSiteBridge" &&  ; 排除 Win 11 右键菜单
-            WinGetClass(targetID) != "Sandbox:wechat:Qt51514QWindowToolSaveBits" &&  ; 排除新版微信右键菜单
-            WinGetClass(targetID) != "Progman"  ; 排除桌面，防止鼠标指针移到桌面上激活桌面
-
-        if (condition) {
-            WinActivate(targetID)
+/**
+ * 判断是否激活的函数，能处理更多样和复杂的情况，舍弃了一长串逻辑判断的方式
+ */
+JudgeActivate(targetID) {
+    if (WinExist("A") == 0) {  ; 确保有激活窗口，抑制不必要的报错
+        return false
+    }
+    if (WinGetProcessName("A") == "StartMenuExperienceHost.exe" ||  ; 排除开始菜单
+    WinGetProcessName("A") == "SearchHost.exe" ||  ; 排除开始菜单的右键菜单
+    WinGetProcessName("A") == "ShellHost.exe" ||  ; 排除控制面板等（和 Win + a 启动的一致）
+    WinGetProcessName("A") == "ShellExperienceHost.exe" ||  ; 排除消息面板（和 Win + n 启动的一致）
+    WinGetProcessName("A") == "MyKeymap.exe" ||  ; 排除 MyKeymap 的部分窗口
+    WinGetProcessName("A") == "Listary.exe") {  ; 排除 Listary 的搜索窗口
+        return false
+    }
+    if (WinGetClass(targetID) == "Progman") {  ; 排除桌面，鼠标移到桌面上就激活桌面是非必要的
+        return false
+    }
+    if (WinGetTitle("A") == "") {  ; 如果当前激活的窗口没有 title，一般可以认为是软件内的特殊窗口，应该被排除，比如浏览器 Ctrl + f 触发的搜索小窗口等
+        return false
+    }
+    if (WinGetTitle(targetID) == "") {  ; 如果当前鼠标下的窗口没有 title，一般可以认为是软件内的特殊窗口，应该被排除，比如浏览器的右键菜单等
+        return false
+    }
+    if (WinGetProcessName(targetID) == WinGetProcessName("A")) {  ; 鼠标下的窗口进程名和现在激活的进程名一致
+        if (WinGetClass(targetID) != WinGetClass("A")) {  ; 若鼠标下的类名和激活的类名不一致，可能是触发了小的次级窗口，比如文件管理器右键菜单，应该被排除
+            return false
+            ; 如果二者的类名和进程名均一致，通常可以认为就是同一软件的多窗口情况，比如打开的多个浏览器独立窗口、多个文件管理器独立窗口
         }
     }
+    return true
 }
