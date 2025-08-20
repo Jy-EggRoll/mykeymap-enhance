@@ -1,16 +1,18 @@
 #Requires AutoHotkey v2.0
 
+; F 开头的函数是内置于 MyKeymap 的函数，为了保持本脚本独立性且避免函数冲突，故采用这样的方式，没有额外的意义
+
 /**
- * 没有活动窗口或是桌面返回 true 反之返回 false
+ * 没有活动窗口或是桌面返回 true，不是则反之返回 false
  */
-NotActiveWin() {
-    return IsDesktop() || not WinExist("A")
+F_NotActiveWin() {
+    return F_IsDesktop() || not WinExist("A")
 }
 
 /**
  * 判断当前窗口是不是桌面
  */
-IsDesktop() {
+F_IsDesktop() {
     return WinActive("Program Manager ahk_class Progman") || WinActive("ahk_class WorkerW")
 }
 
@@ -19,7 +21,7 @@ IsDesktop() {
  * @param {string} winTitle AHK中的WinTitle
  * @returns {number} 
  */
-WindowMaxOrMin(winTitle := "A") {
+F_WindowMaxOrMin(winTitle := "A") {
     return WinGetMinMax(winTitle)
 }
 
@@ -30,7 +32,7 @@ WindowMaxOrMin(winTitle := "A") {
  * @param {number} default 显示器下标
  * @returns {string|number} 匹配的显示器下标
  */
-GetMonitorAt(x, y, default := 1) {
+F_GetMonitorAt(x, y, default := 1) {
     m := SysGet(80)
     loop m {
         MonitorGet(A_Index, &l, &t, &r, &b)
@@ -50,19 +52,19 @@ GetMonitorAt(x, y, default := 1) {
  * @returns {void} 
  */
 PerCenterAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -83,19 +85,19 @@ PerCenterAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerLeftUpAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -116,19 +118,19 @@ PerLeftUpAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerLeftDownAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -149,19 +151,19 @@ PerLeftDownAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerRightUpAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -182,19 +184,19 @@ PerRightUpAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerRightDownAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -215,19 +217,19 @@ PerRightDownAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerUpAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -248,19 +250,19 @@ PerUpAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerRightAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -281,19 +283,19 @@ PerRightAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerDownAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
@@ -314,19 +316,19 @@ PerDownAndResizeWindow(percentageW, percentageH) {
  * @returns {void} 
  */
 PerLeftAndResizeWindow(percentageW, percentageH) {
-    if NotActiveWin() {
+    if F_NotActiveWin() {
         return
     }
 
     DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
 
     WinExist("A")
-    if (WindowMaxOrMin())
+    if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    ms := GetMonitorAt(x + w / 2, y + h / 2)
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
     h := b - t
