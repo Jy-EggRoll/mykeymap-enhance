@@ -1,5 +1,7 @@
 #Requires AutoHotkey v2.0
 
+#Include LogError.ahk
+
 ; 全局变量用于跟踪自动激活功能的状态
 global autoActivateEnabled := false
 
@@ -30,8 +32,13 @@ AutoActivateWindow() {
  */
 ActivateWindowUnderMouse(timeout := 500) {
     MouseGetPos , , &targetID
-    if (A_TimeIdlePhysical >= timeout && JudgeActivate(targetID)) {
-        WinActivate(targetID)
+    try {
+        if (A_TimeIdlePhysical >= timeout && JudgeActivate(targetID)) {
+            WinActivate(targetID)
+        }
+    }
+    catch Error as e {
+        LogError(e, "AutoActivateWindow_Error.log")  ; 写入错误日志，避免打扰用户
     }
 }
 
