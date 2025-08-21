@@ -13,6 +13,14 @@ LogError(ErrorObj, logFilePath := "ErrorLog.txt") {
     logContent .= "额外信息：" ErrorObj.Extra "`n"
     logContent .= "----------`n"  ; 分隔符
 
+    ; 检查并处理过大的日志文件
+    if FileExist(logFilePath) {
+        fileSize := FileGetSize(logFilePath)
+        if (fileSize > 1024 * 1024) {  ; 大于 1 MiB 直接删除，避免占用用户过大的空间
+            FileDelete(logFilePath)
+        }
+    }
+
     ; 写入日志文件（若文件不存在则自动创建）
     FileAppend logContent, logFilePath, "UTF-8"  ; 使用UTF-8编码，避免中文乱码
 }
