@@ -134,6 +134,14 @@
             "actionValueID": 9
           }
         ],
+        "*r": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:14",
+            "actionValueID": 12
+          }
+        ],
         "*s": [
           {
             "windowGroupID": 0,
@@ -177,8 +185,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 3,
-            "comment": "label:14",
-            "actionValueID": 12
+            "comment": "label:15",
+            "actionValueID": 13
           }
         ],
         "singlePress": [
@@ -375,28 +383,6 @@
             "actionValueID": 3
           }
         ],
-        "ld": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerLeftDownAndResizeWindow(0.5, 0.5)"
-          }
-        ],
-        "lj": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 1,
-            "comment": "打开「 回收站 」文件夹",
-            "target": "shell:RecycleBinFolder"
-          }
-        ],
-        "lu": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerLeftUpAndResizeWindow(0.5, 0.5)"
-          }
-        ],
         "pd": [
           {
             "windowGroupID": 0,
@@ -405,18 +391,12 @@
             "actionValueID": 10
           }
         ],
-        "rd": [
+        "rb": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerRightDownAndResizeWindow(0.5, 0.5)"
-          }
-        ],
-        "ru": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerRightUpAndResizeWindow(0.5, 0.5)"
+            "actionTypeID": 1,
+            "comment": "打开「 回收站 」文件夹",
+            "target": "shell:RecycleBinFolder"
           }
         ],
         "se": [
@@ -434,40 +414,12 @@
             "target": "C:\\Soft\\quick-modern-standby\\quick-modern-standby.exe"
           }
         ],
-        "td": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerDownAndResizeWindow(1, 0.7)"
-          }
-        ],
-        "tl": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerLeftAndResizeWindow(0.7, 1)"
-          }
-        ],
         "tm": [
           {
             "windowGroupID": 0,
             "actionTypeID": 6,
             "comment": "Ctrl + Shift + Esc ( Task Manager )",
             "keysToSend": "^+{esc}"
-          }
-        ],
-        "tr": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerRightAndResizeWindow(0.7, 1)"
-          }
-        ],
-        "tu": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerUpAndResizeWindow(1, 0.7)"
           }
         ],
         "wt": [
