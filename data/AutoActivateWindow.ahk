@@ -49,16 +49,20 @@ JudgeActivate(targetID) {
     if (WinExist("A") == 0) {  ; 确保有激活窗口，抑制不必要的报错
         return false
     }
-    if (WinGetProcessName("A") == "StartMenuExperienceHost.exe" ||  ; 排除开始菜单的右键菜单
-    WinGetProcessName("A") == "SearchHost.exe" ||  ; 排除 Win 11 开始菜单
-    WinGetProcessName("A") == "SearchApp.exe" ||  ; 排除 Win 10 开始菜单
-    WinGetProcessName("A") == "ShellHost.exe" ||  ; 排除控制面板等（和 Win + a 启动的一致）
-    WinGetProcessName("A") == "ShellExperienceHost.exe" ||  ; 排除消息面板（和 Win + n 启动的一致）
-    WinGetProcessName("A") == "MyKeymap.exe" ||  ; 排除 MyKeymap 的部分窗口
-    WinGetProcessName("A") == "Listary.exe") {  ; 排除 Listary 的搜索窗口
+    if (
+        WinGetProcessName("A") == "StartMenuExperienceHost.exe" ||  ; 排除开始菜单的右键菜单
+        WinGetProcessName("A") == "SearchHost.exe" ||  ; 排除 Win 11 开始菜单
+        WinGetProcessName("A") == "SearchApp.exe" ||  ; 排除 Win 10 开始菜单
+        WinGetProcessName("A") == "ShellHost.exe" ||  ; 排除控制面板等（和 Win + a 启动的一致）
+        WinGetProcessName("A") == "ShellExperienceHost.exe" ||  ; 排除消息面板（和 Win + n 启动的一致）
+        WinGetProcessName("A") == "MyKeymap.exe" ||  ; 排除 MyKeymap 的部分窗口
+        WinGetProcessName("A") == "Listary.exe"
+    ) {  ; 排除 Listary 的搜索窗口
         return false
     }
-    if (WinGetClass(targetID) == "Progman") {  ; 排除桌面，鼠标移到桌面上就激活桌面是非必要的
+    if (WinGetClass(targetID) == "Progman" ||  ; 排除桌面，鼠标移到桌面上就激活桌面是非必要的
+        WinGetClass("A") == "Qt691QWindowPopupDropShadowSaveBits"  ; Sandboxie 的托盘右键窗口，这个窗口比较特殊，必须独立排除
+    ) {
         return false
     }
     if (WinGetTitle("A") == "") {  ; 如果当前激活的窗口没有 title，一般可以认为是软件内的特殊窗口，应该被排除，比如浏览器 Ctrl + f 触发的搜索小窗口等
