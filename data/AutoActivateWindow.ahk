@@ -33,7 +33,7 @@ AutoActivateWindow() {
 ActivateWindowUnderMouse(timeout := 500) {
     MouseGetPos , , &targetID
     try {
-        if (A_TimeIdlePhysical >= timeout && JudgeActivate(targetID)) {
+        if (A_TimeIdleMouse >= timeout && JudgeActivate(targetID)) {
             WinActivate(targetID)
         }
     }
@@ -49,8 +49,7 @@ JudgeActivate(targetID) {
     if (WinExist("A") == 0) {  ; 确保有激活窗口，抑制不必要的报错
         return false
     }
-    if (
-        WinGetProcessName("A") == "StartMenuExperienceHost.exe" ||  ; 排除开始菜单的右键菜单
+    if (WinGetProcessName("A") == "StartMenuExperienceHost.exe" ||  ; 排除开始菜单的右键菜单
         WinGetProcessName("A") == "SearchHost.exe" ||  ; 排除 Win 11 开始菜单
         WinGetProcessName("A") == "SearchApp.exe" ||  ; 排除 Win 10 开始菜单
         WinGetProcessName("A") == "ShellHost.exe" ||  ; 排除控制面板等（和 Win + a 启动的一致）
