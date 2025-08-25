@@ -25,22 +25,6 @@
             "ahkCode": "ResizeWindow()"
           }
         ],
-        "*WheelDown": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 3,
-            "comment": "label:10",
-            "actionValueID": 8
-          }
-        ],
-        "*WheelUp": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 3,
-            "comment": "label:11",
-            "actionValueID": 9
-          }
-        ],
         "*a": [
           {
             "windowGroupID": 0,
