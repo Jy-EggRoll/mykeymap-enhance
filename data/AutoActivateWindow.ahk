@@ -46,9 +46,6 @@ ActivateWindowUnderMouse(timeout := 500) {
  * 判断是否激活的函数，能处理更多样和复杂的情况，舍弃了一长串逻辑判断的方式
  */
 JudgeActivate(targetID) {
-    if (WinExist("A") == 0) {  ; 确保有激活窗口，抑制不必要的报错
-        return false
-    }
     if (WinGetProcessName("A") == "StartMenuExperienceHost.exe" ||  ; 排除开始菜单的右键菜单
         WinGetProcessName("A") == "SearchHost.exe" ||  ; 排除 Win 11 开始菜单
         WinGetProcessName("A") == "SearchApp.exe" ||  ; 排除 Win 10 开始菜单
