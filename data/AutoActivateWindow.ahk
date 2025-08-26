@@ -47,17 +47,17 @@ ActivateWindowUnderMouse(timeout := 500) {
  */
 JudgeActivate(targetID) {
     if (WinGetProcessName("A") == "StartMenuExperienceHost.exe" ||  ; 排除开始菜单的右键菜单
-        WinGetProcessName("A") == "SearchHost.exe" ||  ; 排除 Win 11 开始菜单
-        WinGetProcessName("A") == "SearchApp.exe" ||  ; 排除 Win 10 开始菜单
-        WinGetProcessName("A") == "ShellHost.exe" ||  ; 排除控制面板等（和 Win + a 启动的一致）
-        WinGetProcessName("A") == "ShellExperienceHost.exe" ||  ; 排除消息面板（和 Win + n 启动的一致）
-        WinGetProcessName("A") == "MyKeymap.exe" ||  ; 排除 MyKeymap 的部分窗口
-        WinGetProcessName("A") == "Listary.exe"
+    WinGetProcessName("A") == "SearchHost.exe" ||  ; 排除 Win 11 开始菜单
+    WinGetProcessName("A") == "SearchApp.exe" ||  ; 排除 Win 10 开始菜单
+    WinGetProcessName("A") == "ShellHost.exe" ||  ; 排除控制面板等（和 Win + a 启动的一致）
+    WinGetProcessName("A") == "ShellExperienceHost.exe" ||  ; 排除消息面板（和 Win + n 启动的一致）
+    WinGetProcessName("A") == "MyKeymap.exe" ||  ; 排除 MyKeymap 的部分窗口
+    WinGetProcessName("A") == "Listary.exe"
     ) {  ; 排除 Listary 的搜索窗口
         return false
     }
     if (WinGetClass(targetID) == "Progman" ||  ; 排除桌面，鼠标移到桌面上就激活桌面是非必要的
-        WinGetClass("A") == "Qt691QWindowPopupDropShadowSaveBits"  ; Sandboxie 的托盘右键窗口，这个窗口比较特殊，必须独立排除
+    WinGetClass("A") == "Qt691QWindowPopupDropShadowSaveBits"  ; Sandboxie 的托盘右键窗口，这个窗口比较特殊，必须独立排除
     ) {
         return false
     }
@@ -75,3 +75,6 @@ JudgeActivate(targetID) {
     }
     return true
 }
+
+; 功能已经较为稳定，我个人将设定为每次 MyKeymap 启动自动执行，请注意该更新
+AutoActivateWindow()
