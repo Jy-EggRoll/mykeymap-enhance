@@ -38,7 +38,7 @@ ActivateWindowUnderMouse(timeout := 500) {
         }
     }
     catch Error as e {
-        LogError(e, "AutoActivateWindow_Error.log")  ; 写入错误日志，避免打扰用户
+        LogError(e, "AutoActivateWindow_Error.log")  ; 写入错误日志，避免打扰用户，这是由于本 ahk 的错误提示通常都可以被安全地忽略
     }
 }
 
@@ -61,10 +61,14 @@ JudgeActivate(targetID) {
     ) {
         return false
     }
-    if (WinGetTitle("A") == "") {  ; 如果当前激活的窗口没有 title，一般可以认为是软件内的特殊窗口，应该被排除，比如浏览器 Ctrl + f 触发的搜索小窗口等
-        return false
+    if (WinGetTitle("A") == "") {  ; 如果当前激活的窗口没有 title，此情况较复杂，再加以讨论
+        ; 为什么要进一步讨论？
+        ; 当鼠标点击任务栏、软件窗口关闭后，都会出现“无 title”的状态
+        if (WinGetProcessName("A") == "msedge.exe") {  ; 是 Edge 浏览器中抢夺了焦点的一些次级窗口，比如 Ctrl + f 唤出的搜索框
+            return false
+        }
     }
-    if (WinGetTitle(targetID) == "") {  ; 如果当前鼠标下的窗口没有 title，一般可以认为是软件内的特殊窗口，应该被排除，比如浏览器的右键菜单等
+    if (WinGetTitle(targetID) == "") {  ; 如果当前鼠标下的窗口没有 title，一般可以认为是软件内的特殊窗口，应该被排除，比如浏览器的右键菜单等。这些小部件不会获得焦点，只能用鼠标位置判定
         return false
     }
     if (WinGetProcessName(targetID) == WinGetProcessName("A")) {  ; 鼠标下的窗口进程名和现在激活的进程名一致
