@@ -29,14 +29,16 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "DecBrightness(10)"
+            "comment": "亮度降低 5",
+            "ahkCode": "DecBrightness(5)"
           }
         ],
         "*WheelUp": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "IncBrightness(10)"
+            "comment": "亮度增加 5",
+            "ahkCode": "IncBrightness(5)"
           }
         ],
         "*a": [
@@ -65,6 +67,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
+            "comment": "亮度降低 10",
             "ahkCode": "DecBrightness(10)"
           }
         ],
@@ -119,6 +122,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
+            "comment": "调整上一个显示器的亮度",
             "ahkCode": "PreviousMonitor()"
           }
         ],
@@ -154,18 +158,11 @@
             "actionValueID": 9
           }
         ],
-        "*r": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 3,
-            "comment": "label:14",
-            "actionValueID": 12
-          }
-        ],
         "*right": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
+            "comment": "调整下一个显示器的亮度",
             "ahkCode": "NextMonitor()"
           }
         ],
@@ -174,6 +171,14 @@
             "windowGroupID": 0,
             "actionTypeID": 8,
             "ahkCode": "PerCenterAndResizeWindow(0.9, 0.9)"
+          }
+        ],
+        "*tab": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:14",
+            "actionValueID": 12
           }
         ],
         "*u": [
@@ -188,6 +193,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
+            "comment": "亮度增加 10",
             "ahkCode": "IncBrightness(10)"
           }
         ],
@@ -253,17 +259,17 @@
         "*WheelDown": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 5,
-            "comment": "重映射为 Volume_Down",
-            "remapToKey": "Volume_Down"
+            "actionTypeID": 6,
+            "comment": "降低音量（2 倍默认步长）",
+            "keysToSend": "{Volume_Down}\nSleep 10\n{Volume_Down}\nSleep 10"
           }
         ],
         "*WheelUp": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 5,
-            "comment": "重映射为 Volume_Up",
-            "remapToKey": "Volume_Up"
+            "actionTypeID": 6,
+            "comment": "增加音量（2 倍默认步长）",
+            "keysToSend": "{Volume_Up}\nSleep 10\n{Volume_Up}\nSleep 10"
           }
         ],
         "*XButton1": [
