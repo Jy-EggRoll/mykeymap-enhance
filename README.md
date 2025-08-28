@@ -37,8 +37,8 @@ https://github.com/Jy-EggRoll/my-keymap/
 |-|-|-|-|
 |DragWindow()|无参数|直接拖动任意非最大化窗口（无需点击标题栏）|绑定到前置键+鼠标左键，例如 <kbd>Caps</kbd> + 鼠标左键|
 ResizeWindow()|无参数|直接调整任意非最大化窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，上手一试便知|绑定到前置键+鼠标右键，例如 <kbd>Caps</kbd> + 鼠标右键|
-|PerCenterAndResizeWindow(percentageW, percentageH)|宽度占屏幕的比例（0~1），高度占屏幕的比例（0~1）|调整窗口大小并居中，智能适应不同分辨率屏幕的不同缩放系数|自定义快捷键|
-|Per*AndResizeWindow(percentageW, percentageH)|宽度占屏幕的比例（0~1），高度占屏幕的比例（0~1）|* 替换为 Left、Down、Right、Up、LeftUp、LeftDown、RightUp、RightDown，负责分屏和边角|前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键|
+|PerCenterAndResizeWindow(percentageW, percentageH)|小数，宽度占屏幕的比例（0-1），高度占屏幕的比例（0-1）|调整窗口大小并居中，智能适应不同分辨率屏幕的不同缩放系数|自定义快捷键|
+|Per*AndResizeWindow(percentageW, percentageH)|小数，宽度占屏幕的比例（0-1），高度占屏幕的比例（0-1）|* 替换为 Left、Down、Right、Up、LeftUp、LeftDown、RightUp、RightDown，负责分屏和边角|前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键|
 AutoActivateWindow()|无参数|开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动|绑定一个快捷键方便随时启停|
 |IncBrightness(dealt)|整数，一个百分比值，如 5|增加屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器|自定义为合适的快捷键|
 |DecBrightness(dealt)|整数，一个百分比值，如 5|降低屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器|自定义为合适的快捷键|
