@@ -259,17 +259,17 @@
         "*WheelDown": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 6,
-            "comment": "降低音量（2 倍默认步长）",
-            "keysToSend": "{Volume_Down}\nSleep 10\n{Volume_Down}\nSleep 10"
+            "actionTypeID": 5,
+            "comment": "重映射为 Volume_Down",
+            "remapToKey": "Volume_Down"
           }
         ],
         "*WheelUp": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 6,
-            "comment": "增加音量（2 倍默认步长）",
-            "keysToSend": "{Volume_Up}\nSleep 10\n{Volume_Up}\nSleep 10"
+            "actionTypeID": 5,
+            "comment": "重映射为 Volume_Up",
+            "remapToKey": "Volume_Up"
           }
         ],
         "*XButton1": [
