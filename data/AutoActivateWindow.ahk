@@ -60,6 +60,7 @@ JudgeActivate(targetID) {
         return false
     }
     if (WinGetClass(targetID) == "Progman" ||  ; 排除桌面，鼠标移到桌面上就激活桌面是非必要的
+    WinGetClass(targetID) == "AutoHotkeyGUI" ||  ; 排除 InputTip 的悬浮提示，避免误激活导致打字失去焦点
     WinGetClass("A") == "Qt691QWindowPopupDropShadowSaveBits"  ; Sandboxie 的托盘右键窗口，这个窗口比较特殊，必须独立排除
     ) {
         return false
