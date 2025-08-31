@@ -39,7 +39,7 @@ weight:
 
 > [!TIP]
 >
-> 由于 GitHub 对于自定义 CSS 的表格支持不佳，请在我的博客查看函数表
+> 由于 GitHub 对于自定义 CSS 的表格支持不佳，请在我的博客查看函数表。文章剩余部分也是一致的，您可以直接继续浏览全文。
 
 <https://eggroll.pages.dev/p/%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8Dmy-keymap/#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%87%BD%E6%95%B0%E8%A1%A8>
 
