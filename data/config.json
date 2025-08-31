@@ -439,6 +439,14 @@
             "target": "shell:RecycleBinFolder"
           }
         ],
+        "sa": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "控制自动启动窗口的启动或停止",
+            "ahkCode": "AutoActivateWindow()"
+          }
+        ],
         "se": [
           {
             "windowGroupID": 0,
