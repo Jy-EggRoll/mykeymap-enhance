@@ -31,76 +31,17 @@ weight:
 
 使用 [MyKeymap](https://github.com/xianyukang/MyKeymap) 已经有相当长一段时间了，学习了一部分 [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey) 后，我也能独立编写一些脚本了。目前，这些脚本大都无需搭配 MyKeymap，可以直接由 AHK 调用。
 
-值得注意的是，通过 MyKeymap 的强大扩展能力来使用我的函数是最佳实践。我的所有函数均未分配快捷键，若您需要直接通过 AHK 调用，请自行修改代码分配快捷键。
+> [!TIP]
+>
+> 通过 MyKeymap 的强大扩展能力来使用我的函数是最佳实践。我的所有函数均未分配快捷键，若您需要直接通过 AHK 调用，请自行修改代码分配快捷键。
 
 ## 自定义函数表
 
-<table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-  <thead>
-    <tr>
-      <th style="width: 25%; padding: 10px; border: 2px solid; text-align: center;">函数名</th>
-      <th style="width: 25%; padding: 10px; border: 2px solid; text-align: center;">参数说明</th>
-      <th style="width: 25%; padding: 10px; border: 2px solid; text-align: center;">功能</th>
-      <th style="width: 25%; padding: 10px; border: 2px solid; text-align: center;">最佳实践</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">DragWindow()</td>
-      <td style="padding: 10px; border: 2px solid;">无参数</td>
-      <td style="padding: 10px; border: 2px solid;">直接拖动任意非最大化窗口（无需点击标题栏）</td>
-      <td style="padding: 10px; border: 2px solid;">绑定到前置键+鼠标左键，例如 <kbd>Caps</kbd> + 鼠标左键</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">ResizeWindow()</td>
-      <td style="padding: 10px; border: 2px solid;">无参数</td>
-      <td style="padding: 10px; border: 2px solid;">直接调整任意非最大化窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，上手一试便知</td>
-      <td style="padding: 10px; border: 2px solid;">绑定到前置键+鼠标右键，例如 <kbd>Caps</kbd> + 鼠标右键</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">PerCenterAndResizeWindow(percentageW, percentageH)</td>
-      <td style="padding: 10px; border: 2px solid;">小数，宽度占屏幕的比例（0-1），高度占屏幕的比例（0-1）</td>
-      <td style="padding: 10px; border: 2px solid;">调整窗口大小并居中，智能适应不同分辨率屏幕的不同缩放系数</td>
-      <td style="padding: 10px; border: 2px solid;">自定义快捷键</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">Per*AndResizeWindow(percentageW, percentageH)</td>
-      <td style="padding: 10px; border: 2px solid;">小数，宽度占屏幕的比例（0-1），高度占屏幕的比例（0-1）</td>
-      <td style="padding: 10px; border: 2px solid;">* 替换为 Left、Down、Right、Up、LeftUp、LeftDown、RightUp、RightDown，负责分屏和边角</td>
-      <td style="padding: 10px; border: 2px solid;">前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">AutoActivateWindow()</td>
-      <td style="padding: 10px; border: 2px solid;">无参数</td>
-      <td style="padding: 10px; border: 2px solid;">开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动</td>
-      <td style="padding: 10px; border: 2px solid;">绑定一个快捷键方便随时启停</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">IncBrightness(dealt)</td>
-      <td style="padding: 10px; border: 2px solid;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid;">增加屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器</td>
-      <td style="padding: 10px; border: 2px solid;">自定义为合适的快捷键</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">DecBrightness(dealt)</td>
-      <td style="padding: 10px; border: 2px solid;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid;">降低屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器</td>
-      <td style="padding: 10px; border: 2px solid;">自定义为合适的快捷键</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">NextMonitor()</td>
-      <td style="padding: 10px; border: 2px solid;">无参数</td>
-      <td style="padding: 10px; border: 2px solid;">调整下一个显示器的亮度，只要 MyKeymap 不重启，锁定的显示器就不会再变</td>
-      <td style="padding: 10px; border: 2px solid;">自定义为合适的快捷键</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid;">PreviousMonitor()</td>
-      <td style="padding: 10px; border: 2px solid;">无参数</td>
-      <td style="padding: 10px; border: 2px solid;">调整下一个显示器的亮度，只要 MyKeymap 不重启，锁定的显示器就不会再变</td>
-      <td style="padding: 10px; border: 2px solid;">自定义为合适的快捷键</td>
-    </tr>
-  </tbody>
-</table>
+> [!TIP]
+>
+> 由于 GitHub 对于自定义 CSS 的表格支持不佳，请在我的博客查看函数表
+
+<https://eggroll.pages.dev/p/%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8Dmy-keymap/#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%87%BD%E6%95%B0%E8%A1%A8>
 
 ## 额外说明
 
