@@ -8,8 +8,9 @@ DWMWA_COLOR_NONE := 0xFFFFFFFE  ; DWM 边框清除值
 
 ; 颜色配置（标准 RGB 值）
 COLORS := [
-    Map("name", "红色", "rgb", "255,0,0"),
-    Map("name", "绿色", "rgb", "0,255,0")
+    Map("name", "Peach", "rgb", "254,100,11"),
+    Map("name", "Sky", "rgb", "4,165,229"),
+    Map("name", "Green", "rgb", "64, 160, 43")
 ]
 
 ; 全局变量
