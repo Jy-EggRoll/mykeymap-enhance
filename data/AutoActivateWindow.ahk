@@ -88,7 +88,8 @@ JudgeActivate(targetID, currentID) {
 
     ; 使用静态 Map 存储需要排除的 A 类名
     static ExcludedClassA := Map(
-        "Qt691QWindowPopupDropShadowSaveBits", true  ; Sandboxie 的托盘右键窗口
+        "Qt691QWindowPopupDropShadowSaveBits", true,  ; Sandboxie 的托盘右键窗口
+        "Qt51513QWindowPopupSaveBits", true  ; PixPin 的托盘右键窗口
     )
     if (ExcludedClassA.Has(classA)) {
         return false
@@ -116,5 +117,4 @@ JudgeActivate(targetID, currentID) {
     return true
 }
 
-; 功能已经较为稳定，我个人将设定为每次 MyKeymap 启动自动执行，请注意该更新
-AutoActivateWindow()
+AutoActivateWindow()  ; MyKeymap 启动时自动执行
