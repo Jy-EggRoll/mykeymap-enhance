@@ -4,7 +4,7 @@
 
 ; Windows DWM API 常量
 DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
-DWMWA_COLOR_NONE := 0xFFFFFFFE  ; DWM 边框清除值
+DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值
 
 ; 颜色配置（标准 RGB 值）
 COLORS := [
@@ -105,7 +105,7 @@ SetWindowBorder(hwnd, color) {
  * @return {Boolean} 操作是否成功
  */
 ClearWindowBorder(hwnd) {
-    return SetWindowBorder(hwnd, DWMWA_COLOR_NONE)
+    return SetWindowBorder(hwnd, DWMWA_COLOR_DEFAULT)
 }
 
 /**
@@ -117,39 +117,45 @@ GetCurrentBorderColor() {
     return RGBtoBGR(COLORS[currentColorIndex]["rgb"])
 }
 
-/**
- * 判断窗口是否应该跳过
- * @param {Integer} hwnd - 窗口句柄
- * @return {Boolean} true 表示应该跳过该窗口
- */
-ShouldSkipWindow(hwnd) {
-    try {
-        ; windowStyle := DllCall("GetWindowLong", "ptr", hwnd, "int", -16, "uint")
+; /**
+;  * 判断窗口是否应该跳过
+;  * @param {Integer} hwnd - 窗口句柄
+;  * @return {Boolean} true 表示应该跳过该窗口
+;  */
+; ShouldSkipWindow(hwnd) {
+;     try {
+;         ; windowStyle := DllCall("GetWindowLong", "ptr", hwnd, "int", -16, "uint")
 
-        ; ; ; 跳过不可见窗口
-        ; ; if (!(windowStyle & 0x10000000)) {
-        ; ;     return true
-        ; ; }
+;         ; ; 跳过不可见窗口
+;         ; if (!(windowStyle & 0x10000000)) {
+;         ;     return true
+;         ; }
 
-        ; ; ; 跳过最小化窗口
-        ; ; if (windowStyle & 0x20000000) {
-        ; ;     return true
-        ; ; }
+;         ; ; ; 跳过最小化窗口
+;         ; ; if (windowStyle & 0x20000000) {
+;         ; ;     return true
+;         ; ; }
 
-        ; ; 获取窗口类名
-        ; classBuffer := Buffer(256)
-        ; DllCall("GetClassName", "ptr", hwnd, "ptr", classBuffer, "int", 256)
-        ; className := StrGet(classBuffer, "UTF-16")
+;         ; ; 获取窗口类名
+;         ; classBuffer := Buffer(256)
+;         ; DllCall("GetClassName", "ptr", hwnd, "ptr", classBuffer, "int", 256)
+;         ; className := StrGet(classBuffer, "UTF-16")
 
-        ; ; 使用静态 Map 存储需要跳过的窗口类名
-        ; static skipClasses := Map()
+;         ; ; 使用静态 Map 存储需要跳过的窗口类名
+;         ; static skipClasses := Map()
 
-        ; return skipClasses.Has(className)
-    }
-    catch {
-        return true
-    }
-}
+;         ; return skipClasses.Has(className)
+
+;         title := WinGetTitle(hwnd)
+
+;         if (!title) {
+;             return true
+;         }
+;     }
+;     catch {
+;         return true
+;     }
+; }
 
 /**
  * 更新活动窗口边框
@@ -164,6 +170,10 @@ UpdateWindowBorder() {
     try {
         currentActiveWindow := DllCall("GetForegroundWindow", "ptr")
 
+        if (JudgeBack(currentActiveWindow)) {
+            return
+        }
+
         if (currentActiveWindow != lastActiveWindow) {
             ; 立即清除失去焦点的窗口边框
             if (lastActiveWindow != 0 && DllCall("IsWindow", "ptr", lastActiveWindow)) {
@@ -171,7 +181,7 @@ UpdateWindowBorder() {
             }
 
             ; 立即为获得焦点的窗口设置边框
-            if (currentActiveWindow != 0 && !ShouldSkipWindow(currentActiveWindow)) {
+            if (currentActiveWindow != 0) {
                 SetWindowBorder(currentActiveWindow, GetCurrentBorderColor())
             }
 
@@ -181,6 +191,13 @@ UpdateWindowBorder() {
     catch Error as e {
         ; LogError(e, "AutoWindowColorBorder_Error.log")
         ; 静默处理
+    }
+}
+
+JudgeBack(currentID) {
+    currentTitle := WinGetTitle(currentID)
+    if (!currentTitle) {  ; 如果当前窗口没有标题，通常不需要往下执行了
+        return true
     }
 }
 
