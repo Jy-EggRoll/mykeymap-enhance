@@ -8,8 +8,8 @@ DWMWA_COLOR_NONE := 0xFFFFFFFE  ; DWM 边框清除值
 
 ; 颜色配置（标准 RGB 值）
 COLORS := [
-    Map("name", "Red", "rgb", "255,0,0"),
-    Map("name", "Green", "rgb", "0,255,0")
+    Map("name", "红色", "rgb", "255,0,0"),
+    Map("name", "绿色", "rgb", "0,255,0")
 ]
 
 ; 全局变量
@@ -92,7 +92,8 @@ SetWindowBorder(hwnd, color) {
         return (result == 0)
     }
     catch Error as e {
-        LogError(e, "AutoWindowColorBorder_Error.log")
+        ; LogError(e, "AutoWindowColorBorder_Error.log")
+        ; 静默处理
         return false
     }
 }
@@ -122,35 +123,27 @@ GetCurrentBorderColor() {
  */
 ShouldSkipWindow(hwnd) {
     try {
-        windowStyle := DllCall("GetWindowLong", "ptr", hwnd, "int", -16, "uint")
+        ; windowStyle := DllCall("GetWindowLong", "ptr", hwnd, "int", -16, "uint")
 
-        ; 跳过不可见窗口
-        if (!(windowStyle & 0x10000000)) {
-            return true
-        }
+        ; ; ; 跳过不可见窗口
+        ; ; if (!(windowStyle & 0x10000000)) {
+        ; ;     return true
+        ; ; }
 
-        ; 跳过最小化窗口
-        if (windowStyle & 0x20000000) {
-            return true
-        }
+        ; ; ; 跳过最小化窗口
+        ; ; if (windowStyle & 0x20000000) {
+        ; ;     return true
+        ; ; }
 
-        ; 获取窗口类名
-        classBuffer := Buffer(256)
-        DllCall("GetClassName", "ptr", hwnd, "ptr", classBuffer, "int", 256)
-        className := StrGet(classBuffer, "UTF-16")
+        ; ; 获取窗口类名
+        ; classBuffer := Buffer(256)
+        ; DllCall("GetClassName", "ptr", hwnd, "ptr", classBuffer, "int", 256)
+        ; className := StrGet(classBuffer, "UTF-16")
 
-        ; 使用静态 Map 存储需要跳过的窗口类名
-        static skipClasses := Map(
-            "Shell_TrayWnd", true,  ; 任务栏
-            "DV2ControlHost", true,       ; 系统控件
-            "MsgrIMEWindowClass", true,   ; 输入法
-            "SysShadow", true,            ; 系统阴影
-            "WorkerW", true,              ; 桌面工作区
-            "Progman", true,              ; 程序管理器
-            "AutoHotkeyGUI", true         ; AutoHotkey GUI
-        )
+        ; ; 使用静态 Map 存储需要跳过的窗口类名
+        ; static skipClasses := Map()
 
-        return skipClasses.Has(className)
+        ; return skipClasses.Has(className)
     }
     catch {
         return true
@@ -171,12 +164,12 @@ UpdateWindowBorder() {
         currentActiveWindow := DllCall("GetForegroundWindow", "ptr")
 
         if (currentActiveWindow != lastActiveWindow) {
-            ; 清除前一个窗口的边框
+            ; 立即清除失去焦点的窗口边框
             if (lastActiveWindow != 0 && DllCall("IsWindow", "ptr", lastActiveWindow)) {
                 ClearWindowBorder(lastActiveWindow)
             }
 
-            ; 为新的活动窗口设置边框
+            ; 立即为获得焦点的窗口设置边框
             if (currentActiveWindow != 0 && !ShouldSkipWindow(currentActiveWindow)) {
                 SetWindowBorder(currentActiveWindow, GetCurrentBorderColor())
             }
@@ -185,7 +178,8 @@ UpdateWindowBorder() {
         }
     }
     catch Error as e {
-        LogError(e, "AutoWindowColorBorder_Error.log")
+        ; LogError(e, "AutoWindowColorBorder_Error.log")
+        ; 静默处理
     }
 }
 
@@ -201,7 +195,8 @@ CleanupBorder() {
         lastActiveWindow := 0
     }
     catch Error as e {
-        LogError(e, "AutoWindowColorBorder_Error.log")
+        ; LogError(e, "AutoWindowColorBorder_Error.log")
+        ; 静默处理
     }
 }
 
