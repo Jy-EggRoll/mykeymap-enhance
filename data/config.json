@@ -45,7 +45,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.95, 0.95)"
+            "comment": "几乎满屏，留出边角方便切换程序",
+            "ahkCode": "PerCenterAndResizeWindow(0.96, 0.92)"
           }
         ],
         "*c": [
@@ -60,7 +61,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.8, 0.8)"
+            "comment": "用于四等分屏幕",
+            "ahkCode": "PerCenterAndResizeWindow(0.5, 0.5)"
           }
         ],
         "*down": [
@@ -75,7 +77,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.7, 0.8)"
+            "comment": "用于九等分屏幕，在高分屏上效果好",
+            "ahkCode": "PerCenterAndResizeWindow(0.333, 0.333)"
           }
         ],
         "*i": [
@@ -162,7 +165,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerCenterAndResizeWindow(0.9, 0.9)"
+            "comment": "大部分软件的视觉舒适大小",
+            "ahkCode": "PerCenterAndResizeWindow(0.8, 0.8)"
           }
         ],
         "*tab": [

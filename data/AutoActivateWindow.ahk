@@ -31,10 +31,9 @@ AutoActivateWindow() {
  * @param timeout 激活的触发等待时间，默认为 500 ms
  */
 ActivateWindowUnderMouse(timeout := 500) {
-    currentID := WinExist("A")
     MouseGetPos(, , &targetID)
     try {
-        if (A_TimeIdleMouse >= timeout && JudgeActivate(targetID, currentID)) {
+        if (A_TimeIdleMouse >= timeout && JudgeActivate(targetID)) {
             WinActivate(targetID)
         }
     }
@@ -46,7 +45,7 @@ ActivateWindowUnderMouse(timeout := 500) {
 /**
  * 判断是否激活的函数，能处理更多样和复杂的情况，舍弃了一长串逻辑判断的方式
  */
-JudgeActivate(targetID, currentID) {
+JudgeActivate(targetID) {
     ; 将所有 WinGet 函数的结果存储在变量中，避免重复调用，提高性能
     existA := WinExist("A")
     processNameA := WinGetProcessName("A")
@@ -54,10 +53,6 @@ JudgeActivate(targetID, currentID) {
     classA := WinGetClass("A")
     titleA := WinGetTitle("A")
     processNameTarget := WinGetProcessName(targetID)
-
-    if (targetID == currentID) {
-        false
-    }
 
     if (existA == 0) {  ; 确保有激活窗口，抑制不必要的报错
         return false
