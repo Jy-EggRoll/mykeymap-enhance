@@ -71,14 +71,6 @@
             "ahkCode": "DecBrightness(10)"
           }
         ],
-        "*e": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "comment": "开启窗口自动激活模式",
-            "ahkCode": "AutoActivateWindow()"
-          }
-        ],
         "*f": [
           {
             "windowGroupID": 0,
@@ -423,6 +415,14 @@
             "actionValueID": 3
           }
         ],
+        "nc": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "切换到下一个边框色",
+            "ahkCode": "SwitchToNextColor()"
+          }
+        ],
         "pd": [
           {
             "windowGroupID": 0,
@@ -435,7 +435,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 1,
-            "comment": "打开「 回收站 」文件夹",
+            "comment": "打开回收站",
             "target": "shell:RecycleBinFolder"
           }
         ],
@@ -445,6 +445,14 @@
             "actionTypeID": 8,
             "comment": "控制自动启动窗口的启动或停止",
             "ahkCode": "AutoActivateWindow()"
+          }
+        ],
+        "sb": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "控制自动着色边框启动或停止",
+            "ahkCode": "AutoWindowColorBorder()"
           }
         ],
         "se": [

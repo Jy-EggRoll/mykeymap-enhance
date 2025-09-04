@@ -7,3 +7,4 @@
 #Include ../data/DragAndResizeWindow.ahk
 #Include ../data/PerResizeWindow.ahk
 #Include ../data/ChangeBrightness.ahk
+#Include AutoWindowColorBorder.ahk
