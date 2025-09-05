@@ -1,5 +1,7 @@
 #Requires AutoHotkey v2.0
 
+; 注意：该脚本极其严格地遵守“获得焦点”即着色边框，“失去焦点”则恢复边框，为了该功能的稳定，不做任何特殊情况处理。若有时您看到边框颜色意外消失，请注意这不是 bug，一定是该窗口丢失了焦点。例 1：收藏页面时，跳出了一个小窗口，浏览器的边框着色消失了；例 2：使用鼠标手势时，浏览器的边框着色消失了。以上两种情况都是正确且合理的。若您实在不适，请自行取消注释我的部分代码。
+
 #Include LogError.ahk
 
 ; Windows DWM API 常量
@@ -79,7 +81,7 @@ SwitchToNextColor() {
  */
 SetWindowBorder(hwnd, color) {
     try {
-        if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+        if (!hwnd) {
             return false
         }
 
@@ -170,13 +172,13 @@ UpdateWindowBorder() {
     try {
         currentActiveWindow := DllCall("GetForegroundWindow", "ptr")
 
-        if (JudgeBack(currentActiveWindow)) {
-            return
-        }
+        ; if (JudgeBack(currentActiveWindow)) {
+        ;     return
+        ; }
 
         if (currentActiveWindow != lastActiveWindow) {
             ; 立即清除失去焦点的窗口边框
-            if (lastActiveWindow != 0 && DllCall("IsWindow", "ptr", lastActiveWindow)) {
+            if (lastActiveWindow != 0) {
                 ClearWindowBorder(lastActiveWindow)
             }
 
@@ -194,12 +196,12 @@ UpdateWindowBorder() {
     }
 }
 
-JudgeBack(currentID) {
-    currentTitle := WinGetTitle(currentID)
-    if (!currentTitle) {  ; 如果当前窗口没有标题，通常不需要往下执行了，目前该逻辑用于解决浏览器鼠标手势导致边框失效的问题
-        return true
-    }
-}
+; JudgeBack(currentID) {
+;     currentTitle := WinGetTitle(currentID)
+;     if (!currentTitle) {  ; 如果当前窗口没有标题，通常不需要往下执行了，目前该逻辑用于解决浏览器鼠标手势导致边框失效的问题
+;         return true
+;     }
+; }
 
 /**
  * 清理边框
