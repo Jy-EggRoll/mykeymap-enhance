@@ -331,20 +331,6 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerLeftDownAndResizeWindow(0.9, 0.9)"
-          }
-        ],
-        "#!Left": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "PerLeftUpAndResizeWindow(0.9, 0.9)"
-          }
-        ],
-        "#!Right": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
             "ahkCode": "PerRightDownAndResizeWindow(0.9, 0.9)"
           }
         ],
@@ -381,6 +367,20 @@
             "windowGroupID": 0,
             "actionTypeID": 8,
             "ahkCode": "PerUpAndResizeWindow(1, 0.9)"
+          }
+        ],
+        "^#Down": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftDownAndResizeWindow(0.9, 0.9)"
+          }
+        ],
+        "^#Up": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftUpAndResizeWindow(0.9, 0.9)"
           }
         ]
       }
