@@ -81,18 +81,24 @@ JudgeActivate(targetID) {
         return false
     }
 
-    ; 使用静态 Map 存储需要排除的 A 类名
-    static ExcludedClassA := Map(
-        "Qt691QWindowPopupDropShadowSaveBits", true,  ; Sandboxie 的托盘右键窗口
-        "Qt51513QWindowPopupSaveBits", true  ; PixPin 的托盘右键窗口
-    )
-    if (ExcludedClassA.Has(classA)) {
+    ; ; 使用静态 Map 存储需要排除的 A 类名
+    ; static ExcludedClassA := Map(
+    ;     "Qt691QWindowPopupDropShadowSaveBits", true,  ; Sandboxie 的托盘右键窗口
+    ;     "Qt51513QWindowPopupSaveBits", true  ; PixPin 的托盘右键窗口
+    ; )
+    ; if (ExcludedClassA.Has(classA)) {
+    ;     return false
+    ; }
+
+    ; 检查类名是否包含特定关键词组合，以确定是否需要排除，这是从一众 Qt 软件的托盘右键菜单类名中抽象出来的
+    if (InStr(classA, "Qt") && InStr(classA, "QWindow") && InStr(classA, "Popup")) {
         return false
     }
 
     if (titleA == "") {  ; 如果当前激活的窗口没有 title，此情况较复杂，再加以讨论
         ; 为什么要进一步讨论？
         ; 当鼠标点击任务栏、软件窗口关闭后，都会出现“无 title”的状态
+        ; 如果始终让其返回 false，会导致关闭窗口后等情况，函数功能整体失效
         if (processNameA == "msedge.exe") {  ; 是 Edge 浏览器中抢夺了焦点的一些次级窗口，比如 Ctrl + f 唤出的搜索框
             return false
         }
@@ -110,6 +116,8 @@ JudgeActivate(targetID) {
     }
 
     return true
+
+    ; [TODO] 修复 Edge 中编辑收藏夹和扩展菜单作为独立窗口抢夺焦点的问题，但是该问题目前不能优雅地解决
 }
 
 AutoActivateWindow()  ; MyKeymap 启动时自动执行

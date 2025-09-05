@@ -4,9 +4,9 @@
 
 ; Windows DWM API 常量
 DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
-DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值
+DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值，外观看起来是一般是淡灰色的，可能与不同软件亦有关
 
-; 颜色配置（标准 RGB 值）
+; 颜色配置（标准 RGB 值），目前的颜色选自 Catppuccin 的 Latte 风味
 COLORS := [
     Map("name", "Peach", "rgb", "254,100,11"),
     Map("name", "Sky", "rgb", "4,165,229"),
@@ -196,7 +196,7 @@ UpdateWindowBorder() {
 
 JudgeBack(currentID) {
     currentTitle := WinGetTitle(currentID)
-    if (!currentTitle) {  ; 如果当前窗口没有标题，通常不需要往下执行了
+    if (!currentTitle) {  ; 如果当前窗口没有标题，通常不需要往下执行了，目前该逻辑用于解决浏览器鼠标手势导致边框失效的问题
         return true
     }
 }
