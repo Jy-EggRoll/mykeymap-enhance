@@ -88,7 +88,8 @@ JudgeActivate(targetID) {
     ; 使用静态 Map 存储需要排除的 A 类名
     static ExcludedClassA := Map(
         "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
-        "Shell_TrayWnd", true  ; 任务栏，保证用户点击任务栏后，功能仍正常
+        "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
+        "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
     )
     ; if (ExcludedClassA.Has(classA)) {
     ;     return false
