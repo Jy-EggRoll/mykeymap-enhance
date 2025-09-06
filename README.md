@@ -37,9 +37,9 @@ weight:
 
 > [!TIP]
 >
-> 若您在 GitHub 浏览此节，由于 GitHub 不支持自定义 CSS 的表格，为了更舒适的阅读体验，请跳转至我的博客查看函数表。文章剩余部分也是一致的，您可以直接继续浏览全文。
-
-<https://eggroll.pages.dev/p/%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8Dmy-keymap/#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%87%BD%E6%95%B0%E8%A1%A8>
+> 若您在手机端或较窄的 GitHub 页面上浏览此节，为了更舒适的阅读体验，请跳转至我的博客查看函数表（GitHub 不支持自定义 CSS 的表格，这会导致表格超出屏幕，排版也不美观）。文章剩余部分也是一致的，您可以直接继续浏览全文。
+>
+> <https://eggroll.pages.dev/p/%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8Dmy-keymap/#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%87%BD%E6%95%B0%E8%A1%A8>
 
 <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
   <thead>

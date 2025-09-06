@@ -21,7 +21,7 @@ WinSpyGui() {
 
     oGui.BackColor := "FFFFFF"
     oGui.SetFont("s11", "Microsoft YaHei")
-    oGui.Add("Edit", "xm w640 r31 ReadOnly -Wrap vCtrl_Title")
+    oGui.Add("Edit", "xm w640 r40 ReadOnly -Wrap vCtrl_Title")
     ; oGui.Add("Text",,"当前鼠标位置:")
     ; oGui.Add("Edit","w640 r4 ReadOnly vCtrl_MousePos")
     ; oGui.Add("Text",,"当前窗口位置:")
@@ -96,6 +96,9 @@ TryUpdate() {
     ; 检测窗口样式特征
     StyleInfo := GetWindowStyleInfo(Style)
 
+    ; 获取窗口边框和尺寸信息
+    BorderInfo := GetWindowBorderInfo(curWin)
+
     dllCallCurrentActiveWindow := DllCall("GetForegroundWindow", "ptr")
     existACurrentActiveWindow := WinExist("A")
 
@@ -104,8 +107,8 @@ TryUpdate() {
         . "ahk_exe " t3 "`n"
         . "DllCallActiveID " dllCallCurrentActiveWindow "`n"
         . "ExistActiveID " existACurrentActiveWindow "`n"
-        . "`n--- Window Styles ---`n"
-        . StyleInfo
+        . "`n" . BorderInfo
+        . "`n" . StyleInfo
 
     UpdateText("Ctrl_Title", WinDataText)
     CoordMode "Mouse", "Window"
@@ -211,6 +214,80 @@ textMangle(x) {
     return x
 }
 
+; 获取窗口边框和尺寸信息
+GetWindowBorderInfo(hwnd) {
+    ; DWM 属性常量
+    DWMWA_EXTENDED_FRAME_BOUNDS := 9  ; 扩展框架边界
+    DWMWA_VISIBLE_FRAME_BORDER_THICKNESS := 37  ; 可见边框厚度
+
+    borderInfo := ""
+
+    try {
+        ; 获取窗口的常规位置和大小
+        WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
+        WinGetClientPos(&clientX, &clientY, &clientW, &clientH, "ahk_id " hwnd)
+
+        ; 获取扩展框架边界 (RECT 结构)
+        extendedRect := Buffer(16, 0)  ; RECT 结构需要 16 字节
+        result1 := DllCall("dwmapi\DwmGetWindowAttribute",
+            "ptr", hwnd,
+            "uint", DWMWA_EXTENDED_FRAME_BOUNDS,
+            "ptr", extendedRect,
+            "uint", 16,
+            "int")
+
+        if (result1 == 0) {
+            extLeft := NumGet(extendedRect, 0, "int")
+            extTop := NumGet(extendedRect, 4, "int")
+            extRight := NumGet(extendedRect, 8, "int")
+            extBottom := NumGet(extendedRect, 12, "int")
+            extWidth := extRight - extLeft
+            extHeight := extBottom - extTop
+
+            borderInfo .= "--- Window Size & Border Info ---`n"
+            borderInfo .= "WinGetPosSize: " winW " * " winH "`n"
+            borderInfo .= "WinGetClientPosSize: " clientW " * " clientH "`n"
+            borderInfo .= "PlusExtendedFrameSize: " extWidth " * " extHeight "`n"
+
+            ; 计算边框厚度
+            leftBorder := clientX - extLeft
+            topBorder := clientY - extTop
+            rightBorder := extRight - (clientX + clientW)
+            bottomBorder := extBottom - (clientY + clientH)
+
+            borderInfo .= "BorderThickness: [Left: " leftBorder "] [Top: " topBorder "] [Right: " rightBorder "] [Bottom: " bottomBorder "]`n"
+
+            ; 计算阴影厚度 (WinGet 窗口边界与扩展边界的差异)
+            shadowLeft := extLeft - WinX
+            shadowTop := extTop - WinY
+            shadowRight := (winX + winW) - extRight
+            shadowBottom := (winY + winH) - extBottom
+
+            borderInfo .= "ShadowThickness: [Left: " shadowLeft "] [Top: " shadowTop "] [Right: " shadowRight "] [Bottom: " shadowBottom "]`n"
+        }
+
+        ; 尝试获取可见边框厚度
+        borderThickness := Buffer(4, 0)  ; UINT 类型需要 4 字节
+        result2 := DllCall("dwmapi\DwmGetWindowAttribute",
+            "ptr", hwnd,
+            "uint", DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+            "ptr", borderThickness,
+            "uint", 4,
+            "int")
+
+        if (result2 == 0) {
+            thickness := NumGet(borderThickness, 0, "uint")
+            borderInfo .= "VisibleFrameBorderThickness: " thickness " pixels`n"
+        }
+
+    } catch Error as e {
+        borderInfo .= "--- Window Size & Border Info ---`n"
+        borderInfo .= "Error getting border info: " e.Message "`n"
+    }
+
+    return borderInfo
+}
+
 ; 获取窗口样式信息
 GetWindowStyleInfo(Style) {
     ; 定义窗口样式数据
@@ -230,7 +307,8 @@ GetWindowStyleInfo(Style) {
                                                         Desc: "Child window" }
     ]
 
-    styleText := "Style: 0x" . Format("{:X}", Style) . "`n"
+    styleText := "--- Window Styles ---`n"
+    styleText .= "Style: 0x" . Format("{:X}", Style) . "`n"
 
     ; 检查每个样式，显示所有样式
     for styleData in WindowStyles {
