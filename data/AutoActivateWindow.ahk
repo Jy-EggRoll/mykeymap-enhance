@@ -33,7 +33,7 @@ AutoActivateWindow() {
 ActivateWindowUnderMouse(timeout := 500) {
     MouseGetPos(, , &targetID)
     try {
-        if (A_TimeIdleMouse >= timeout && JudgeActivate(targetID)) {
+        if (A_TimeIdlePhysical >= timeout && JudgeActivate(targetID)) {
             WinActivate(targetID)
         }
     }
