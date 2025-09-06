@@ -21,7 +21,7 @@ WinSpyGui() {
 
     oGui.BackColor := "FFFFFF"
     oGui.SetFont("s11", "Microsoft YaHei")
-    oGui.Add("Edit", "xm w640 r29 ReadOnly -Wrap vCtrl_Title")
+    oGui.Add("Edit", "xm w640 r31 ReadOnly -Wrap vCtrl_Title")
     ; oGui.Add("Text",,"当前鼠标位置:")
     ; oGui.Add("Edit","w640 r4 ReadOnly vCtrl_MousePos")
     ; oGui.Add("Text",,"当前窗口位置:")
@@ -96,9 +96,14 @@ TryUpdate() {
     ; 检测窗口样式特征
     StyleInfo := GetWindowStyleInfo(Style)
 
+    dllCallCurrentActiveWindow := DllCall("GetForegroundWindow", "ptr")
+    existACurrentActiveWindow := WinExist("A")
+
     WinDataText := "Title: " t1 "`n" ; ZZZ
         . "ahk_class " t2 "`n"
         . "ahk_exe " t3 "`n"
+        . "DllCallActiveID " dllCallCurrentActiveWindow "`n"
+        . "ExistActiveID " existACurrentActiveWindow "`n"
         . "`n--- Window Styles ---`n"
         . StyleInfo
 

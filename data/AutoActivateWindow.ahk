@@ -62,13 +62,14 @@ JudgeActivate(targetID) {
     }
 
     ; 使用静态 Map 存储需要排除的进程名，只在脚本第一次运行时创建一次
+    ; 在采用新方法后，此项可专注于“失去焦点就会关闭”的窗口
     static ExcludedProcessNameA := Map(
         ; "StartMenuExperienceHost.exe", true,  ; 排除开始菜单的右键菜单
         ; "SearchHost.exe", true,  ; 排除 Win 11 开始菜单
         ; "SearchApp.exe", true,  ; 排除 Win 10 开始菜单
         ; "ShellHost.exe", true,  ; 排除控制面板等（和 Win + a 启动的一致）
         ; "ShellExperienceHost.exe", true,  ; 排除消息面板（和 Win + n 启动的一致）
-        "MyKeymap.exe", true,  ; 排除 MyKeymap 的部分窗口
+        "MyKeymap.exe", true,  ; 排除 MyKeymap 的部分窗口，如亮度调节窗口
         "Listary.exe", true  ; 排除 Listary 的搜索窗口
     )
     if (ExcludedProcessNameA.Has(processNameA)) {
@@ -84,11 +85,11 @@ JudgeActivate(targetID) {
     ;     return false
     ; }
 
-    ; ; 使用静态 Map 存储需要排除的 A 类名
-    ; static ExcludedClassA := Map(
-    ;     "Qt691QWindowPopupDropShadowSaveBits", true,  ; Sandboxie 的托盘右键窗口
-    ;     "Qt51513QWindowPopupSaveBits", true  ; PixPin 的托盘右键窗口
-    ; )
+    ; 使用静态 Map 存储需要排除的 A 类名
+    static ExcludedClassA := Map(
+        "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
+        "Shell_TrayWnd", true  ; 任务栏，保证用户点击任务栏后，功能仍正常
+    )
     ; if (ExcludedClassA.Has(classA)) {
     ;     return false
     ; }
@@ -125,7 +126,10 @@ JudgeActivate(targetID) {
     ; 自此，用一种完美、优雅的方案解决了所有弹出窗口与右键菜单的问题
 
     if (styleA & 0x80000000) {  ; 如果激活的窗口具有 WS_POPUP 样式，则是一个弹出窗口，许多次级菜单遵循此设置，完美解决了浏览器的问题
-        if (classA == "Progman") {  ; 如果点击了桌面，那么鼠标指向其他程序时应该仍然激活其他程序【记录：桌面的特性和浏览器某些弹出菜单如“扩展”“鼠标手势”的特性竟然完全一致】
+        ; if (classA == "Progman") {  ; 如果点击了桌面，那么鼠标指向其他程序时应该仍然激活其他程序【记录：桌面的特性和浏览器某些弹出菜单如“扩展”“鼠标手势”的特性竟然完全一致】
+        ;     return true
+        ; }
+        if (ExcludedClassA.Has(classA)) {
             return true
         }
         return false

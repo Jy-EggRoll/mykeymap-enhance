@@ -172,6 +172,8 @@ UpdateWindowBorder() {
     try {
         currentActiveWindow := DllCall("GetForegroundWindow", "ptr")
 
+        ; 从目前的测试来看，该 hwnd 和 WinExist 获取到的没有任何区别，暂且保留该写法
+
         ; if (JudgeBack(currentActiveWindow)) {
         ;     return
         ; }
