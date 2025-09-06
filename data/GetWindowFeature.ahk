@@ -21,7 +21,7 @@ WinSpyGui() {
 
     oGui.BackColor := "FFFFFF"
     oGui.SetFont("s11", "Microsoft YaHei")
-    oGui.Add("Edit", "xm w640 r40 ReadOnly -Wrap vCtrl_Title")
+    oGui.Add("Edit", "xm w640 r39 ReadOnly -Wrap vCtrl_Title")
     ; oGui.Add("Text",,"当前鼠标位置:")
     ; oGui.Add("Edit","w640 r4 ReadOnly vCtrl_MousePos")
     ; oGui.Add("Text",,"当前窗口位置:")
