@@ -86,11 +86,11 @@ JudgeActivate(targetID) {
     ; }
 
     ; 使用静态 Map 存储需要排除的 A 类名
-    ; static ExcludedClassA := Map(
-    ;     "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
-    ;     "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
-    ;     "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
-    ; )
+    static ExcludedClassA := Map(
+        "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
+        "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
+        "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
+    )
     ; if (ExcludedClassA.Has(classA)) {
     ;     return false
     ; }
@@ -126,15 +126,15 @@ JudgeActivate(targetID) {
 
     ; 自此，用一种完美、优雅的方案解决了所有弹出窗口与右键菜单的问题
 
-    ; if (styleA & 0x80000000) {  ; 如果激活的窗口具有 WS_POPUP 样式，则是一个弹出窗口，许多次级菜单遵循此设置，完美解决了浏览器的问题
-    ;     ; if (classA == "Progman") {  ; 如果点击了桌面，那么鼠标指向其他程序时应该仍然激活其他程序【记录：桌面的特性和浏览器某些弹出菜单如“扩展”“鼠标手势”的特性竟然完全一致】
-    ;     ;     return true
-    ;     ; }
-    ;     if (ExcludedClassA.Has(classA)) {
-    ;         return true
-    ;     }
-    ;     return false
-    ; }
+    if (styleA & 0x80000000) {  ; 如果活动窗口具有 WS_POPUP 样式，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单。当它们出现时，自动激活功能应该停止。
+        ; if (classA == "Progman") {  ; 如果点击了桌面，那么鼠标指向其他程序时应该仍然激活其他程序【记录：桌面的特性和浏览器某些弹出菜单如“扩展”“鼠标手势”的特性竟然完全一致】
+        ;     return true
+        ; }
+        if (ExcludedClassA.Has(classA)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面、任务栏，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这也是不应该的，所以做了二次处理
+            return true
+        }
+        return false
+    }
 
     ;【记录：一些高优先级的窗口拥有高度一致的特性，这些特性出现在开始菜单、桌面、浏览器部分弹出窗口上】
     /**
