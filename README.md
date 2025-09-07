@@ -54,13 +54,13 @@ weight:
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">DragWindow()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接拖动任意非最大化窗口（无需点击标题栏）</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接拖动任意窗口（无需点击标题栏），如果是最大化窗口，该窗口将会被还原为上一个非最大化状态</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标左键，例如 <kbd>Caps</kbd> + 鼠标左键</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ResizeWindow()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接调整任意非最大化窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，上手一试便知</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接调整任意窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，如果是最大化窗口，该窗口将会被还原为上一个非最大化状态</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标右键，例如 <kbd>Caps</kbd> + 鼠标右键</td>
     </tr>
     <tr>
@@ -81,29 +81,6 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或一个指令，方便随时启停</td>
     </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">IncBrightness(dealt)</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">增加屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">DecBrightness(dealt)</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">降低屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">NextMonitor()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">调整下一个显示器的亮度，只要 MyKeymap 不重启，当前被调节的显示器就不会再改变，直到触发该函数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">PreviousMonitor()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">调整上一个显示器的亮度，只要 MyKeymap 不重启，当前被调节的显示器就不会再改变，直到触发该函数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoWindowColorBorder()</td>
@@ -140,10 +117,6 @@ weight:
 
 - **防误触**：仅当鼠标**静置 500 ms** 时激活窗口，移动过程中绝不触发，彻底避免操作干扰
 - **全场景兼容**：修复桌面、浏览器、文件资源管理器和开始菜单中的右键菜单 bug，实现“露出边边角角就能激活”
-
-### 亮度调节 IncBrightness & DecBrightness
-
-不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。
 
 ### 活动窗口边框着色 AutoWindowColorBorder
 
