@@ -1,7 +1,5 @@
 #Requires AutoHotkey v2.0
 
-#Include PerResizeWindow.ahk
-
 ; 设置窗口操作的延迟时间为 10 ms，拖动可以达到 100 帧
 SetWinDelay 10
 
@@ -14,7 +12,7 @@ DragWindow() {
 
     ; 检查鼠标下窗口是否处于最大化状态，恢复它们到整屏但可拖动的状态
     if WinGetMinMax(ID)
-        PerLeftUpAndResizeWindow(1, 1)
+        WinRestore(ID)
 
     ; 获取窗口初始位置
     WinGetPos &WinX1, &WinY1, , , ID
@@ -45,7 +43,7 @@ ResizeWindow() {
     MouseGetPos &X1, &Y1, &ID
     ; 检查鼠标下窗口是否处于最大化状态，恢复它们到整屏但可拖动的状态
     if WinGetMinMax(ID)
-        PerLeftUpAndResizeWindow(1, 1)
+        WinRestore(ID)
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
