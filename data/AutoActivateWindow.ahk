@@ -6,7 +6,7 @@
 global autoActivateEnabled := false
 
 /**
- * 切换自动激活窗口的开启状态，是一个开关函数
+ * 切换自动激活窗口的开启状态，是一个开关函数，无参数
  */
 AutoActivateWindow() {
     global autoActivateEnabled
@@ -38,7 +38,8 @@ ActivateWindowUnderMouse(timeout := 500) {
         }
     }
     catch Error as e {
-        LogError(e, "AutoActivateWindow_Error.log")  ; 写入错误日志，避免打扰用户，这是由于本 ahk 的错误提示通常都可以被安全地忽略
+        ; LogError(e, "AutoActivateWindow_Error.log")  ; 写入错误日志，避免打扰用户，这是由于本 ahk 的错误提示通常都可以被安全地忽略，不会造成任何实质性的影响
+        ; 目前静默处理，功能已经相当完善，已经没有写入日志的必要
     }
 }
 
@@ -62,7 +63,7 @@ JudgeActivate(targetID) {
     }
 
     ; 使用静态 Map 存储需要排除的进程名，只在脚本第一次运行时创建一次
-    ; 在采用新方法后，此项可专注于“失去焦点就会关闭”的窗口
+    ; 此项目前专注于处理“失去焦点就会关闭”的窗口
     static ExcludedProcessNameA := Map(
         ; "StartMenuExperienceHost.exe", true,  ; 排除开始菜单的右键菜单
         ; "SearchHost.exe", true,  ; 排除 Win 11 开始菜单
@@ -91,46 +92,10 @@ JudgeActivate(targetID) {
         ; "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
         "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
     )
-    ; if (ExcludedClassA.Has(classA)) {
-    ;     return false
-    ; }
 
-    ; 检查类名是否包含特定关键词组合，以确定是否需要排除，这是从一众 Qt 软件的托盘右键菜单类名中抽象出来的
-    ; if (InStr(classA, "Qt") && InStr(classA, "QWindow") && InStr(classA, "Popup")) {
-    ;     return false
-    ; }
-
-    ; if (titleA == "") {  ; 如果当前激活的窗口没有 title，此情况较复杂，再加以讨论
-    ;     ; 为什么要进一步讨论？
-    ;     ; 当鼠标点击任务栏、软件窗口关闭后，都会出现“无 title”的状态
-    ;     ; 如果始终让其返回 false，会导致关闭窗口后等情况，函数功能整体失效
-    ;     if (processNameA == "msedge.exe") {  ; 是 Edge 浏览器中抢夺了焦点的一些次级窗口，比如 Ctrl + f 唤出的搜索框
-    ;         return false
-    ;     }
-    ; }
-
-    ; if (WinGetTitle(targetID) == "") {  ; 如果当前鼠标下的窗口没有 title，一般可以认为是软件内的特殊窗口，应该被排除，比如浏览器的右键菜单等。这些小部件不会获得焦点，只能用鼠标位置判定
-    ;     return false
-    ; }
-
-    ; if (processNameTarget == processNameA) {  ; 鼠标下的窗口进程名和现在激活的进程名一致
-    ;     if (classTarget != classA) {  ; 若鼠标下的类名和激活的类名不一致，可能是触发了小的次级窗口，比如文件管理器右键菜单，应该被排除
-    ;         return false
-    ;         ; 如果二者的类名和进程名均一致，通常可以认为就是同一软件的多窗口情况，比如打开的多个浏览器独立窗口、多个文件管理器独立窗口
-    ;     }
-    ; }
-
-    ; return true
-
-    ; ; [TODO] 修复 Edge 中编辑收藏夹和扩展菜单作为独立窗口抢夺焦点的问题，但是该问题目前不能优雅地解决
-
-    ; 自此，用一种完美、优雅的方案解决了所有弹出窗口与右键菜单的问题
-
-    if (styleA & 0x80000000) {  ; 如果活动窗口具有 WS_POPUP 样式，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单。当它们出现时，自动激活功能应该停止。
-        ; if (classA == "Progman") {  ; 如果点击了桌面，那么鼠标指向其他程序时应该仍然激活其他程序【记录：桌面的特性和浏览器某些弹出菜单如“扩展”“鼠标手势”的特性竟然完全一致】
-        ;     return true
-        ; }
-        if (ExcludedClassA.Has(classA)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面、任务栏，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这也是不应该的，所以做了二次处理
+    if (styleA & 0x80000000 && !(styleA & 0x40000)) {
+        ; 如果活动窗口具有 WS_POPUP 样式，又不能调整大小，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单。当它们出现并抢夺了焦点时，自动激活功能应该停止，以确保这些窗口出现在前台，让用户处理
+        if (ExcludedClassA.Has(classA)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这是不应该的，所以做了二次处理
             return true
         }
         return false
@@ -162,14 +127,10 @@ JudgeActivate(targetID) {
      *     ○ WS_CHILD (0x40000000)
      */
 
-    ; if (styleTarget & 0x80000000) {  ; 如果鼠标下的窗口具有 WS_POPUP 样式，则是一个弹出窗口，许多次级菜单遵循此设置，如各种软件的托盘右键菜单
-    ;     return false
-    ; }
-
     if (styleTarget & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口
         return true
     }
     return false
 }
 
-AutoActivateWindow()  ; MyKeymap 启动时自动执行
+AutoActivateWindow()  ; MyKeymap 启动时自动启用该功能
