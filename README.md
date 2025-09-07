@@ -2,7 +2,7 @@
 title: 项目介绍——my-keymap
 description: 
 date: 2025-08-14
-lastmod: 2025-09-04
+lastmod: 2025-09-07
 image: 
 categories:
     - 项目
@@ -140,6 +140,10 @@ weight:
 
 - **防误触**：仅当鼠标**静置 500 ms** 时激活窗口，移动过程中绝不触发，彻底避免操作干扰
 - **全场景兼容**：修复桌面、浏览器、文件资源管理器和开始菜单中的右键菜单 bug，实现“露出边边角角就能激活”
+
+### 亮度调节 IncBrightness & DecBrightness
+
+不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。由于不显示 GUI，显示器状态切换时需要重启 MyKeymap，以保证功能正常。
 
 ### 活动窗口边框着色 AutoWindowColorBorder
 
