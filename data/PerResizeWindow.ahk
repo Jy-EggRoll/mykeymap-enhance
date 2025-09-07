@@ -205,15 +205,15 @@ PerCenterAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
 
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
+
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
 
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
@@ -241,15 +241,14 @@ PerLeftUpAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
@@ -276,15 +275,14 @@ PerLeftDownAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
@@ -311,15 +309,14 @@ PerRightUpAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
@@ -346,15 +343,14 @@ PerRightDownAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
@@ -381,15 +377,14 @@ PerUpAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
@@ -416,15 +411,14 @@ PerRightAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
@@ -451,15 +445,14 @@ PerDownAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
@@ -486,15 +479,14 @@ PerLeftAndResizeWindow(percentageW, percentageH) {
     }
 
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
     ; borderThickness := GetBorderThickness(hwnd)
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
     w := r - l
