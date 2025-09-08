@@ -1,919 +1,919 @@
 {
-    "keymaps": [
-        {
-            "delay": 0,
-            "disableAt": "",
-            "enable": true,
-            "hotkey": "*CapsLock",
-            "hotkeys": {
-                "*a": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerCenterAndResizeWindow(0.96, 0.92)",
-                        "comment": "几乎满屏，留出边角方便切换程序",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*c": [
-                    {
-                        "actionTypeID": 2,
-                        "actionValueID": 8,
-                        "comment": "label:24",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*d": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerCenterAndResizeWindow(0.5, 0.5)",
-                        "comment": "用于四等分屏幕",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*down": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "DecBrightness(10)",
-                        "comment": "亮度降低 10",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*f": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerCenterAndResizeWindow(0.333, 0.333)",
-                        "comment": "用于九等分屏幕，在高分屏上效果好",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*i": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 1,
-                        "comment": "label:25",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*j": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 3,
-                        "comment": "label:27",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*k": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 2,
-                        "comment": "label:26",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*l": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 4,
-                        "comment": "label:28",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*LButton": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "DragWindow()",
-                        "comment": "进入拖动模式",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*left": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PreviousMonitor()",
-                        "comment": "调整上一个显示器的亮度",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*m": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 10,
-                        "comment": "label:34",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*n": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 9,
-                        "comment": "label:33",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*o": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 6,
-                        "comment": "label:30",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*q": [
-                    {
-                        "actionTypeID": 3,
-                        "actionValueID": 9,
-                        "comment": "label:11",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*RButton": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "ResizeWindow()",
-                        "comment": "进入大小调整模式",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*right": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "NextMonitor()",
-                        "comment": "调整下一个显示器的亮度",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*s": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerCenterAndResizeWindow(0.8, 0.8)",
-                        "comment": "大部分软件的视觉舒适大小",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*space": [
-                    {
-                        "actionTypeID": 7,
-                        "actionValueID": 29,
-                        "comment": "label:61",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*tab": [
-                    {
-                        "actionTypeID": 3,
-                        "actionValueID": 12,
-                        "comment": "label:14",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*u": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 5,
-                        "comment": "label:29",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*up": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "IncBrightness(10)",
-                        "comment": "亮度增加 10",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*v": [
-                    {
-                        "actionTypeID": 3,
-                        "actionValueID": 7,
-                        "comment": "label:7",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*w": [
-                    {
-                        "actionTypeID": 3,
-                        "actionValueID": 8,
-                        "comment": "label:10",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*WheelDown": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "DecBrightness(5)",
-                        "comment": "亮度降低 5",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*WheelUp": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "IncBrightness(5)",
-                        "comment": "亮度增加 5",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*x": [
-                    {
-                        "actionTypeID": 3,
-                        "actionValueID": 1,
-                        "comment": "label:1",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*z": [
-                    {
-                        "actionTypeID": 3,
-                        "actionValueID": 13,
-                        "comment": "label:15",
-                        "windowGroupID": 0
-                    }
-                ],
-                "singlePress": [
-                    {
-                        "actionTypeID": 9,
-                        "actionValueID": 6,
-                        "comment": "label:76",
-                        "windowGroupID": 0
-                    }
-                ]
-            },
-            "id": 5,
-            "name": "CapsLock",
-            "parentID": 0
-        },
-        {
-            "delay": 0,
-            "disableAt": "",
-            "enable": true,
-            "hotkey": "RButton",
-            "hotkeys": {
-                "*LButton": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "Ctrl + Alt + Tab ( 可用鼠标中键关闭窗口 )",
-                        "keysToSend": "^!{tab}",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*WheelDown": [
-                    {
-                        "actionTypeID": 5,
-                        "comment": "重映射为 Volume_Down",
-                        "remapToKey": "Volume_Down",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*WheelUp": [
-                    {
-                        "actionTypeID": 5,
-                        "comment": "重映射为 Volume_Up",
-                        "remapToKey": "Volume_Up",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*XButton1": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "关闭标签页快捷键",
-                        "keysToSend": "^w",
-                        "windowGroupID": 0
-                    }
-                ],
-                "*XButton2": [
-                    {
-                        "actionTypeID": 5,
-                        "comment": "重映射为 MButton",
-                        "remapToKey": "MButton",
-                        "windowGroupID": 0
-                    }
-                ],
-                "singlePress": [
-                    {
-                        "actionTypeID": 4,
-                        "actionValueID": 10,
-                        "comment": "label:34",
-                        "windowGroupID": 0
-                    }
-                ]
-            },
-            "id": 16,
-            "name": "鼠标右键",
-            "parentID": 0
-        },
-        {
-            "delay": 0,
-            "disableAt": "",
-            "enable": true,
-            "hotkey": "customHotkeys",
-            "hotkeys": {
-                "!'": [
-                    {
-                        "actionTypeID": 9,
-                        "actionValueID": 2,
-                        "comment": "label:72",
-                        "windowGroupID": 0
-                    }
-                ],
-                "!+'": [
-                    {
-                        "actionTypeID": 9,
-                        "actionValueID": 1,
-                        "comment": "label:71",
-                        "windowGroupID": 0
-                    }
-                ],
-                "!CapsLock": [
-                    {
-                        "actionTypeID": 9,
-                        "actionValueID": 7,
-                        "comment": "label:77",
-                        "windowGroupID": 0
-                    }
-                ],
-                "#!Down": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerRightDownAndResizeWindow(0.6, 0.6)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "#!Up": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerRightUpAndResizeWindow(0.6, 0.6)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "#Down": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerDownAndResizeWindow(1, 0.6)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "#Left": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerLeftAndResizeWindow(0.6, 1)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "#Right": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerRightAndResizeWindow(0.6, 1)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "#Up": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerUpAndResizeWindow(1, 0.6)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "^#Down": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerLeftDownAndResizeWindow(0.6, 0.6)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "^#Up": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "PerLeftUpAndResizeWindow(0.6, 0.6)",
-                        "windowGroupID": 0
-                    }
-                ]
-            },
-            "id": 1,
-            "name": "Custom Hotkeys",
-            "parentID": 0
-        },
-        {
-            "delay": 0,
-            "disableAt": "",
-            "enable": true,
-            "hotkey": "capslockAbbr",
-            "hotkeys": {
-                "21": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(2, \"h1\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "22": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(2, \"h2\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "31": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(3, \"h1\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "32": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(3, \"h2\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "33": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(3, \"h3\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "41": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(4, 1)",
-                        "comment": "四分屏位置 1",
-                        "windowGroupID": 0
-                    }
-                ],
-                "42": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(4, 2)",
-                        "comment": "四分屏位置 2",
-                        "windowGroupID": 0
-                    }
-                ],
-                "43": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(4, 3)",
-                        "comment": "四分屏位置 3",
-                        "windowGroupID": 0
-                    }
-                ],
-                "44": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(4, 4)",
-                        "comment": "四分屏位置 4",
-                        "windowGroupID": 0
-                    }
-                ],
-                "91": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 1)",
-                        "comment": "九分屏位置 1",
-                        "windowGroupID": 0
-                    }
-                ],
-                "92": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 2)",
-                        "comment": "九分屏位置 2",
-                        "windowGroupID": 0
-                    }
-                ],
-                "93": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 3)",
-                        "comment": "九分屏位置 3",
-                        "windowGroupID": 0
-                    }
-                ],
-                "94": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 4)",
-                        "comment": "九分屏位置 4",
-                        "windowGroupID": 0
-                    }
-                ],
-                "95": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 5)",
-                        "comment": "九分屏位置 5",
-                        "windowGroupID": 0
-                    }
-                ],
-                "96": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 6)",
-                        "comment": "九分屏位置 6",
-                        "windowGroupID": 0
-                    }
-                ],
-                "97": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 7)",
-                        "comment": "九分屏位置 7",
-                        "windowGroupID": 0
-                    }
-                ],
-                "98": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 8)",
-                        "comment": "九分屏位置 8",
-                        "windowGroupID": 0
-                    }
-                ],
-                "99": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(9, 9)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "br": [
-                    {
-                        "actionTypeID": 2,
-                        "actionValueID": 6,
-                        "comment": "label:22",
-                        "windowGroupID": 0
-                    }
-                ],
-                "cc": [
-                    {
-                        "actionTypeID": 1,
-                        "args": "-n \"{selected}\"",
-                        "comment": "用 VS Code 打开选中的文件，在新窗口中打开",
-                        "target": "shortcuts\\Visual Studio Code.lnk",
-                        "windowGroupID": 0
-                    }
-                ],
-                "ex": [
-                    {
-                        "actionTypeID": 9,
-                        "actionValueID": 3,
-                        "comment": "label:73",
-                        "windowGroupID": 0
-                    }
-                ],
-                "nc": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SwitchToNextColor()",
-                        "comment": "切换到下一个边框色",
-                        "windowGroupID": 0
-                    }
-                ],
-                "pd": [
-                    {
-                        "actionTypeID": 2,
-                        "actionValueID": 10,
-                        "comment": "label:2402",
-                        "windowGroupID": 0
-                    }
-                ],
-                "rb": [
-                    {
-                        "actionTypeID": 1,
-                        "comment": "打开回收站",
-                        "target": "shell:RecycleBinFolder",
-                        "windowGroupID": 0
-                    }
-                ],
-                "sa": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "AutoActivateWindow()",
-                        "comment": "控制自动启动窗口的启动或停止",
-                        "windowGroupID": 0
-                    }
-                ],
-                "sb": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "AutoWindowColorBorder()",
-                        "comment": "控制自动着色边框启动或停止",
-                        "windowGroupID": 0
-                    }
-                ],
-                "se": [
-                    {
-                        "actionTypeID": 9,
-                        "actionValueID": 4,
-                        "comment": "label:74",
-                        "windowGroupID": 0
-                    }
-                ],
-                "sl": [
-                    {
-                        "actionTypeID": 1,
-                        "target": "C:\\Soft\\quick-modern-standby\\quick-modern-standby.exe",
-                        "windowGroupID": 0
-                    }
-                ],
-                "tm": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "Ctrl + Shift + Esc ( Task Manager )",
-                        "keysToSend": "^+{esc}",
-                        "windowGroupID": 0
-                    }
-                ],
-                "v21": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(2, \"v1\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "v22": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(2, \"v2\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "v31": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(3, \"v1\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "v32": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(3, \"v2\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "v33": [
-                    {
-                        "actionTypeID": 8,
-                        "ahkCode": "SplitScreen(3, \"v3\")",
-                        "windowGroupID": 0
-                    }
-                ],
-                "wt": [
-                    {
-                        "actionTypeID": 1,
-                        "args": "-d \"{selected}\"",
-                        "comment": "用 Windows Terminal 打开选中的文件夹",
-                        "target": "wt.exe",
-                        "windowGroupID": 0
-                    }
-                ]
-            },
-            "id": 2,
-            "name": "Command",
-            "parentID": 0
-        },
-        {
-            "delay": 0,
-            "disableAt": "",
-            "enable": false,
-            "hotkey": "semicolonAbbr",
-            "hotkeys": {
-                ",": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "因为在输入法中设置了「 中文状态下使用英文标点 」, 所以用这个输入中文逗号",
-                        "keysToSend": "，",
-                        "windowGroupID": 0
-                    }
-                ],
-                ".": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "因为在输入法中设置了「 中文状态下使用英文标点 」, 所以用这个输入中文句号",
-                        "keysToSend": "。",
-                        "windowGroupID": 0
-                    }
-                ],
-                "/": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "因为在输入法中设置了「 中文状态下使用英文标点 」, 所以用这个输入中文顿号",
-                        "keysToSend": "、",
-                        "windowGroupID": 0
-                    }
-                ],
-                "dk": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入一对 {} 并把光标移动中间",
-                        "keysToSend": "{text}{}\n{left}",
-                        "windowGroupID": 0
-                    }
-                ],
-                "dq": [
-                    {
-                        "actionTypeID": 1,
-                        "args": "bin\\AlignComment.ahk",
-                        "comment": "对齐代码注释",
-                        "runInBackground": true,
-                        "target": "bin\\AutoHotkey64.exe",
-                        "windowGroupID": 0
-                    }
-                ],
-                "fz": [
-                    {
-                        "actionTypeID": 1,
-                        "args": "bin\\CollectText.ahk",
-                        "comment": "用剪切板收集文本 (连续复制然后合并粘贴)",
-                        "target": "bin\\AutoHotkey64.exe",
-                        "windowGroupID": 0,
-                        "winTitle": "连续复制后 ahk_class AutoHotkeyGUI"
-                    }
-                ],
-                "gg": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "一键 Git 提交",
-                        "keysToSend": "{text}git add -A; git commit -a -m \"\"; git push origin (git branch --show-current);\n{left 47}",
-                        "windowGroupID": 0
-                    }
-                ],
-                "gt": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "狗头 🐶",
-                        "keysToSend": "🐶",
-                        "windowGroupID": 0
-                    }
-                ],
-                "i love nia": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "没错，缩写中可以包含空格，用del i love nia删掉这个示例",
-                        "keysToSend": "{text}我爱尼娅! \n{text}( 还 有 大 家 )",
-                        "windowGroupID": 0
-                    }
-                ],
-                "jt": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入箭头符号",
-                        "keysToSend": "{text}➤ ",
-                        "windowGroupID": 0
-                    }
-                ],
-                "kg": [
-                    {
-                        "actionTypeID": 7,
-                        "actionValueID": 29,
-                        "comment": "label:61",
-                        "windowGroupID": 0
-                    }
-                ],
-                "rq": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入当前日期",
-                        "keysToSend": "ahk-expression: Format(\"{}-{}-{}\", A_YYYY, A_MM, A_DD)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "sj": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入当前时间",
-                        "keysToSend": "ahk-expression: Format(\"{}年{}月{}日 {}:{}\", A_YYYY, A_MM, A_DD, A_Hour, A_Min)",
-                        "windowGroupID": 0
-                    }
-                ],
-                "sk": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入一对「」并把光标移动中间",
-                        "keysToSend": "「  」\n{left 2}",
-                        "windowGroupID": 0
-                    }
-                ],
-                "xf": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入小括号和分号",
-                        "keysToSend": "();{left 2}",
-                        "windowGroupID": 0
-                    }
-                ],
-                "xk": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入一对 () 并把光标移到中间",
-                        "keysToSend": "(){left}",
-                        "windowGroupID": 0
-                    }
-                ],
-                "zh": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "搜索时加上 site: 选项，能让搜索引擎只搜某网站的内容，另外用 inurl: 过滤掉专栏和视频内容",
-                        "keysToSend": "{text} site:zhihu.com inurl:question",
-                        "windowGroupID": 0
-                    }
-                ],
-                "zk": [
-                    {
-                        "actionTypeID": 6,
-                        "comment": "输入一对 [] 并把光标移到中间",
-                        "keysToSend": "[]{left}",
-                        "windowGroupID": 0
-                    }
-                ]
-            },
-            "id": 3,
-            "name": "Abbreviation",
-            "parentID": 0
-        },
-        {
-            "delay": 0,
-            "disableAt": "",
-            "enable": true,
-            "hotkey": "settings",
-            "hotkeys": {},
-            "id": 4,
-            "name": "Settings",
-            "parentID": 0
-        }
-    ],
-    "options": {
-        "commandInputSkin": {
-            "backgroundColor": "#FFFFFF",
-            "backgroundOpacity": "0.9",
-            "borderColor": "#FFFFFF",
-            "borderOpacity": "1.0",
-            "borderRadius": "10",
-            "borderWidth": "3",
-            "cornerColor": "#000000",
-            "cornerOpacity": "0.0",
-            "gridlineColor": "#2843AD",
-            "gridlineOpacity": "0.04",
-            "hideAnimationDuration": "0.34",
-            "keyColor": "#000000",
-            "keyOpacity": "1.0",
-            "windowShadowColor": "#000000",
-            "windowShadowOpacity": "0.5",
-            "windowShadowSize": "3.0",
-            "windowWidth": "700",
-            "windowYPos": "0.25"
-        },
-        "keyboardLayout": "esc\nf1 f2 f3 f4 f5 f6\nf7 f8 f9 f10 f11 f12\n`\n1 2 3 4 5\n6 7 8 9 0\n- = backspace\ntab \nq w e r t\ny u i o p [ ] \\\na s d f g\nh j k l ; ' enter\nLShift\nz x c v\nb n m , . /\nRShift\nLCtrl LWin LAlt\nspace\nRAlt RWin RCtrl\nsinglePress\nhome pgup delete end pgdn\nup down left right\nLButton RButton MButton\nXButton1 XButton2\nWheelUp WheelDown\nWheelLeft WheelRight",
-        "keyMapping": "",
-        "language": "zh",
-        "mouse": {
-            "delay1": "0.13",
-            "delay2": "0.01",
-            "fastRepeat": "70",
-            "fastSingle": "110",
-            "keepMouseMode": false,
-            "showTip": false,
-            "slowRepeat": "13",
-            "slowSingle": "10",
-            "tipSymbol": "🐶"
-        },
-        "mykeymapVersion": "2.0-beta33",
-        "pathVariables": [
-            {
-                "name": "programs",
-                "value": "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\"
-            }
+  "keymaps": [
+    {
+      "id": 5,
+      "name": "CapsLock",
+      "enable": true,
+      "hotkey": "*CapsLock",
+      "parentID": 0,
+      "delay": 0,
+      "disableAt": "",
+      "hotkeys": {
+        "*LButton": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "进入拖动模式",
+            "ahkCode": "DragWindow()"
+          }
         ],
-        "scroll": {
-            "delay1": "0.2",
-            "delay2": "0.03",
-            "onceLineCount": "1"
-        },
-        "startup": true,
-        "windowGroups": [
-            {
-                "id": -1,
-                "name": "🚫 Exclude",
-                "value": "Stardew Valley ahk_class SDL_app\nahk_exe Hades.exe"
-            },
-            {
-                "id": 0,
-                "name": "🌎 Global"
-            },
-            {
-                "conditionType": 1,
-                "id": 1,
-                "name": "🌐 Web Browser",
-                "value": "ahk_exe chrome.exe\nahk_exe msedge.exe\nahk_exe firefox.exe"
-            },
-            {
-                "conditionType": 1,
-                "id": 3,
-                "name": "📁 File Explorer",
-                "value": "ahk_exe explorer.exe"
-            }
+        "*RButton": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "进入大小调整模式",
+            "ahkCode": "ResizeWindow()"
+          }
+        ],
+        "*WheelDown": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "亮度降低 5",
+            "ahkCode": "DecBrightness(5)"
+          }
+        ],
+        "*WheelUp": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "亮度增加 5",
+            "ahkCode": "IncBrightness(5)"
+          }
+        ],
+        "*a": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "几乎满屏，留出边角方便切换程序",
+            "ahkCode": "PerCenterAndResizeWindow(0.96, 0.92)"
+          }
+        ],
+        "*c": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 2,
+            "comment": "label:24",
+            "actionValueID": 8
+          }
+        ],
+        "*d": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "较小，但仍然较舒适",
+            "ahkCode": "PerCenterAndResizeWindow(0.6, 0.6)"
+          }
+        ],
+        "*down": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "亮度降低 10",
+            "ahkCode": "DecBrightness(10)"
+          }
+        ],
+        "*f": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "屏幕四分之一的大小，对于居中函数，再小也就没有必要了，会影响到大部分程序的显示效果，甚至不能做到完美居中（程序有最小大小限制）",
+            "ahkCode": "PerCenterAndResizeWindow(0.5, 0.5)"
+          }
+        ],
+        "*i": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:25",
+            "actionValueID": 1
+          }
+        ],
+        "*j": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:27",
+            "actionValueID": 3
+          }
+        ],
+        "*k": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:26",
+            "actionValueID": 2
+          }
+        ],
+        "*l": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:28",
+            "actionValueID": 4
+          }
+        ],
+        "*left": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "调整上一个显示器的亮度",
+            "ahkCode": "PreviousMonitor()"
+          }
+        ],
+        "*m": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:34",
+            "actionValueID": 10
+          }
+        ],
+        "*n": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:33",
+            "actionValueID": 9
+          }
+        ],
+        "*o": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:30",
+            "actionValueID": 6
+          }
+        ],
+        "*q": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:11",
+            "actionValueID": 9
+          }
+        ],
+        "*right": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "调整下一个显示器的亮度",
+            "ahkCode": "NextMonitor()"
+          }
+        ],
+        "*s": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "大部分软件的视觉舒适大小",
+            "ahkCode": "PerCenterAndResizeWindow(0.8, 0.8)"
+          }
+        ],
+        "*space": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 7,
+            "comment": "label:61",
+            "actionValueID": 29
+          }
+        ],
+        "*tab": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:14",
+            "actionValueID": 12
+          }
+        ],
+        "*u": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:29",
+            "actionValueID": 5
+          }
+        ],
+        "*up": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "亮度增加 10",
+            "ahkCode": "IncBrightness(10)"
+          }
+        ],
+        "*v": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:7",
+            "actionValueID": 7
+          }
+        ],
+        "*w": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:10",
+            "actionValueID": 8
+          }
+        ],
+        "*x": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:1",
+            "actionValueID": 1
+          }
+        ],
+        "*z": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:15",
+            "actionValueID": 13
+          }
+        ],
+        "singlePress": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 9,
+            "comment": "label:76",
+            "actionValueID": 6
+          }
         ]
+      }
+    },
+    {
+      "id": 16,
+      "name": "鼠标右键",
+      "enable": true,
+      "hotkey": "RButton",
+      "parentID": 0,
+      "delay": 0,
+      "disableAt": "",
+      "hotkeys": {
+        "*LButton": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "Ctrl + Alt + Tab ( 可用鼠标中键关闭窗口 )",
+            "keysToSend": "^!{tab}"
+          }
+        ],
+        "*WheelDown": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 5,
+            "comment": "重映射为 Volume_Down",
+            "remapToKey": "Volume_Down"
+          }
+        ],
+        "*WheelUp": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 5,
+            "comment": "重映射为 Volume_Up",
+            "remapToKey": "Volume_Up"
+          }
+        ],
+        "*XButton1": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "关闭标签页快捷键",
+            "keysToSend": "^w"
+          }
+        ],
+        "*XButton2": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 5,
+            "comment": "重映射为 MButton",
+            "remapToKey": "MButton"
+          }
+        ],
+        "singlePress": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 4,
+            "comment": "label:34",
+            "actionValueID": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "name": "Custom Hotkeys",
+      "enable": true,
+      "hotkey": "customHotkeys",
+      "parentID": 0,
+      "delay": 0,
+      "disableAt": "",
+      "hotkeys": {
+        "!'": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 9,
+            "comment": "label:72",
+            "actionValueID": 2
+          }
+        ],
+        "!+'": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 9,
+            "comment": "label:71",
+            "actionValueID": 1
+          }
+        ],
+        "!CapsLock": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 9,
+            "comment": "label:77",
+            "actionValueID": 7
+          }
+        ],
+        "#!Down": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightDownAndResizeWindow(0.6, 0.6)"
+          }
+        ],
+        "#!Up": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightUpAndResizeWindow(0.6, 0.6)"
+          }
+        ],
+        "#Down": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerDownAndResizeWindow(1, 0.6)"
+          }
+        ],
+        "#Left": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftAndResizeWindow(0.6, 1)"
+          }
+        ],
+        "#Right": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerRightAndResizeWindow(0.6, 1)"
+          }
+        ],
+        "#Up": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerUpAndResizeWindow(1, 0.6)"
+          }
+        ],
+        "^#Down": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftDownAndResizeWindow(0.6, 0.6)"
+          }
+        ],
+        "^#Up": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "PerLeftUpAndResizeWindow(0.6, 0.6)"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Command",
+      "enable": true,
+      "hotkey": "capslockAbbr",
+      "parentID": 0,
+      "delay": 0,
+      "disableAt": "",
+      "hotkeys": {
+        "21": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(2, \"h1\")"
+          }
+        ],
+        "22": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(2, \"h2\")"
+          }
+        ],
+        "31": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"h1\")"
+          }
+        ],
+        "32": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"h2\")"
+          }
+        ],
+        "33": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"h3\")"
+          }
+        ],
+        "41": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 1",
+            "ahkCode": "SplitScreen(4, 1)"
+          }
+        ],
+        "42": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 2",
+            "ahkCode": "SplitScreen(4, 2)"
+          }
+        ],
+        "43": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 3",
+            "ahkCode": "SplitScreen(4, 3)"
+          }
+        ],
+        "44": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 4",
+            "ahkCode": "SplitScreen(4, 4)"
+          }
+        ],
+        "91": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 1",
+            "ahkCode": "SplitScreen(9, 1)"
+          }
+        ],
+        "92": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 2",
+            "ahkCode": "SplitScreen(9, 2)"
+          }
+        ],
+        "93": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 3",
+            "ahkCode": "SplitScreen(9, 3)"
+          }
+        ],
+        "94": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 4",
+            "ahkCode": "SplitScreen(9, 4)"
+          }
+        ],
+        "95": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 5",
+            "ahkCode": "SplitScreen(9, 5)"
+          }
+        ],
+        "96": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 6",
+            "ahkCode": "SplitScreen(9, 6)"
+          }
+        ],
+        "97": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 7",
+            "ahkCode": "SplitScreen(9, 7)"
+          }
+        ],
+        "98": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 8",
+            "ahkCode": "SplitScreen(9, 8)"
+          }
+        ],
+        "99": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(9, 9)"
+          }
+        ],
+        "br": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 2,
+            "comment": "label:22",
+            "actionValueID": 6
+          }
+        ],
+        "cc": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 1,
+            "comment": "用 VS Code 打开选中的文件，在新窗口中打开",
+            "target": "shortcuts\\Visual Studio Code.lnk",
+            "args": "-n \"{selected}\""
+          }
+        ],
+        "ex": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 9,
+            "comment": "label:73",
+            "actionValueID": 3
+          }
+        ],
+        "nc": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "切换到下一个边框色",
+            "ahkCode": "SwitchToNextColor()"
+          }
+        ],
+        "pd": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 2,
+            "comment": "label:2402",
+            "actionValueID": 10
+          }
+        ],
+        "rb": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 1,
+            "comment": "打开回收站",
+            "target": "shell:RecycleBinFolder"
+          }
+        ],
+        "sa": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "控制自动启动窗口的启动或停止",
+            "ahkCode": "AutoActivateWindow()"
+          }
+        ],
+        "sb": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "控制自动着色边框启动或停止",
+            "ahkCode": "AutoWindowColorBorder()"
+          }
+        ],
+        "se": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 9,
+            "comment": "label:74",
+            "actionValueID": 4
+          }
+        ],
+        "sl": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 1,
+            "target": "C:\\Soft\\quick-modern-standby\\quick-modern-standby.exe"
+          }
+        ],
+        "tm": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "Ctrl + Shift + Esc ( Task Manager )",
+            "keysToSend": "^+{esc}"
+          }
+        ],
+        "v21": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(2, \"v1\")"
+          }
+        ],
+        "v22": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(2, \"v2\")"
+          }
+        ],
+        "v31": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"v1\")"
+          }
+        ],
+        "v32": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"v2\")"
+          }
+        ],
+        "v33": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"v3\")"
+          }
+        ],
+        "wt": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 1,
+            "comment": "用 Windows Terminal 打开选中的文件夹",
+            "target": "wt.exe",
+            "args": "-d \"{selected}\""
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "name": "Abbreviation",
+      "enable": false,
+      "hotkey": "semicolonAbbr",
+      "parentID": 0,
+      "delay": 0,
+      "disableAt": "",
+      "hotkeys": {
+        ",": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "因为在输入法中设置了「 中文状态下使用英文标点 」, 所以用这个输入中文逗号",
+            "keysToSend": "，"
+          }
+        ],
+        ".": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "因为在输入法中设置了「 中文状态下使用英文标点 」, 所以用这个输入中文句号",
+            "keysToSend": "。"
+          }
+        ],
+        "/": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "因为在输入法中设置了「 中文状态下使用英文标点 」, 所以用这个输入中文顿号",
+            "keysToSend": "、"
+          }
+        ],
+        "dk": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入一对 {} 并把光标移动中间",
+            "keysToSend": "{text}{}\n{left}"
+          }
+        ],
+        "dq": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 1,
+            "comment": "对齐代码注释",
+            "target": "bin\\AutoHotkey64.exe",
+            "args": "bin\\AlignComment.ahk",
+            "runInBackground": true
+          }
+        ],
+        "fz": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 1,
+            "comment": "用剪切板收集文本 (连续复制然后合并粘贴)",
+            "winTitle": "连续复制后 ahk_class AutoHotkeyGUI",
+            "target": "bin\\AutoHotkey64.exe",
+            "args": "bin\\CollectText.ahk"
+          }
+        ],
+        "gg": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "一键 Git 提交",
+            "keysToSend": "{text}git add -A; git commit -a -m \"\"; git push origin (git branch --show-current);\n{left 47}"
+          }
+        ],
+        "gt": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "狗头 🐶",
+            "keysToSend": "🐶"
+          }
+        ],
+        "i love nia": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "没错，缩写中可以包含空格，用del i love nia删掉这个示例",
+            "keysToSend": "{text}我爱尼娅! \n{text}( 还 有 大 家 )"
+          }
+        ],
+        "jt": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入箭头符号",
+            "keysToSend": "{text}➤ "
+          }
+        ],
+        "kg": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 7,
+            "comment": "label:61",
+            "actionValueID": 29
+          }
+        ],
+        "rq": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入当前日期",
+            "keysToSend": "ahk-expression: Format(\"{}-{}-{}\", A_YYYY, A_MM, A_DD)"
+          }
+        ],
+        "sj": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入当前时间",
+            "keysToSend": "ahk-expression: Format(\"{}年{}月{}日 {}:{}\", A_YYYY, A_MM, A_DD, A_Hour, A_Min)"
+          }
+        ],
+        "sk": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入一对「」并把光标移动中间",
+            "keysToSend": "「  」\n{left 2}"
+          }
+        ],
+        "xf": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入小括号和分号",
+            "keysToSend": "();{left 2}"
+          }
+        ],
+        "xk": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入一对 () 并把光标移到中间",
+            "keysToSend": "(){left}"
+          }
+        ],
+        "zh": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "搜索时加上 site: 选项，能让搜索引擎只搜某网站的内容，另外用 inurl: 过滤掉专栏和视频内容",
+            "keysToSend": "{text} site:zhihu.com inurl:question"
+          }
+        ],
+        "zk": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入一对 [] 并把光标移到中间",
+            "keysToSend": "[]{left}"
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "name": "Settings",
+      "enable": true,
+      "hotkey": "settings",
+      "parentID": 0,
+      "delay": 0,
+      "disableAt": "",
+      "hotkeys": {}
     }
+  ],
+  "options": {
+    "mykeymapVersion": "2.0-beta33",
+    "windowGroups": [
+      {
+        "id": -1,
+        "name": "🚫 Exclude",
+        "value": "Stardew Valley ahk_class SDL_app\nahk_exe Hades.exe"
+      },
+      {
+        "id": 0,
+        "name": "🌎 Global"
+      },
+      {
+        "id": 1,
+        "name": "🌐 Web Browser",
+        "value": "ahk_exe chrome.exe\nahk_exe msedge.exe\nahk_exe firefox.exe",
+        "conditionType": 1
+      },
+      {
+        "id": 3,
+        "name": "📁 File Explorer",
+        "value": "ahk_exe explorer.exe",
+        "conditionType": 1
+      }
+    ],
+    "mouse": {
+      "keepMouseMode": false,
+      "showTip": false,
+      "tipSymbol": "🐶",
+      "delay1": "0.13",
+      "delay2": "0.01",
+      "fastSingle": "110",
+      "fastRepeat": "70",
+      "slowSingle": "10",
+      "slowRepeat": "13"
+    },
+    "scroll": {
+      "delay1": "0.2",
+      "delay2": "0.03",
+      "onceLineCount": "1"
+    },
+    "commandInputSkin": {
+      "backgroundColor": "#FFFFFF",
+      "backgroundOpacity": "0.9",
+      "borderWidth": "3",
+      "borderColor": "#FFFFFF",
+      "borderOpacity": "1.0",
+      "borderRadius": "10",
+      "cornerColor": "#000000",
+      "cornerOpacity": "0.0",
+      "gridlineColor": "#2843AD",
+      "gridlineOpacity": "0.04",
+      "keyColor": "#000000",
+      "keyOpacity": "1.0",
+      "hideAnimationDuration": "0.34",
+      "windowYPos": "0.25",
+      "windowWidth": "700",
+      "windowShadowColor": "#000000",
+      "windowShadowOpacity": "0.5",
+      "windowShadowSize": "3.0"
+    },
+    "pathVariables": [
+      {
+        "name": "programs",
+        "value": "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\"
+      }
+    ],
+    "startup": true,
+    "language": "zh",
+    "keyMapping": "",
+    "keyboardLayout": "esc\nf1 f2 f3 f4 f5 f6\nf7 f8 f9 f10 f11 f12\n`\n1 2 3 4 5\n6 7 8 9 0\n- = backspace\ntab \nq w e r t\ny u i o p [ ] \\\na s d f g\nh j k l ; ' enter\nLShift\nz x c v\nb n m , . /\nRShift\nLCtrl LWin LAlt\nspace\nRAlt RWin RCtrl\nsinglePress\nhome pgup delete end pgdn\nup down left right\nLButton RButton MButton\nXButton1 XButton2\nWheelUp WheelDown\nWheelLeft WheelRight"
+  }
 }
