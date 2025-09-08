@@ -18,7 +18,7 @@ F_IsDesktop() {
 
 /**
  * 当前窗口是最大化还是最小化
- * @param {string} winTitle AHK中的WinTitle
+ * @param {string} winTitle AHK 中的 WinTitle
  * @returns {number} 
  */
 F_WindowMaxOrMin(winTitle := "A") {

@@ -169,6 +169,14 @@
             "ahkCode": "PerCenterAndResizeWindow(0.8, 0.8)"
           }
         ],
+        "*space": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 7,
+            "comment": "label:61",
+            "actionValueID": 29
+          }
+        ],
         "*tab": [
           {
             "windowGroupID": 0,
