@@ -214,7 +214,7 @@ GetShadowThickness(hwnd) {
  * 
  * 当 gridNum 为 3 时，取值为字符串 "h1"、"h2"、"h3"（水平分割）或 "v1"、"v2"、"v3"（垂直分割）
  */
-splitScreen(gridNum, gridIndex) {
+SplitScreen(gridNum, gridIndex) {
     switch gridNum {
         case 4:
         {

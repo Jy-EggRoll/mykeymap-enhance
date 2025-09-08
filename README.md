@@ -76,6 +76,12 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键</td>
     </tr>
     <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SplitScreen(gridNum, gridIndex)</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">gridNum：网格数量，gridIndex：实际位置</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">描述较长，见下文，该函数是对上面两个函数的进一步封装</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">使用 MyKeymap 的命令实现分屏，如 41、92</td>
+    </tr>
+    <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoActivateWindow()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动</td>
@@ -130,9 +136,27 @@ weight:
 
 针对官方函数“硬编码像素值（如 800 × 600）”的小缺陷，该函数通过“比例参数”实现智能适配。
 
-### 分屏与定位的 8 个拓展函数
+### 分屏拓展函数 splitScreen
 
-为替代 Windows 原生分屏，新增 8 个窗口控制函数，分别是：窗口置于上下左右四个半屏以及四个边角。
+根据指定的网格数量和网格索引，将当前活动窗口调整到屏幕对应位置并设置相应大小，支持多种分屏布局（2 格、3 格、4 格、9 格），不同网格数量对应不同的屏幕分割方式。
+
+@param {number} gridNum - 网格数量，决定分屏布局模式，支持的值：2、3、4、9
+
+2：两格布局，支持水平分割（h1 左半屏、h2 右半屏）和垂直分割（v1 上半屏、v2 下半屏）
+
+3：三格布局，支持水平分割（h1 左 1/3、h2 中 1/3、h3 右 1/3）和垂直分割（v1 上 1/3、v2 中 1/3、v3 下 1/3）
+
+4：四格布局（2 * 2 网格），索引 1-4 分别对应左上、右上、左下、右下
+
+9：九格布局（3 * 3 网格），索引 1-9 对应从左上到右下的 3 * 3 网格位置
+
+@param {number|string} gridIndex - 网格索引，标识窗口在当前网格布局中的位置
+
+当 gridNum 为 4 或 9 时，取值为数字 1-4 或 1-9，对应网格中的具体位置
+
+当 gridNum 为 2 时，取值为字符串 "h1"、"h2"（水平分割）或 "v1"、"v2"（垂直分割）
+
+当 gridNum 为 3 时，取值为字符串 "h1"、"h2"、"h3"（水平分割）或 "v1"、"v2"、"v3"（垂直分割）
 
 ### 自动激活窗口 AutoActivateWindow
 
