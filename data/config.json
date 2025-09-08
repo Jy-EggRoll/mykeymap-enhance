@@ -339,56 +339,56 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerRightDownAndResizeWindow(0.9, 0.9)"
+            "ahkCode": "PerRightDownAndResizeWindow(0.6, 0.6)"
           }
         ],
         "#!Up": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerRightUpAndResizeWindow(0.9, 0.9)"
+            "ahkCode": "PerRightUpAndResizeWindow(0.6, 0.6)"
           }
         ],
         "#Down": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerDownAndResizeWindow(1, 0.9)"
+            "ahkCode": "PerDownAndResizeWindow(1, 0.6)"
           }
         ],
         "#Left": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerLeftAndResizeWindow(0.9, 1)"
+            "ahkCode": "PerLeftAndResizeWindow(0.6, 1)"
           }
         ],
         "#Right": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerRightAndResizeWindow(0.9, 1)"
+            "ahkCode": "PerRightAndResizeWindow(0.6, 1)"
           }
         ],
         "#Up": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerUpAndResizeWindow(1, 0.9)"
+            "ahkCode": "PerUpAndResizeWindow(1, 0.6)"
           }
         ],
         "^#Down": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerLeftDownAndResizeWindow(0.9, 0.9)"
+            "ahkCode": "PerLeftDownAndResizeWindow(0.6, 0.6)"
           }
         ],
         "^#Up": [
           {
             "windowGroupID": 0,
             "actionTypeID": 8,
-            "ahkCode": "PerLeftUpAndResizeWindow(0.9, 0.9)"
+            "ahkCode": "PerLeftUpAndResizeWindow(0.6, 0.6)"
           }
         ]
       }
@@ -402,6 +402,144 @@
       "delay": 0,
       "disableAt": "",
       "hotkeys": {
+        "21": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(2, \"h1\")"
+          }
+        ],
+        "22": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(2, \"h2\")"
+          }
+        ],
+        "31": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(3, \"h1\")"
+          }
+        ],
+        "32": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(3, \"h2\")"
+          }
+        ],
+        "33": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(3, \"h3\")"
+          }
+        ],
+        "41": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 1",
+            "ahkCode": "splitScreen(4, 1)"
+          }
+        ],
+        "42": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 2",
+            "ahkCode": "splitScreen(4, 2)"
+          }
+        ],
+        "43": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 3",
+            "ahkCode": "splitScreen(4, 3)"
+          }
+        ],
+        "44": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "四分屏位置 4",
+            "ahkCode": "splitScreen(4, 4)"
+          }
+        ],
+        "91": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 1",
+            "ahkCode": "splitScreen(9, 1)"
+          }
+        ],
+        "92": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 2",
+            "ahkCode": "splitScreen(9, 2)"
+          }
+        ],
+        "93": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 3",
+            "ahkCode": "splitScreen(9, 3)"
+          }
+        ],
+        "94": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 4",
+            "ahkCode": "splitScreen(9, 4)"
+          }
+        ],
+        "95": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 5",
+            "ahkCode": "splitScreen(9, 5)"
+          }
+        ],
+        "96": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 6",
+            "ahkCode": "splitScreen(9, 6)"
+          }
+        ],
+        "97": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 7",
+            "ahkCode": "splitScreen(9, 7)"
+          }
+        ],
+        "98": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "comment": "九分屏位置 8",
+            "ahkCode": "splitScreen(9, 8)"
+          }
+        ],
+        "99": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(9, 9)"
+          }
+        ],
         "br": [
           {
             "windowGroupID": 0,
@@ -488,6 +626,41 @@
             "actionTypeID": 6,
             "comment": "Ctrl + Shift + Esc ( Task Manager )",
             "keysToSend": "^+{esc}"
+          }
+        ],
+        "v21": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(2, \"v1\")"
+          }
+        ],
+        "v22": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(2, \"v2\")"
+          }
+        ],
+        "v31": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(3, \"v1\")"
+          }
+        ],
+        "v32": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(3, \"v2\")"
+          }
+        ],
+        "v33": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "splitScreen(3, \"v3\")"
           }
         ],
         "wt": [

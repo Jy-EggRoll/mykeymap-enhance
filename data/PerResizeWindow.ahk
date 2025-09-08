@@ -194,6 +194,144 @@ GetShadowThickness(hwnd) {
 ; }
 
 /**
+ * 根据指定的网格数量和网格索引，将当前活动窗口调整到屏幕对应位置并设置相应大小
+ * 支持多种分屏布局（2 格、3 格、4 格、9 格），不同网格数量对应不同的屏幕分割方式
+ * @param {number} gridNum - 网格数量，决定分屏布局模式，支持的值：2、3、4、9
+ * 
+ * 2：两格布局，支持水平分割（h1 左半屏、h2 右半屏）和垂直分割（v1 上半屏、v2 下半屏）
+ * 
+ * 3：三格布局，支持水平分割（h1 左 1/3、h2 中 1/3、h3 右 1/3）和垂直分割（v1 上 1/3、v2 中 1/3、v3 下 1/3）
+ * 
+ * 4：四格布局（2 * 2 网格），索引 1-4 分别对应左上、右上、左下、右下
+ * 
+ * 9：九格布局（3 * 3 网格），索引 1-9 对应从左上到右下的 3 * 3 网格位置
+ * 
+ * @param {number|string} gridIndex - 网格索引，标识窗口在当前网格布局中的位置
+ * 
+ * 当 gridNum 为 4 或 9 时，取值为数字 1-4 或 1-9，对应网格中的具体位置
+ * 
+ * 当 gridNum 为 2 时，取值为字符串 "h1"、"h2"（水平分割）或 "v1"、"v2"（垂直分割）
+ * 
+ * 当 gridNum 为 3 时，取值为字符串 "h1"、"h2"、"h3"（水平分割）或 "v1"、"v2"、"v3"（垂直分割）
+ */
+splitScreen(gridNum, gridIndex) {
+    switch gridNum {
+        case 4:
+        {
+            switch gridIndex {
+                case 1:
+                {
+                    PerLeftUpAndResizeWindow(0.5, 0.5)
+                }
+                case 2:
+                {
+                    PerRightUpAndResizeWindow(0.5, 0.5)
+                }
+                case 3:
+                {
+                    PerLeftDownAndResizeWindow(0.5, 0.5)
+                }
+                case 4:
+                {
+                    PerRightDownAndResizeWindow(0.5, 0.5)
+                }
+            }
+        }
+        case 9:
+        {
+            switch gridIndex {
+                case 1:
+                {
+                    PerLeftUpAndResizeWindow(0.334, 0.334)
+                }
+                case 2:
+                {
+                    PerUpAndResizeWindow(0.334, 0.334)
+                }
+                case 3:
+                {
+                    PerRightUpAndResizeWindow(0.334, 0.334)
+                }
+                case 4:
+                {
+                    PerLeftAndResizeWindow(0.334, 0.334)
+                }
+                case 5:
+                {
+                    PerCenterAndResizeWindow(0.334, 0.334)
+                }
+                case 6:
+                {
+                    PerRightAndResizeWindow(0.334, 0.334)
+                }
+                case 7:
+                {
+                    PerLeftDownAndResizeWindow(0.334, 0.334)
+                }
+                case 8:
+                {
+                    PerDownAndResizeWindow(0.334, 0.334)
+                }
+                case 9:
+                {
+                    PerLeftDownAndResizeWindow(0.334, 0.334)
+                }
+            }
+        }
+        case 2:
+        {
+            switch gridIndex {
+                case "h1":
+                {
+                    PerLeftAndResizeWindow(0.5, 1)
+                }
+                case "h2":
+                {
+                    PerRightAndResizeWindow(0.5, 1)
+                }
+                case "v1":
+                {
+                    PerUpAndResizeWindow(1, 0.5)
+                }
+                case "v2":
+                {
+                    PerDownAndResizeWindow(1, 0.5)
+                }
+            }
+        }
+        case 3:
+        {
+            switch gridIndex {
+                case "h1":
+                {
+                    PerLeftAndResizeWindow(0.334, 1)
+                }
+                case "h2":
+                {
+                    PerCenterAndResizeWindow(0.334, 1)
+                }
+                case "h3":
+                {
+                    PerRightAndResizeWindow(0.334, 1)
+                }
+                case "v1":
+                {
+                    PerUpAndResizeWindow(1, 0.334)
+                }
+                case "v2":
+                {
+                    PerCenterAndResizeWindow(1, 0.334)
+                }
+                case "v3":
+                {
+                    PerDownAndResizeWindow(1, 0.334)
+                }
+            }
+        }
+    }
+}
+
+/**
  * 窗口居中并修改其大小
  * @param percentageW
  * @param percentageH
