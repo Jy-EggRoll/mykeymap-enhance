@@ -3,6 +3,7 @@
 ; 注意：该脚本极其严格地遵守“获得焦点”即着色边框，“失去焦点”则恢复边框，为了该功能的稳定，不做任何特殊情况处理。若有时您看到边框颜色意外消失，请注意这不是 bug，一定是该窗口丢失了焦点。例 1：收藏页面时，跳出了一个小窗口，浏览器的边框着色消失了；例 2：使用鼠标手势时，浏览器的边框着色消失了。以上两种情况都是正确且合理的。若您实在不适，请自行取消注释我的部分代码。
 
 #Include LogError.ahk
+#Include QueryTheme.ahk
 
 ; Windows DWM API 常量
 DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
@@ -12,13 +13,21 @@ DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值，外观看起来是一
 COLORS := [
     Map("name", "Peach", "rgb", "254,100,11"),
     Map("name", "Sky", "rgb", "4,165,229"),
-    Map("name", "Green", "rgb", "64, 160, 43")
+    Map("name", "Green", "rgb", "64,160,43")
+]
+
+COLORS_MODE2 := [
+    Map("name", "Mauve", "rgb", "136,57,239"),
+    Map("name", "Peach", "rgb", "254,100,11"),
+    Map("name", "Sky", "rgb", "4,165,229"),
 ]
 
 ; 全局变量
 global borderEnabled := false
 global currentColorIndex := 1
+global currentColorIndexMode2 := 1
 global lastActiveWindow := 0
+global lightTheme := IsLightTheme()
 
 /**
  * RGB 转 BGR 颜色格式函数
@@ -64,11 +73,23 @@ AutoWindowColorBorder() {
  * 切换到下一个颜色
  */
 SwitchToNextColor() {
-    global currentColorIndex, COLORS
+    global currentColorIndex, COLORS, currentColorIndexMode2, COLORS_MODE2, lightTheme
 
-    currentColorIndex := currentColorIndex >= COLORS.Length ? 1 : currentColorIndex + 1
-    colorName := COLORS[currentColorIndex]["name"]
+    test := IsLightTheme()
 
+    if (test != lightTheme) {
+        lightTheme := test
+        ToolTip("系统主题已更改 颜色列表已刷新")
+        SetTimer(ToolTip, -1000)
+    }
+
+    if (lightTheme) {
+        currentColorIndexMode2 := currentColorIndexMode2 >= COLORS_MODE2.Length ? 1 : currentColorIndexMode2 + 1
+        colorName := COLORS_MODE2[currentColorIndexMode2]["name"]
+    } else {
+        currentColorIndex := currentColorIndex >= COLORS.Length ? 1 : currentColorIndex + 1
+        colorName := COLORS[currentColorIndex]["name"]
+    }
     ToolTip("切换到颜色: " . colorName)
     SetTimer(ToolTip, -1000)
 }
@@ -115,55 +136,19 @@ ClearWindowBorder(hwnd) {
  * @return {Integer} 当前边框颜色值
  */
 GetCurrentBorderColor() {
-    global currentColorIndex, COLORS
-    return RGBtoBGR(COLORS[currentColorIndex]["rgb"])
+    global currentColorIndex, COLORS, currentColorIndexMode2, COLORS_MODE2, lightTheme
+    if (lightTheme) {
+        return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])
+    } else {
+        return RGBtoBGR(COLORS[currentColorIndex]["rgb"])
+    }
 }
-
-; /**
-;  * 判断窗口是否应该跳过
-;  * @param {Integer} hwnd - 窗口句柄
-;  * @return {Boolean} true 表示应该跳过该窗口
-;  */
-; ShouldSkipWindow(hwnd) {
-;     try {
-;         ; windowStyle := DllCall("GetWindowLong", "ptr", hwnd, "int", -16, "uint")
-
-;         ; ; 跳过不可见窗口
-;         ; if (!(windowStyle & 0x10000000)) {
-;         ;     return true
-;         ; }
-
-;         ; ; ; 跳过最小化窗口
-;         ; ; if (windowStyle & 0x20000000) {
-;         ; ;     return true
-;         ; ; }
-
-;         ; ; 获取窗口类名
-;         ; classBuffer := Buffer(256)
-;         ; DllCall("GetClassName", "ptr", hwnd, "ptr", classBuffer, "int", 256)
-;         ; className := StrGet(classBuffer, "UTF-16")
-
-;         ; ; 使用静态 Map 存储需要跳过的窗口类名
-;         ; static skipClasses := Map()
-
-;         ; return skipClasses.Has(className)
-
-;         title := WinGetTitle(hwnd)
-
-;         if (!title) {
-;             return true
-;         }
-;     }
-;     catch {
-;         return true
-;     }
-; }
 
 /**
  * 更新活动窗口边框
  */
 UpdateWindowBorder() {
-    global lastActiveWindow, borderEnabled
+    global lastActiveWindow, borderEnabled, lightTheme
 
     if (!borderEnabled) {
         return
@@ -171,12 +156,7 @@ UpdateWindowBorder() {
 
     try {
         currentActiveWindow := DllCall("GetForegroundWindow", "ptr")
-
         ; 从目前的测试来看，该 hwnd 和 WinExist 获取到的没有任何区别，暂且保留该写法
-
-        ; if (JudgeBack(currentActiveWindow)) {
-        ;     return
-        ; }
 
         if (currentActiveWindow != lastActiveWindow) {
             ; 立即清除失去焦点的窗口边框
@@ -186,6 +166,12 @@ UpdateWindowBorder() {
 
             ; 立即为获得焦点的窗口设置边框
             if (currentActiveWindow != 0) {
+                test := IsLightTheme()
+                if (test != lightTheme) {
+                    lightTheme := test
+                    ToolTip("系统主题已更改 颜色列表已刷新")
+                    SetTimer(ToolTip, -1000)
+                }
                 SetWindowBorder(currentActiveWindow, GetCurrentBorderColor())
             }
 
@@ -197,13 +183,6 @@ UpdateWindowBorder() {
         ; 静默处理
     }
 }
-
-; JudgeBack(currentID) {
-;     currentTitle := WinGetTitle(currentID)
-;     if (!currentTitle) {  ; 如果当前窗口没有标题，通常不需要往下执行了，目前该逻辑用于解决浏览器鼠标手势导致边框失效的问题
-;         return true
-;     }
-; }
 
 /**
  * 清理边框
