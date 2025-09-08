@@ -274,7 +274,7 @@ SplitScreen(gridNum, gridIndex) {
                 }
                 case 9:
                 {
-                    PerLeftDownAndResizeWindow(0.334, 0.334)
+                    PerRightDownAndResizeWindow(0.334, 0.334)
                 }
             }
         }
