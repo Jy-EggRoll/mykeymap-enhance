@@ -335,14 +335,14 @@
                 "#!Down": [
                     {
                         "actionTypeID": 8,
-                        "ahkCode": "PerRightDownAndResizeWindow(0.5, 0.5)",
+                        "ahkCode": "PerRightDownAndResizeWindow(0.9, 0.9)",
                         "windowGroupID": 0
                     }
                 ],
                 "#!Up": [
                     {
                         "actionTypeID": 8,
-                        "ahkCode": "PerRightUpAndResizeWindow(0.5, 0.5)",
+                        "ahkCode": "PerRightUpAndResizeWindow(0.9, 0.9)",
                         "windowGroupID": 0
                     }
                 ],
@@ -377,14 +377,14 @@
                 "^#Down": [
                     {
                         "actionTypeID": 8,
-                        "ahkCode": "PerLeftDownAndResizeWindow(0.5, 0.5)",
+                        "ahkCode": "PerLeftDownAndResizeWindow(0.9, 0.9)",
                         "windowGroupID": 0
                     }
                 ],
                 "^#Up": [
                     {
                         "actionTypeID": 8,
-                        "ahkCode": "PerLeftUpAndResizeWindow(0.5, 0.5)",
+                        "ahkCode": "PerLeftUpAndResizeWindow(0.9, 0.9)",
                         "windowGroupID": 0
                     }
                 ]
