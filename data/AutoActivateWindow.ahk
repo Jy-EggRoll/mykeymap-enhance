@@ -89,13 +89,16 @@ JudgeActivate(targetID) {
     ; 使用静态 Map 存储需要排除的 A 类名
     static ExcludedClassA := Map(
         "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
-        ; "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
+        "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
         "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
     )
 
     if (styleA & 0x80000000 && !(styleA & 0x40000)) {
         ; 如果活动窗口具有 WS_POPUP 样式，又不能调整大小，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单。当它们出现并抢夺了焦点时，自动激活功能应该停止，以确保这些窗口出现在前台，让用户处理
         if (ExcludedClassA.Has(classA)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这是不应该的，所以做了二次处理
+            if (classTarget == "Xaml_WindowedPopupClass") {  ; 防止 Windows 徽标键右键菜单因失去焦点而消失
+                return false
+            }
             return true
         }
         return false
