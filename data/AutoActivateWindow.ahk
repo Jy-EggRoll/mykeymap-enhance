@@ -50,6 +50,7 @@ JudgeActivate(targetID) {
 
     ; 将所有 WinGet 函数的结果存储在变量中，避免重复调用，提高性能
     existA := WinExist("A")
+    traywndExist := WinExist("ahk_class Xaml_WindowedPopupClass")
     processNameA := WinGetProcessName("A")
     classTarget := WinGetClass(targetID)
     classA := WinGetClass("A")
@@ -96,7 +97,7 @@ JudgeActivate(targetID) {
     if (styleA & 0x80000000 && !(styleA & 0x40000)) {
         ; 如果活动窗口具有 WS_POPUP 样式，又不能调整大小，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单。当它们出现并抢夺了焦点时，自动激活功能应该停止，以确保这些窗口出现在前台，让用户处理
         if (ExcludedClassA.Has(classA)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这是不应该的，所以做了二次处理
-            if (classTarget == "Xaml_WindowedPopupClass") {  ; 防止 Windows 徽标键右键菜单因失去焦点而消失
+            if (traywndExist) {  ; 防止 Windows 徽标键右键菜单因失去焦点而消失，适用于点击或触发 Win + x 的情况
                 return false
             }
             return true
