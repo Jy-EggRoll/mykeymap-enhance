@@ -4,6 +4,7 @@
 
 ; 全局变量用于跟踪自动激活功能的状态
 global autoActivateEnabled := false
+global mousePos := [0, 0]
 
 /**
  * 切换自动激活窗口的开启状态，是一个开关函数，无参数
@@ -29,18 +30,31 @@ AutoActivateWindow() {
 /**
  * 实际执行激活操作的函数
  * @param timeoutMouse 激活的鼠标等待时间，默认为 200 ms
- * @param timeoutKeyboard 激活的键盘等待时间，默认为 2000 ms
  */
-ActivateWindowUnderMouse(timeoutMouse := 200, timeoutKeyboard := 2000) {
-    MouseGetPos(, , &targetID)
+ActivateWindowUnderMouse(timeoutMouse := 200) {
+    global mousePos
+    MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
-        if (A_TimeIdleMouse >= timeoutMouse && A_TimeIdleKeyboard >= timeoutKeyboard && JudgeActivate(targetID)) {
-            WinActivate(targetID)
+        pendingActivation := false
+        ; 检查鼠标位置是否发生了变化
+        if (mouseX != mousePos[1] || mouseY != mousePos[2]) {
+            ; 鼠标位置发生了变化，标记为待激活状态
+            pendingActivation := true
+            mousePos := [mouseX, mouseY]  ; 立即更新位置
+        }
+
+        ; 如果有待激活的状态，并且鼠标已经静止足够时间
+        if (pendingActivation && A_TimeIdleMouse >= timeoutMouse) {
+            if (JudgeActivate(targetID)) {
+                WinActivate(targetID)
+                ; ToolTip("已触发激活")
+                ; SetTimer(ToolTip, -1000)
+            }
         }
     }
     catch Error as e {
-        ; LogError(e, "AutoActivateWindow_Error.log")  ; 写入错误日志，避免打扰用户，这是由于本 ahk 的错误提示通常都可以被安全地忽略，不会造成任何实质性的影响
-        ; 目前静默处理，功能已经相当完善，已经没有写入日志的必要
+        ; ToolTip(e.Message)
+        ; SetTimer(ToolTip, -1000)
     }
 }
 
