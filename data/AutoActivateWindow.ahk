@@ -28,12 +28,13 @@ AutoActivateWindow() {
 
 /**
  * 实际执行激活操作的函数
- * @param timeout 激活的触发等待时间，默认为 300 ms
+ * @param timeoutMouse 激活的鼠标等待时间，默认为 200 ms
+ * @param timeoutKeyboard 激活的键盘等待时间，默认为 2000 ms
  */
-ActivateWindowUnderMouse(timeout := 300) {
+ActivateWindowUnderMouse(timeoutMouse := 200, timeoutKeyboard := 2000) {
     MouseGetPos(, , &targetID)
     try {
-        if (A_TimeIdlePhysical >= timeout && JudgeActivate(targetID)) {
+        if (A_TimeIdleMouse >= timeoutMouse && A_TimeIdleKeyboard >= timeoutKeyboard && JudgeActivate(targetID)) {
             WinActivate(targetID)
         }
     }
