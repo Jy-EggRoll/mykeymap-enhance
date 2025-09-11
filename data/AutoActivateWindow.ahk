@@ -28,9 +28,9 @@ AutoActivateWindow() {
 
 /**
  * 实际执行激活操作的函数
- * @param timeout 激活的触发等待时间，默认为 500 ms
+ * @param timeout 激活的触发等待时间，默认为 300 ms
  */
-ActivateWindowUnderMouse(timeout := 500) {
+ActivateWindowUnderMouse(timeout := 300) {
     MouseGetPos(, , &targetID)
     try {
         if (A_TimeIdlePhysical >= timeout && JudgeActivate(targetID)) {
