@@ -35,7 +35,7 @@ ActivateWindowUnderMouse(timeoutMouse := 200) {
     global mousePos
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
-        pendingActivation := false
+        static pendingActivation := false
         ; 检查鼠标位置是否发生了变化
         if (mouseX != mousePos[1] || mouseY != mousePos[2]) {
             ; 鼠标位置发生了变化，标记为待激活状态
@@ -45,11 +45,15 @@ ActivateWindowUnderMouse(timeoutMouse := 200) {
 
         ; 如果有待激活的状态，并且鼠标已经静止足够时间
         if (pendingActivation && A_TimeIdleMouse >= timeoutMouse) {
+            ; ToolTip(pendingActivation)
+            ; SetTimer(ToolTip, -1000)
             if (JudgeActivate(targetID)) {
                 WinActivate(targetID)
                 ; ToolTip("已触发激活")
                 ; SetTimer(ToolTip, -1000)
             }
+            ; 不论激活是否成功，都重置待激活状态
+            pendingActivation := false
         }
     }
     catch Error as e {
