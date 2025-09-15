@@ -7,14 +7,15 @@ global autoActivateEnabled := false
 global mousePos := [0, 0]
 
 /**
- * 切换自动激活窗口的开启状态，是一个开关函数，无参数
+ * 切换自动激活窗口的开启状态，是一个开关函数
+ * @param pollingTime 轮询时间，默认为 20 ms
  */
-AutoActivateWindow() {
+AutoActivateWindow(pollingTime := 20) {
     global autoActivateEnabled
 
     if (!autoActivateEnabled) {
         ; 当前未激活，执行启动逻辑
-        SetTimer(ActivateWindowUnderMouse, 50)  ; 启动定时器，每 50 ms 检查一次，对性能的影响微乎其微
+        SetTimer(ActivateWindowUnderMouse, pollingTime)  ; 启动定时器，给予用户选择轮询时间的自由度，轮询时间越长，对于进入“待激活”模式的鼠标移动幅度的允许范围就越大
         autoActivateEnabled := true
         ToolTip("自动激活窗口已启动")
         SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
@@ -30,14 +31,16 @@ AutoActivateWindow() {
 /**
  * 实际执行激活操作的函数
  * @param timeoutMouse 激活的鼠标等待时间，默认为 100 ms
+ * @param mouseMovementAmplitude 鼠标移动幅度，默认为正负 50 像素
  */
-ActivateWindowUnderMouse(timeoutMouse := 100) {
+ActivateWindowUnderMouse(timeoutMouse := 100, mouseMovementAmplitude := 50) {
     global mousePos
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
         static pendingActivation := false
-        if ((Abs(mouseX - mousePos[1]) > 50 || Abs(mouseY - mousePos[2]) > 50) && A_TimeIdleMouse >= timeoutMouse) {  ; 宽高 100 px 区域的点击容错
-            ; 鼠标位置发生了明显移动，且有 timeoutMouse ms 的时间没有移动了，则启用“待激活”模式
+        if ((Abs(mouseX - mousePos[1]) > mouseMovementAmplitude || Abs(mouseY - mousePos[2]) > mouseMovementAmplitude) &&
+        A_TimeIdleMouse >= timeoutMouse) {  ; 宽高 2 * mouseMovementAmplitude px 区域的点击容错
+            ; 鼠标位置在 pollingTime ms 内发生了明显移动，且有 timeoutMouse ms 的时间没有移动了，则启用“待激活”模式
             pendingActivation := true
             ; ToolTip("启动待激活模式")
             ; SetTimer(ToolTip, -1000)

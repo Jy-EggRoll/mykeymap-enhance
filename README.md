@@ -82,8 +82,8 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">使用 MyKeymap 的命令实现分屏，如 41、92</td>
     </tr>
     <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ActivateWindowUnderMouse(timeoutMouse := 500, timeoutKeyboard := 5000)</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选参数，鼠标和键盘操作的超时时间，二者需要同时满足</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoActivateWindow(pollingTime := 20)</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">pollingTime：轮询时间，默认为 20 ms</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或一个指令，方便随时启停</td>
     </tr>
