@@ -29,9 +29,9 @@ AutoActivateWindow() {
 
 /**
  * 实际执行激活操作的函数
- * @param timeoutMouse 激活的鼠标等待时间，默认为 500 ms
+ * @param timeoutMouse 激活的鼠标等待时间，默认为 100 ms
  */
-ActivateWindowUnderMouse(timeoutMouse := 500) {
+ActivateWindowUnderMouse(timeoutMouse := 100) {
     global mousePos
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
