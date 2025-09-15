@@ -37,7 +37,7 @@ ActivateWindowUnderMouse(timeoutMouse := 200) {
     try {
         static pendingActivation := false
         ; 检查鼠标位置是否发生了变化
-        if (mouseX != mousePos[1] || mouseY != mousePos[2]) {
+        if (Abs(mouseX - mousePos[1]) > 50 || Abs(mouseY - mousePos[2]) > 50) {  // 增加 100 * 100 区域的点击容错
             ; 鼠标位置发生了变化，标记为待激活状态
             pendingActivation := true
             mousePos := [mouseX, mouseY]  ; 立即更新位置
