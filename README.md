@@ -2,7 +2,7 @@
 title: 项目介绍——my-keymap
 description: 
 date: 2025-08-14
-lastmod: 2025-09-11
+lastmod: 2025-09-15
 image: 
 categories:
     - 项目
@@ -82,7 +82,7 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">使用 MyKeymap 的命令实现分屏，如 41、92</td>
     </tr>
     <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ActivateWindowUnderMouse(timeoutMouse := 200, timeoutKeyboard := 5000)</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ActivateWindowUnderMouse(timeoutMouse := 500, timeoutKeyboard := 5000)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选参数，鼠标和键盘操作的超时时间，二者需要同时满足</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或一个指令，方便随时启停</td>
@@ -162,10 +162,10 @@ weight:
 
 解决“激活窗口的心智负担”：鼠标悬停处自动激活窗口，无需纠结“点链接会误触、点资源管理器怕选到文件、点代码编辑器会改变输入焦点”。
 
-- **用户行为识别**：仅当鼠标 **移动后再静置 200 ms 以上** 时激活窗口，鼠标移动过程中绝不触发，鼠标一直静止时绝不触发。效果如下：
-  - 纯鼠标操作：十分灵敏又不至于移动时误触发
+- **用户行为识别**：仅当鼠标 **移动后再静置 500 ms 以上且移动范围超过 100 px * 100px** 时激活窗口，鼠标移动过程中绝不触发，鼠标一直静止时绝不触发。效果如下：
+  - 纯鼠标操作：较灵敏又不至于移动时误触发
   - 纯键盘操作：完全不触发自动激活
-  - 在软件内点击某超链接，跳出了某窗口，但是鼠标“未移动”时，不会导致误触发
+  - 在软件内点击某超链接，跳出了某窗口，但是鼠标没有大范围移动时，不会导致误触发
 - **全场景兼容**：内置了及其完善的判断逻辑，桌面、浏览器、文件资源管理器和开始菜单中的右键菜单都不会被识别为窗口并误激活，功能十分稳定。
 
 ### 亮度调节 IncBrightness & DecBrightness
