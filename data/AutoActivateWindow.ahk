@@ -36,15 +36,16 @@ ActivateWindowUnderMouse(timeoutMouse := 200) {
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
         static pendingActivation := false
-        ; 检查鼠标位置是否发生了变化
-        if (Abs(mouseX - mousePos[1]) > 50 || Abs(mouseY - mousePos[2]) > 50) {  // 增加 100 * 100 区域的点击容错
-            ; 鼠标位置发生了变化，标记为待激活状态
+        if ((Abs(mouseX - mousePos[1]) > 50 || Abs(mouseY - mousePos[2]) > 50) && A_TimeIdleMouse >= timeoutMouse) {  ; 宽高 100 px 区域的点击容错
+            ; 鼠标位置发生了明显移动，且有 timeoutMouse ms 的时间没有移动了，则启用“待激活”模式
             pendingActivation := true
+            ; ToolTip("启动待激活模式")
+            ; SetTimer(ToolTip, -1000)
             mousePos := [mouseX, mouseY]  ; 立即更新位置
         }
 
-        ; 如果有待激活的状态，并且鼠标已经静止足够时间
-        if (pendingActivation && A_TimeIdleMouse >= timeoutMouse) {
+        ; 如果处于“待激活”模式
+        if (pendingActivation) {
             ; ToolTip(pendingActivation)
             ; SetTimer(ToolTip, -1000)
             if (JudgeActivate(targetID)) {
