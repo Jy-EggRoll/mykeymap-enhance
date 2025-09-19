@@ -8,14 +8,14 @@ global mousePos := [0, 0]
 
 /**
  * 切换自动激活窗口的开启状态，是一个开关函数
- * @param pollingTime 轮询时间，默认为 20 ms
+ * @param pollingTime 轮询时间，默认为 50 ms
  */
-AutoActivateWindow(pollingTime := 20) {
+AutoActivateWindow(pollingTime := 50) {
     global autoActivateEnabled
 
     if (!autoActivateEnabled) {
         ; 当前未激活，执行启动逻辑
-        SetTimer(ActivateWindowUnderMouse, pollingTime)  ; 启动定时器，给予用户选择轮询时间的自由度，轮询时间越长，对于进入“待激活”模式的鼠标移动幅度的允许范围就越大
+        SetTimer(ActivateWindowUnderMouse, pollingTime)  ; 启动定时器，间隔为 pollingTime ms
         autoActivateEnabled := true
         ToolTip("自动激活窗口已启动")
         SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
@@ -30,10 +30,10 @@ AutoActivateWindow(pollingTime := 20) {
 
 /**
  * 实际执行激活操作的函数
- * @param timeoutMouse 激活的鼠标等待时间，默认为 100 ms
- * @param mouseMovementAmplitude 鼠标移动幅度，默认为正负 50 像素
+ * @param timeoutMouse 激活的鼠标等待时间，默认为 1000 ms
+ * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 50 像素
  */
-ActivateWindowUnderMouse(timeoutMouse := 100, mouseMovementAmplitude := 50) {
+ActivateWindowUnderMouse(timeoutMouse := 1000, mouseMovementAmplitude := 50) {
     global mousePos
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
@@ -159,3 +159,5 @@ JudgeActivate(targetID) {
     }
     return false
 }
+
+AutoActivateWindow()  ; 设定自启动
