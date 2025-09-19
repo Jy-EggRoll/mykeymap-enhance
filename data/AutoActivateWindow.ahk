@@ -33,7 +33,7 @@ AutoActivateWindow(pollingTime := 50) {
  * @param timeoutMouse 激活的鼠标等待时间，默认为 1000 ms
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 50 像素
  */
-ActivateWindowUnderMouse(timeoutMouse := 1000, mouseMovementAmplitude := 50) {
+ActivateWindowUnderMouse(timeoutMouse := 500, mouseMovementAmplitude := 50) {
     global mousePos
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
