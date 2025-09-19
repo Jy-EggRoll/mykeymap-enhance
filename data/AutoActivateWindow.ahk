@@ -159,5 +159,3 @@ JudgeActivate(targetID) {
     }
     return false
 }
-
-AutoActivateWindow()  ; MyKeymap 启动时自动启用该功能
