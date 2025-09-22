@@ -89,8 +89,8 @@ jobs:
           $previousTag = "${{ steps.previous_tag.outputs.previous_tag }}"
           
           try {
-              "# 发布详情" | Out-File -FilePath release_notes.txt -Encoding utf8
-              "`n## 变更记录`n" | Out-File -FilePath release_notes.txt -Encoding utf8 -Append
+              "# 发布详情`n`n" | Out-File -FilePath release_notes.txt -Encoding utf8
+              "`## 变更记录`n`n" | Out-File -FilePath release_notes.txt -Encoding utf8 -Append
               
               if (-not $previousTag) {
                   Write-Host "从初始提交到 $currentTag 生成变更记录"
