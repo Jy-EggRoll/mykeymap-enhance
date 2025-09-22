@@ -3,13 +3,105 @@ name: Auto Release
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'  # 匹配 vX.Y.Z 格式的标签
 
 jobs:
-  publish:
-    runs-on: windows-latest
+  build-and-release:
+    runs-on: windows-latest  # 使用 Windows 运行器
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Release
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 拉取所有历史记录，以便获取完整的 commit 信息
+
+      - name: Package data directory
+        run: |
+          # 使用 PowerShell 的压缩命令
+          Compress-Archive -Path data\* -DestinationPath data.zip
+          echo "ZIP_PACKAGE=data.zip" >> $env:GITHUB_ENV
+        shell: powershell
+
+      - name: Get current tag
+        id: current_tag
+        run: |
+          $currentTag = $env:GITHUB_REF -replace 'refs/tags/', ''
+          echo "current_tag=$currentTag" >> $env:GITHUB_OUTPUT
+        shell: powershell
+
+      - name: Find previous minor version tag
+        id: previous_tag
+        run: |
+          $currentTag = "${{ steps.current_tag.outputs.current_tag }}"
+          
+          # 提取主版本和次版本 (例如从 v1.2.3 中提取 1.2)
+          if ($currentTag -match 'v(\d+\.\d+)\.\d+') {
+              $majorMinor = $matches[1]
+              
+              # 查找同主版本和次版本的所有标签
+              $candidateTags = git tag --list "v$majorMinor.*" | Where-Object { $_ -ne $currentTag } | Sort-Object -Property { [version]($_.TrimStart('v')) }
+              
+              # 如果找到同主版本和次版本的标签
+              if ($candidateTags) {
+                  $previousTag = $candidateTags[-1]
+              }
+          }
+          
+          # 如果没有找到同主版本和次版本的标签，查找上一个次版本
+          if (-not $previousTag) {
+              if ($currentTag -match 'v(\d+)\.\d+\.\d+') {
+                  $major = $matches[1]
+                  
+                  # 查找同主版本的所有标签
+                  $candidateTags = git tag --list "v$major.*.*" | Where-Object { $_ -ne $currentTag } | Sort-Object -Property { [version]($_.TrimStart('v')) }
+                  
+                  if ($candidateTags) {
+                      $previousTag = $candidateTags[-1]
+                  }
+              }
+          }
+          
+          # 如果仍然没有找到，使用第一个标签
+          if (-not $previousTag) {
+              $allTags = git tag --list "v*.*.*" | Sort-Object -Property { [version]($_.TrimStart('v')) }
+              if ($allTags) {
+                  $previousTag = $allTags[0]
+              }
+          }
+          
+          echo "previous_tag=$previousTag" >> $env:GITHUB_OUTPUT
+          Write-Host "Found previous tag: $previousTag"
+        shell: powershell
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          $currentTag = "${{ steps.current_tag.outputs.current_tag }}"
+          $previousTag = "${{ steps.previous_tag.outputs.previous_tag }}"
+          
+          # 生成两个标签之间的 commit 信息
+          if ($previousTag -eq $currentTag -or -not $previousTag) {
+              # 如果是第一个标签，获取所有 commit
+              $notes = git log --pretty=format:"- %s (%h)"
+          } else {
+              $notes = git log "$previousTag..$currentTag" --pretty=format:"- %s (%h)"
+          }
+          
+          # 保存到文件
+          $notes | Out-File -FilePath release_notes.txt -Encoding utf8
+          echo "notes_file=release_notes.txt" >> $env:GITHUB_ENV
+          
+          # 输出前 10 行用于日志查看
+          Write-Host "Generated release notes:"
+          Get-Content release_notes.txt | Select-Object -First 10
+        shell: powershell
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.current_tag.outputs.current_tag }}
+          name: Release ${{ steps.current_tag.outputs.current_tag }}
+          body_path: ${{ env.notes_file }}
+          files: ${{ env.ZIP_PACKAGE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
