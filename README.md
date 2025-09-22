@@ -19,7 +19,7 @@ weight:
 
 ## 使用方法
 
-将本仓库中 `data` 目录中各子文件放入 MyKeymap 的 `data` 目录下即可，之后各个函数可以根据您的需要被 MyKeymap 调用。
+下载 Release 中的 `data.zip`，解压后将各子文件放入 MyKeymap 的 `data` 目录下即可，之后各个函数可以根据您的需要被 MyKeymap 调用。
 
 > [!WARNING]
 >
