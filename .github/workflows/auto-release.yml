@@ -1,4 +1,4 @@
-name: Create Release (Windows)
+name: Auto Create Release
 
 on:
   push:
@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # 拉取所有历史记录
 
       - name: Package data directory
         run: |
@@ -65,7 +63,7 @@ jobs:
               
               # 显示排序后的标签用于调试
               Write-Host "排序后的标签:"
-              $allTags | ForEach-Object { Write-Host "$($_.Tag) - $($_.Version)" }
+              $allTags | ForEach-Object { Write-Host "$($_.Tag)" }
               
               # 查找最新的前一个版本
               if ($allTags.Count -gt 0) {
