@@ -5,9 +5,8 @@ on:
     tags:
       - 'v*.*.*'  # 匹配 vX.Y.Z 格式的标签
 
-# 添加必要的权限声明
 permissions:
-  contents: write  # 允许创建和修改发布
+  contents: write
 
 jobs:
   build-and-release:
@@ -21,7 +20,6 @@ jobs:
 
       - name: Package data directory
         run: |
-          # 打包 data 目录
           if (Test-Path -Path "data") {
               Compress-Archive -Path data\* -DestinationPath data.zip
               echo "ZIP_PACKAGE=data.zip" >> $env:GITHUB_ENV
@@ -30,7 +28,7 @@ jobs:
               Write-Error "Directory not found (data)"
               exit 1
           }
-        shell: powershell
+        shell: pwsh  # 使用 PowerShell 7
 
       - name: Get current tag
         id: current_tag
@@ -38,7 +36,7 @@ jobs:
           $currentTag = $env:GITHUB_REF -replace 'refs/tags/', ''
           echo "current_tag=$currentTag" >> $env:GITHUB_OUTPUT
           Write-Host "Current tag: $currentTag"
-        shell: powershell
+        shell: pwsh
 
       - name: Find previous version tag
         id: previous_tag
@@ -46,22 +44,28 @@ jobs:
           $currentTag = "${{ steps.current_tag.outputs.current_tag }}"
           $previousTag = $null
           
+          # 显示所有可用标签用于调试
+          Write-Host "所有可用标签:"
+          git tag --list "v*.*.*" | ForEach-Object { Write-Host $_ }
+          
           # 提取版本号（移除 v 前缀）
           if ($currentTag -match 'v(\d+\.\d+\.\d+)') {
               $currentVersion = [version]$matches[1]
               
               # 获取所有符合格式的标签并排序
               $allTags = git tag --list "v*.*.*" `
-                  | Where-Object { $_ -ne $currentTag } `
+                  | Where-Object { $_ -ne $currentTag -and $_ -match 'v(\d+\.\d+\.\d+)' } `
                   | ForEach-Object { 
-                      if ($_ -match 'v(\d+\.\d+\.\d+)') {
-                          [PSCustomObject]@{
-                              Tag = $_
-                              Version = [version]$matches[1]
-                          }
+                      [PSCustomObject]@{
+                          Tag = $_
+                          Version = [version]$matches[1]
                       }
                   } `
                   | Sort-Object -Property Version -Descending
+              
+              # 显示排序后的标签用于调试
+              Write-Host "排序后的标签:"
+              $allTags | ForEach-Object { Write-Host "$($_.Tag) - $($_.Version)" }
               
               # 查找最新的前一个版本
               if ($allTags.Count -gt 0) {
@@ -70,13 +74,13 @@ jobs:
           }
           
           if ($previousTag) {
-              Write-Host "Found previous tag: $previousTag"
+              Write-Host "找到前一个标签: $previousTag"
           } else {
-              Write-Host "No previous tags found"
+              Write-Host "未找到前一个标签"
           }
           
           echo "previous_tag=$previousTag" >> $env:GITHUB_OUTPUT
-        shell: powershell
+        shell: pwsh
 
       - name: Generate release notes
         id: release_notes
@@ -84,42 +88,32 @@ jobs:
           $currentTag = "${{ steps.current_tag.outputs.current_tag }}"
           $previousTag = "${{ steps.previous_tag.outputs.previous_tag }}"
           
-          # 生成提交日志，包含 Markdown 格式和时间信息
           try {
-              # 写入 Markdown 标题
-              "# 发布详情`n" | Out-File -FilePath release_notes.txt -Encoding utf8
-
-              # 添加变更记录标题
-              "`n## 变更记录`n`n" | Out-File -FilePath release_notes.txt -Encoding utf8 -Append
+              "# 发布详情" | Out-File -FilePath release_notes.txt -Encoding utf8
+              "`n## 变更记录`n" | Out-File -FilePath release_notes.txt -Encoding utf8 -Append
               
-              # 获取提交记录，包含时间、信息和哈希
               if (-not $previousTag) {
-                  # 没有上一个标签，获取从初始提交到当前标签的所有提交
-                  Write-Host "Generating notes from initial commit to $currentTag"
+                  Write-Host "从初始提交到 $currentTag 生成变更记录"
                   $notes = git log "$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M"
               } else {
-                  # 获取两个标签之间的提交
-                  Write-Host "Generating notes from $previousTag to $currentTag"
+                  Write-Host "从 $previousTag 到 $currentTag 生成变更记录"
                   $notes = git log "$previousTag..$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M"
               }
               
-              # 处理空日志情况
               if (-not $notes) {
                   $notes = "- 无明显变更"
               }
               
-              # 将提交记录追加到文件
               $notes | Out-File -FilePath release_notes.txt -Encoding utf8 -Append
               echo "notes_file=release_notes.txt" >> $env:GITHUB_ENV
               
-              # 输出前 10 行
-              Write-Host "Generated release notes:"
+              Write-Host "生成的发布说明:"
               Get-Content release_notes.txt | Select-Object -First 10
           } catch {
-              Write-Error "Failed to generate release notes: $_"
+              Write-Error "生成发布说明失败: $_"
               exit 1
           }
-        shell: powershell
+        shell: pwsh
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -128,6 +122,6 @@ jobs:
           name: Release ${{ steps.current_tag.outputs.current_tag }}
           body_path: ${{ env.notes_file }}
           files: ${{ env.ZIP_PACKAGE }}
-          overwrite: true  # 允许覆盖已存在的发布（可选）
+          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
