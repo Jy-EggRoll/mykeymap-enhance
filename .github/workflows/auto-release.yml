@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*.*.*'  # 匹配vX.Y.Z格式的标签
 
+# 添加必要的权限声明
+permissions:
+  contents: write  # 允许创建和修改发布
+
 jobs:
   build-and-release:
     runs-on: windows-latest
@@ -117,5 +121,6 @@ jobs:
           name: Release ${{ steps.current_tag.outputs.current_tag }}
           body_path: ${{ env.notes_file }}
           files: ${{ env.ZIP_PACKAGE }}
+          overwrite: true  # 允许覆盖已存在的发布（可选）
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
