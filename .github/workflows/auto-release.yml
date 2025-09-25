@@ -108,7 +108,7 @@ jobs:
               echo "notes_file=release_notes.txt" >> $env:GITHUB_ENV
               
               Write-Host "生成的发布说明:"
-              Get-Content release_notes.txt | Select-Object -First 10
+              Get-Content release_notes.txt
           } catch {
               Write-Error "生成发布说明失败: $_"
               exit 1
