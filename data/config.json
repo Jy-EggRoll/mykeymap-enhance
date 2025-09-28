@@ -625,7 +625,7 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 6,
-            "comment": "Ctrl + Shift + Esc ( Task Manager )",
+            "comment": "打开任务管理器",
             "keysToSend": "^+{esc}"
           }
         ],
@@ -668,9 +668,8 @@
           {
             "windowGroupID": 0,
             "actionTypeID": 1,
-            "comment": "用 Windows Terminal 打开选中的文件夹",
-            "target": "wt.exe",
-            "args": "-d \"{selected}\""
+            "comment": "打开 Terminal",
+            "target": "wt.exe"
           }
         ]
       }
