@@ -57,14 +57,14 @@ AutoWindowColorBorder() {
         ; 启动边框功能
         SetTimer(UpdateWindowBorder, 100)
         borderEnabled := true
-        ToolTip("窗口边框功能已启动")
+        ToolTip("窗口边框着色已启动")
         SetTimer(ToolTip, -1000)
     } else {
         ; 停止边框功能
         SetTimer(UpdateWindowBorder, 0)
         CleanupBorder()
         borderEnabled := false
-        ToolTip("窗口边框功能已停止")
+        ToolTip("窗口边框着色已停止")
         SetTimer(ToolTip, -1000)
     }
 }
@@ -155,8 +155,7 @@ UpdateWindowBorder() {
     }
 
     try {
-        currentActiveWindow := DllCall("GetForegroundWindow", "ptr")
-        ; 从目前的测试来看，该 hwnd 和 WinExist 获取到的没有任何区别，暂且保留该写法
+        currentActiveWindow := WinExist("A")
 
         if (currentActiveWindow != lastActiveWindow) {
             ; 立即清除失去焦点的窗口边框
@@ -179,7 +178,6 @@ UpdateWindowBorder() {
         }
     }
     catch Error as e {
-        ; LogError(e, "AutoWindowColorBorder_Error.log")
         ; 静默处理
     }
 }
@@ -196,7 +194,6 @@ CleanupBorder() {
         lastActiveWindow := 0
     }
     catch Error as e {
-        ; LogError(e, "AutoWindowColorBorder_Error.log")
         ; 静默处理
     }
 }
