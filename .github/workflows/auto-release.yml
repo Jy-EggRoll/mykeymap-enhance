@@ -33,6 +33,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
+          name: data-package
           path: ${{ env.ZIP_PACKAGE }}
           retention-days: 1
 
@@ -78,6 +79,12 @@ jobs:
           with:
             path: ./artifacts
 
+        - name: List downloaded artifacts
+          run: |
+            echo "Downloaded artifacts structure:"
+            find ./artifacts -type f -ls || true
+            ls -la ./artifacts/ || true
+
         - name: Generate release notes
           id: release_notes
           run: |
@@ -122,6 +129,6 @@ jobs:
             name: Release ${{ steps.current_tag.outputs.current_tag }}
             body_path: release_notes.md
             files: |
-              ./artifacts/data.zip
+              ./artifacts/data-package/data.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
