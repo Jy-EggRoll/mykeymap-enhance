@@ -1,4 +1,4 @@
-name: Auto Create Release
+name: Auto Release
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  package:
     runs-on: windows-latest
     
     steps:
@@ -28,99 +28,101 @@ jobs:
               Write-Error "Directory not found (data)"
               exit 1
           }
-        shell: pwsh  # 使用 PowerShell 7
-
-      - name: Get current tag
-        id: current_tag
-        run: |
-          $currentTag = $env:GITHUB_REF -replace 'refs/tags/', ''
-          echo "current_tag=$currentTag" >> $env:GITHUB_OUTPUT
-          Write-Host "Current tag: $currentTag"
         shell: pwsh
 
-      - name: Find previous version tag
-        id: previous_tag
-        run: |
-          $currentTag = "${{ steps.current_tag.outputs.current_tag }}"
-          $previousTag = $null
-          
-          # 显示所有可用标签用于调试
-          Write-Host "所有可用标签:"
-          git tag --list "v*.*.*" | ForEach-Object { Write-Host $_ }
-          
-          # 提取版本号（移除 v 前缀）
-          if ($currentTag -match 'v(\d+\.\d+\.\d+)') {
-              $currentVersion = [version]$matches[1]
-              
-              # 获取所有符合格式的标签并排序
-              $allTags = git tag --list "v*.*.*" `
-                  | Where-Object { $_ -ne $currentTag -and $_ -match 'v(\d+\.\d+\.\d+)' } `
-                  | ForEach-Object { 
-                      [PSCustomObject]@{
-                          Tag = $_
-                          Version = [version]$matches[1]
-                      }
-                  } `
-                  | Sort-Object -Property Version -Descending
-              
-              # 显示排序后的标签用于调试
-              Write-Host "排序后的标签:"
-              $allTags | ForEach-Object { Write-Host "$($_.Tag)" }
-              
-              # 查找最新的前一个版本
-              if ($allTags.Count -gt 0) {
-                  $previousTag = $allTags[0].Tag
-              }
-          }
-          
-          if ($previousTag) {
-              Write-Host "找到前一个标签: $previousTag"
-          } else {
-              Write-Host "未找到前一个标签"
-          }
-          
-          echo "previous_tag=$previousTag" >> $env:GITHUB_OUTPUT
-        shell: pwsh
-
-      - name: Generate release notes
-        id: release_notes
-        run: |
-          $currentTag = "${{ steps.current_tag.outputs.current_tag }}"
-          $previousTag = "${{ steps.previous_tag.outputs.previous_tag }}"
-          
-          try {
-              "# 发布详情`n" | Out-File -FilePath release_notes.txt -Encoding utf8
-              "`## 变更记录`n" | Out-File -FilePath release_notes.txt -Encoding utf8 -Append
-              
-              if (-not $previousTag) {
-                  Write-Host "从初始提交到 $currentTag 生成变更记录"
-                  $notes = git log "$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M"
-              } else {
-                  Write-Host "从 $previousTag 到 $currentTag 生成变更记录"
-                  $notes = git log "$previousTag..$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M"
-              }
-              
-              if (-not $notes) {
-                  $notes = "- 无明显变更"
-              }
-              
-              $notes | Out-File -FilePath release_notes.txt -Encoding utf8 -Append
-              echo "notes_file=release_notes.txt" >> $env:GITHUB_ENV
-              
-              Write-Host "生成的发布说明:"
-              Get-Content release_notes.txt
-          } catch {
-              Write-Error "生成发布说明失败: $_"
-              exit 1
-          }
-        shell: pwsh
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ steps.current_tag.outputs.current_tag }}
-          name: Release ${{ steps.current_tag.outputs.current_tag }}
-          body_path: ${{ env.notes_file }}
-          files: ${{ env.ZIP_PACKAGE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: data.zip
+          path: ${{ env.ZIP_PACKAGE }}
+          retention-days: 1
+
+  release:
+      needs: package
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0  # 拉取所有历史记录
+
+        - name: Get current tag
+          id: current_tag
+          run: |
+            currentTag=${GITHUB_REF#refs/tags/}
+            echo "current_tag=$currentTag" >> $GITHUB_OUTPUT
+            echo "Current tag: $currentTag"
+
+        - name: Find previous version tag
+          id: previous_tag
+          run: |
+            currentTag="${{ steps.current_tag.outputs.current_tag }}"
+            previousTag=""
+
+            # 显示所有可用标签用于调试
+            echo "所有可用标签:"
+            git tag --list "v*.*.*"
+
+            # 获取所有符合格式的标签并排序，找到最新的前一个版本
+            previousTag=$(git tag --list "v*.*.*" | grep -v "^$currentTag$" | sort -V | tail -n1)
+
+            if [ -n "$previousTag" ]; then
+                echo "找到前一个标签: $previousTag"
+            else
+                echo "未找到前一个标签"
+            fi
+
+            echo "previous_tag=$previousTag" >> $GITHUB_OUTPUT
+
+        - name: Download all artifacts
+          uses: actions/download-artifact@v4
+          with:
+            path: ./artifacts
+
+        - name: Generate release notes
+          id: release_notes
+          run: |
+            currentTag="${{ steps.current_tag.outputs.current_tag }}"
+            previousTag="${{ steps.previous_tag.outputs.previous_tag }}"
+
+            echo "# 发布详情" > release_notes.md
+            echo "" >> release_notes.md
+            
+            # 检查是否存在对应版本的 ReleaseNote 文件
+            releaseNoteFile="ReleaseNote/${currentTag}.txt"
+            if [ -f "$releaseNoteFile" ]; then
+                echo "找到版本说明文件: $releaseNoteFile"
+                cat "$releaseNoteFile" >> release_notes.md
+                echo "" >> release_notes.md
+            else
+                echo "未找到版本说明文件: $releaseNoteFile"
+            fi
+
+            echo "## 详细变更记录（所有提交历史）" >> release_notes.md
+            echo "" >> release_notes.md
+
+            if [ -z "$previousTag" ]; then
+                echo "从初始提交到 $currentTag 生成变更记录"
+                git log "$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M" >> release_notes.md
+            else
+                echo "从 $previousTag 到 $currentTag 生成变更记录"
+                git log "$previousTag..$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M" >> release_notes.md
+            fi
+
+            if [ ! -s release_notes.md ] || [ $(wc -l < release_notes.md) -le 3 ]; then
+                echo "- 无明显变更" >> release_notes.md
+            fi
+
+            echo "生成的发布说明:"
+            cat release_notes.md
+
+        - name: Create GitHub Release
+          uses: softprops/action-gh-release@v2
+          with:
+            tag_name: ${{ steps.current_tag.outputs.current_tag }}
+            name: Release ${{ steps.current_tag.outputs.current_tag }}
+            body_path: release_notes.md
+            files: |
+              ./artifacts/data.zip
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

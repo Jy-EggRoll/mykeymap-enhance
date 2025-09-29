@@ -73,6 +73,14 @@
             "ahkCode": "DecBrightness(10)"
           }
         ],
+        "*e": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 3,
+            "comment": "label:4",
+            "actionValueID": 4
+          }
+        ],
         "*f": [
           {
             "windowGroupID": 0,
