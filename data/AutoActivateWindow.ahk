@@ -4,7 +4,19 @@
 
 ; 全局变量用于跟踪自动激活功能的状态
 global autoActivateEnabled := false
-global mousePos := [0, 0]
+global windowStates := Map()  ; 窗口状态映射表
+global mousePos := [0, 0]  ; 鼠标位置记录
+global pendingActivation := false  ; 待激活状态标志
+
+/**
+ * 窗口状态类，用于记录每个窗口的信息
+ */
+class WindowState {
+    __New(hwnd) {
+        this.hwnd := hwnd
+        this.mouseVisited := false  ; 鼠标是否访问过此窗口
+    }
+}
 
 /**
  * 切换自动激活窗口的开启状态，是一个开关函数
@@ -15,54 +27,189 @@ AutoActivateWindow(pollingTime := 50) {
 
     if (!autoActivateEnabled) {
         ; 当前未激活，执行启动逻辑
-        SetTimer(ActivateWindowUnderMouse, pollingTime)  ; 启动定时器，间隔为 pollingTime ms
+        SetTimer(ActivateWindowUnderMouse, pollingTime)  ; 启动主要逻辑定时器
+        SetTimer(MaintainWindowStates, pollingTime)  ; 启动窗口状态维护定时器
+
+        ; 初始化现有窗口状态，将当前所有窗口标记为已访问
+        InitializeExistingWindows()
+
         autoActivateEnabled := true
-        ToolTip("自动激活窗口已启动")
+        ToolTip("窗口自动激活已启动")
         SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
     } else {
         ; 当前已激活，执行停止逻辑
-        SetTimer(ActivateWindowUnderMouse, 0)  ; 停止定时器
+        SetTimer(ActivateWindowUnderMouse, 0)  ; 停止主要逻辑定时器
+        SetTimer(MaintainWindowStates, 0)  ; 停止窗口状态维护定时器
         autoActivateEnabled := false
-        ToolTip("自动激活窗口已停止")
+
+        ; 清空窗口状态记录
+        global windowStates
+        windowStates := Map()
+        ToolTip("窗口自动激活已停止")
         SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
     }
 }
 
 /**
+ * 初始化现有窗口状态，将所有当前窗口标记为已访问
+ * 这样脚本启动时不会因为现有窗口而被阻断
+ */
+InitializeExistingWindows() {
+    global windowStates
+
+    try {
+        DetectHiddenWindows(false)
+        windowList := WinGetList()
+
+        loop windowList.Length {
+            hwnd := windowList[A_Index]
+            if (WinExist(hwnd) && IsValidWindow(hwnd)) {
+                if (!windowStates.Has(hwnd)) {
+                    state := WindowState(hwnd)
+                    state.mouseVisited := true  ; 将现有窗口标记为已访问
+                    windowStates[hwnd] := state
+                }
+            }
+        }
+    } catch Error as e {
+        ; 静默处理错误
+    }
+}
+
+/**
+ * 维护窗口状态列表
+ * - 检查并移除已不存在的窗口
+ * - 发现新窗口并添加到列表
+ * - 检查是否有未访问的窗口，如有则禁用自动激活
+ */
+MaintainWindowStates() {
+    global windowStates, autoActivateEnabled
+
+    try {
+        ; 获取当前所有可见窗口
+        currentWindows := []
+
+        ; 枚举所有顶级窗口
+        DetectHiddenWindows(false)
+        windowList := WinGetList()
+
+        ; 收集当前存在的窗口
+        currentWindowsMap := Map()
+        loop windowList.Length {
+            hwnd := windowList[A_Index]
+            if (WinExist(hwnd) && IsValidWindow(hwnd)) {
+                currentWindowsMap[hwnd] := true
+
+                ; 如果是新窗口，添加到状态记录
+                if (!windowStates.Has(hwnd)) {
+                    windowStates[hwnd] := WindowState(hwnd)
+                }
+            }
+        }
+
+        ; 移除不再存在的窗口
+        toRemove := []
+        for hwnd, state in windowStates {
+            if (!currentWindowsMap.Has(hwnd) || !WinExist(hwnd)) {
+                toRemove.Push(hwnd)
+            }
+        }
+
+        for i, hwnd in toRemove {
+            windowStates.Delete(hwnd)
+        }
+
+    } catch Error as e {
+        ; 静默处理错误，避免影响主要功能
+    }
+}
+
+/**
+ * 检查是否有未被鼠标访问过的窗口
+ * 如果有未访问的窗口，则完全禁用自动激活功能
+ */
+CheckForUnvisitedWindows() {
+    global windowStates, autoActivateEnabled
+
+    try {
+        for hwnd, state in windowStates {
+            if (!state.mouseVisited && WinExist(hwnd)) {
+                ; 发现未访问的窗口，完全禁用自动激活
+                return false
+            }
+        }
+        return true
+    } catch Error as e {
+        return true
+    }
+}
+
+/**
+ * 判断窗口是否为有效的可激活窗口
+ */
+IsValidWindow(hwnd) {
+    try {
+        if (!WinExist(hwnd)) {
+            return false
+        }
+
+        ; 检查窗口样式，排除一些特殊窗口
+        style := WinGetStyle(hwnd)
+
+        if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口
+            return true
+        }
+
+        return false
+    } catch Error as e {
+        return false
+    }
+}
+
+/**
  * 实际执行激活操作的函数
- * @param timeoutMouse 激活的鼠标等待时间，默认为 1000 ms
+ * @param timeoutMouse 激活的鼠标等待时间，默认为 200 ms
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 10 像素
  */
 ActivateWindowUnderMouse(timeoutMouse := 200, mouseMovementAmplitude := 10) {
-    global mousePos
+    global mousePos, windowStates, pendingActivation
+
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
-        static pendingActivation := false
+        ; 更新鼠标悬停窗口的访问状态
+        if (targetID && WinExist(targetID) && IsValidWindow(targetID)) {
+            if (windowStates.Has(targetID)) {
+                ; 如果窗口在跟踪列表中，标记为已访问
+                windowStates[targetID].mouseVisited := true
+            }
+        }
+
+        ; 检查是否有未访问的窗口，如果有则完全禁用自动激活
+        activationAllowed := CheckForUnvisitedWindows()
+        if (!activationAllowed) {
+            ; 有未访问的窗口，完全禁用自动激活
+            pendingActivation := false
+            return
+        }
+
         if ((Abs(mouseX - mousePos[1]) > mouseMovementAmplitude || Abs(mouseY - mousePos[2]) > mouseMovementAmplitude) &&
         A_TimeIdleMouse >= timeoutMouse) {  ; 宽高 2 * mouseMovementAmplitude px 区域的点击容错
             ; 鼠标位置在 pollingTime ms 内发生了明显移动，且有 timeoutMouse ms 的时间没有移动了，则启用“待激活”模式
             pendingActivation := true
-            ; ToolTip("启动待激活模式")
-            ; SetTimer(ToolTip, -1000)
             mousePos := [mouseX, mouseY]  ; 立即更新位置
         }
 
-        ; 如果处于“待激活”模式
+        ; 如果处于"待激活"模式
         if (pendingActivation) {
-            ; ToolTip(pendingActivation)
-            ; SetTimer(ToolTip, -1000)
             if (JudgeActivate(targetID)) {
                 WinActivate(targetID)
-                ; ToolTip("已触发激活")
-                ; SetTimer(ToolTip, -1000)
             }
             ; 不论激活是否成功，都重置待激活状态
             pendingActivation := false
         }
     }
     catch Error as e {
-        ; ToolTip(e.Message)
-        ; SetTimer(ToolTip, -1000)
+        ; 静默处理错误
     }
 }
 
@@ -160,4 +307,35 @@ JudgeActivate(targetID) {
     return false
 }
 
-AutoActivateWindow()  ; 设定自启动
+ShowDebugTooltip() {
+    global windowStates, autoActivateEnabled
+
+    info := ""
+    info .= "窗口总数: " windowStates.Count "`n"
+
+    unvisitedCount := 0
+    for hwnd, state in windowStates {
+        if (!state.mouseVisited && WinExist(hwnd)) {
+            unvisitedCount++
+            try {
+                title := WinGetTitle(hwnd)
+                className := WinGetClass(hwnd)
+                info .= "未访问：title=【" title "】class=【" className "】`n---`n"
+            } catch {
+                info .= "未访问: 未知窗口`n"
+            }
+        }
+    }
+
+    if (unvisitedCount == 0) {
+        info .= "所有窗口已访问"
+    } else {
+        info .= "未访问窗口数: " unvisitedCount
+    }
+
+    ToolTip(info)
+    SetTimer(ToolTip, -5000)
+}
+
+; 启动时自动启用该功能
+AutoActivateWindow()
