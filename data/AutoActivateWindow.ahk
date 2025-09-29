@@ -199,7 +199,7 @@ ActivateWindowUnderMouse(timeoutMouse := 200, mouseMovementAmplitude := 10) {
             mousePos := [mouseX, mouseY]  ; 立即更新位置
         }
 
-        ; 如果处于"待激活"模式
+        ; 如果处于待激活模式
         if (pendingActivation) {
             if (JudgeActivate(targetID)) {
                 WinActivate(targetID)
