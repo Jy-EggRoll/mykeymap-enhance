@@ -41,6 +41,13 @@
             "ahkCode": "IncBrightness(5)"
           }
         ],
+        "*XButton2": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "ShowDebugTooltip()"
+          }
+        ],
         "*a": [
           {
             "windowGroupID": 0,
