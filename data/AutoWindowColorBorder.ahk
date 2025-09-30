@@ -19,7 +19,7 @@ COLORS := [
 COLORS_MODE2 := [
     Map("name", "Mauve", "rgb", "136,57,239"),
     Map("name", "Peach", "rgb", "254,100,11"),
-    Map("name", "Sky", "rgb", "4,165,229"),
+    Map("name", "Sky", "rgb", "4,165,229")
 ]
 
 ; 全局变量
@@ -55,7 +55,7 @@ AutoWindowColorBorder() {
 
     if (!borderEnabled) {
         ; 启动边框功能
-        SetTimer(UpdateWindowBorder, 100)
+        SetTimer(UpdateWindowBorder, 50)
         borderEnabled := true
         ToolTip("窗口边框着色已启动")
         SetTimer(ToolTip, -1000)
@@ -171,10 +171,10 @@ UpdateWindowBorder() {
                     ToolTip("系统主题已更改 颜色列表已刷新")
                     SetTimer(ToolTip, -1000)
                 }
-                SetWindowBorder(currentActiveWindow, GetCurrentBorderColor())
+                if (SetWindowBorder(currentActiveWindow, GetCurrentBorderColor())) {
+                    lastActiveWindow := currentActiveWindow  ; 仅在成功设置边框后更新 lastActiveWindow
+                }
             }
-
-            lastActiveWindow := currentActiveWindow
         }
     }
     catch Error as e {
