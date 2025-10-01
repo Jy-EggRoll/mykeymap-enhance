@@ -104,7 +104,7 @@ jobs:
                 echo "未找到版本说明文件: $releaseNoteFile"
             fi
 
-            echo "## 详细变更记录（所有提交历史）" >> release_notes.md
+            echo "## 详细提交记录" >> release_notes.md
             echo "" >> release_notes.md
 
             if [ -z "$previousTag" ]; then

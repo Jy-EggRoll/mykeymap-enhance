@@ -260,6 +260,7 @@ JudgeActivate(targetID) {
     ; 使用静态 Map 存储需要排除的 A 类名
     static ExcludedClassA := Map(
         "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
+        "WorkerW", true,  ; 也是桌面，目前似乎是 Win 11 独有的，于 2025 年 10 月发现
         "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
         "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
     )
