@@ -865,7 +865,7 @@
       {
         "id": -1,
         "name": "🚫 Exclude",
-        "value": "Stardew Valley ahk_class SDL_app\nahk_exe Hades.exe"
+        "value": "ahk_exe Hades.exe\nahk_exe deadcells.exe"
       },
       {
         "id": 0,
