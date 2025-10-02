@@ -431,6 +431,20 @@
             "ahkCode": "SplitScreen(2, \"h2\")"
           }
         ],
+        "2v1": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(2, \"v1\")"
+          }
+        ],
+        "2v2": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(2, \"v2\")"
+          }
+        ],
         "31": [
           {
             "windowGroupID": 0,
@@ -450,6 +464,27 @@
             "windowGroupID": 0,
             "actionTypeID": 8,
             "ahkCode": "SplitScreen(3, \"h3\")"
+          }
+        ],
+        "3v1": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"v1\")"
+          }
+        ],
+        "3v2": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"v2\")"
+          }
+        ],
+        "3v3": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 8,
+            "ahkCode": "SplitScreen(3, \"v3\")"
           }
         ],
         "41": [
@@ -642,41 +677,6 @@
             "actionTypeID": 6,
             "comment": "打开任务管理器",
             "keysToSend": "^+{esc}"
-          }
-        ],
-        "v21": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "SplitScreen(2, \"v1\")"
-          }
-        ],
-        "v22": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "SplitScreen(2, \"v2\")"
-          }
-        ],
-        "v31": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "SplitScreen(3, \"v1\")"
-          }
-        ],
-        "v32": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "SplitScreen(3, \"v2\")"
-          }
-        ],
-        "v33": [
-          {
-            "windowGroupID": 0,
-            "actionTypeID": 8,
-            "ahkCode": "SplitScreen(3, \"v3\")"
           }
         ],
         "wt": [
