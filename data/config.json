@@ -302,9 +302,9 @@
         "*XButton2": [
           {
             "windowGroupID": 0,
-            "actionTypeID": 5,
-            "comment": "重映射为 MButton",
-            "remapToKey": "MButton"
+            "actionTypeID": 3,
+            "comment": "label:1",
+            "actionValueID": 1
           }
         ],
         "singlePress": [
@@ -313,6 +313,25 @@
             "actionTypeID": 4,
             "comment": "label:34",
             "actionValueID": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "name": "鼠标侧键",
+      "enable": true,
+      "hotkey": "XButton2",
+      "parentID": 0,
+      "delay": 0,
+      "disableAt": "",
+      "hotkeys": {
+        "singlePress": [
+          {
+            "windowGroupID": 0,
+            "actionTypeID": 6,
+            "comment": "输入鼠标中键",
+            "keysToSend": "{blind}{MButton}"
           }
         ]
       }
