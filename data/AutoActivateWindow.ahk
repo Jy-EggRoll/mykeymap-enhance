@@ -58,7 +58,6 @@ InitializeExistingWindows() {
     global windowStates
 
     try {
-        DetectHiddenWindows(false)
         windowList := WinGetList()
 
         loop windowList.Length {
@@ -89,8 +88,6 @@ MaintainWindowStates() {
         ; 获取当前所有可见窗口
         currentWindows := []
 
-        ; 枚举所有顶级窗口
-        DetectHiddenWindows(false)
         windowList := WinGetList()
 
         ; 收集当前存在的窗口
@@ -217,25 +214,31 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
  * 判断是否激活的函数，能处理更多样和复杂的情况，舍弃了一长串逻辑判断的方式
  */
 JudgeActivate(targetID) {
-
     ; 将所有 WinGet 函数的结果存储在变量中，避免重复调用，提高性能
-    existA := WinExist("A")
+    targetClass := WinGetClass(targetID)
+    activeID := WinExist("A")
     traywndPopupExist := WinExist("ahk_class Xaml_WindowedPopupClass")
-    processNameA := WinGetProcessName("A")
-    classTarget := WinGetClass(targetID)
-    classA := WinGetClass("A")
-    titleA := WinGetTitle("A")
-    processNameTarget := WinGetProcessName(targetID)
-    styleA := WinGetStyle("A")
-    styleTarget := WinGetStyle(targetID)
+    activeProcessName := WinGetProcessName("A")
+    activeClass := WinGetClass("A")
+    activeStyle := WinGetStyle("A")
+    targetStyle := WinGetStyle(targetID)
 
-    if (existA == 0) {  ; 确保有激活窗口，抑制不必要的错误写入
+    ; classTarget := WinGetClass(targetID)
+    ; titleA := WinGetTitle("A")
+    ; processNameTarget := WinGetProcessName(targetID)
+
+    if (activeID == 0) {  ; 确保有激活窗口，抑制不必要的错误写入
         return false
+    }
+
+    if (targetID == traywndPopupExist) {
+        ToolTip("鼠标下是徽标键右键菜单")
+        SetTimer(ToolTip, -1000)
     }
 
     ; 使用静态 Map 存储需要排除的进程名，只在脚本第一次运行时创建一次
     ; 此项目前专注于处理“失去焦点就会关闭”的窗口
-    static ExcludedProcessNameA := Map(
+    static ExcludedActiveProcessName := Map(
         ; "StartMenuExperienceHost.exe", true,  ; 排除开始菜单的右键菜单
         ; "SearchHost.exe", true,  ; 排除 Win 11 开始菜单
         ; "SearchApp.exe", true,  ; 排除 Win 10 开始菜单
@@ -244,7 +247,7 @@ JudgeActivate(targetID) {
         "MyKeymap.exe", true,  ; 排除 MyKeymap 的部分窗口，如亮度调节窗口
         "Listary.exe", true  ; 排除 Listary 的搜索窗口
     )
-    if (ExcludedProcessNameA.Has(processNameA)) {
+    if (ExcludedActiveProcessName.Has(activeProcessName)) {
         return false
     }
 
@@ -258,20 +261,22 @@ JudgeActivate(targetID) {
     ; }
 
     ; 使用静态 Map 存储需要排除的 A 类名
-    static ExcludedClassA := Map(
+    static ExcludedActiveClass := Map(
         "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
         "WorkerW", true,  ; 桌面的层
         "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
         "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
     )
 
-    if (styleA & 0x80000000 && !(styleA & 0x40000) || styleA & 0x80880000 && !(styleA & 0x40000)) {
+    if (activeStyle & 0x80000000 && !(activeStyle & 0x40000) || activeStyle & 0x80880000 && !(activeStyle & 0x40000)) {
         ; 如果活动窗口【具有 WS_POPUP 样式同时不能调节窗口大小】或者【具有 WS_POPUPWINDOW 样式且不能调整大小】，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单，又或是一些具有奇怪逻辑的组件（比如微信、微信的的表情面板）。当它们出现并抢夺了焦点时，自动激活功能应该停止，以确保这些窗口出现在前台，让用户处理
-        if (ExcludedClassA.Has(classA)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这是不应该的，所以做了二次处理
+        if (ExcludedActiveClass.Has(activeClass)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这是不应该的，所以做了二次处理
             if (traywndPopupExist) {  ; 防止 Windows 徽标键右键菜单因失去焦点而消失，适用于点击或触发 Win + x 的情况
                 return false
             }
-            WinShow(traywndPopupExist)  ; 🐛 修复了在开始菜单和徽标键右键菜单同时打开时，右键菜单消失的问题
+            if (targetClass == "Xaml_WindowedPopupClass") {
+                return false
+            }
             return true
         }
         return false
@@ -303,7 +308,7 @@ JudgeActivate(targetID) {
      *     ○ WS_CHILD (0x40000000)
      */
 
-    if (styleTarget & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口
+    if (targetStyle & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口
         return true
     }
     return false
