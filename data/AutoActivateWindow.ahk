@@ -248,11 +248,11 @@ JudgeActivate(targetID) {
         return false
     }
 
-    ; ; 使用静态 Map 存储需要排除的 target 类名
+    ; 使用静态 Map 存储需要排除的 target 类名
     ; static ExcludedClassTarget := Map(
-    ;     "Progman", true,  ; 排除桌面
-    ;     "AutoHotkeyGUI", true  ; 排除 InputTip 的悬浮提示
+    ;     "ahk_class Xaml_WindowedPopupClass", true  ; 用于在开始菜单存在时并打开徽标键右键菜单时，确保右键菜单不会消失
     ; )
+
     ; if (ExcludedClassTarget.Has(classTarget)) {
     ;     return false
     ; }
@@ -260,7 +260,7 @@ JudgeActivate(targetID) {
     ; 使用静态 Map 存储需要排除的 A 类名
     static ExcludedClassA := Map(
         "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
-        "WorkerW", true,  ; 也是桌面，目前似乎是 Win 11 独有的，于 2025 年 10 月发现
+        "WorkerW", true,  ; 桌面的层
         "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
         "ApplicationFrameWindow", true  ; 设置，保证用户点击了设置后，功能仍正常
     )
@@ -271,6 +271,7 @@ JudgeActivate(targetID) {
             if (traywndPopupExist) {  ; 防止 Windows 徽标键右键菜单因失去焦点而消失，适用于点击或触发 Win + x 的情况
                 return false
             }
+            WinShow(traywndPopupExist)  ; 🐛 修复了在开始菜单和徽标键右键菜单同时打开时，右键菜单消失的问题
             return true
         }
         return false

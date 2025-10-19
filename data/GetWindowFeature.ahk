@@ -4,6 +4,7 @@
 #SingleInstance force
 SetWorkingDir A_ScriptDir
 CoordMode "Pixel", "Screen"
+DetectHiddenWindows true  ; 确保可以检测到隐藏窗口
 
 global oGui
 
