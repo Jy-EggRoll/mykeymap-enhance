@@ -1,8 +1,8 @@
 ---
 title: 项目介绍——my-keymap
-description: 
+description: 我的 MyKeymap 自定义功能仓库，不依赖于 MyKeymap 就可以运行，可以视为我的自定义 AutoHotkey 库 | My MyKeymap custom function repository runs without relying on MyKeymap and can be considered my custom AutoHotkey library
 date: 2025-08-14
-lastmod: 2025-10-20
+lastmod: 2025-10-21
 image: 
 categories:
     - 项目
@@ -13,9 +13,9 @@ tags:
 weight: 
 ---
 
-## 仓库链接
+## 仓库地址
 
-<https://github.com/Jy-EggRoll/my-keymap/>
+<https://github.com/Jy-EggRoll/mykeymap-enhance/>
 
 ## 使用方法
 
@@ -136,9 +136,9 @@ weight:
 
 效果展示：
 
-![拖动](拖动.gif)
+![拖动](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/拖动.gif)
 
-![调节](调节.gif)
+![调节](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/调节.gif)
 
 ### 比例居中 PerCenterAndResizeWindow
 
@@ -146,7 +146,7 @@ weight:
 
 效果演示：
 
-![比例居中](比例居中.gif)
+![比例居中](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/比例居中.gif)
 
 ### 分屏拓展函数 SplitScreen
 
@@ -172,7 +172,7 @@ weight:
 
 效果演示：
 
-![命令分屏](命令分屏.gif)
+![命令分屏](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/命令分屏.gif)
 
 ### 自动激活窗口 AutoActivateWindow
 
@@ -187,7 +187,7 @@ weight:
 
 效果展示（中途没有完全没有点击过鼠标左键）：
 
-![自动激活](自动激活.gif)
+![自动激活](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/自动激活.gif)
 
 ### 亮度调节 IncBrightness & DecBrightness
 
@@ -207,27 +207,27 @@ Windows 11 自带类似功能，其效果实在不能令人满意。对于第三
 
 效果展示：
 
-![着色](边框着色.png)
+![着色](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/边框着色.png)
 
 动态效果如下（请留意紫色的边框）：
 
-![着色动态效果](着色动态效果.gif)
+![着色动态效果](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/着色动态效果.gif)
 
 如果颜色不合适，请使用 SwitchToNextColor() 来切换颜色，颜色列表在代码中自定义。目前颜色可以随着系统主题自动变更，深色主题对应无后缀列表，浅色主题对应 Mode2 列表。两种模式的默认边框颜色分别如下：
 
-![深色模式-Peach](Peach.png)
+![深色模式-Peach](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/Peach.png)
 
-![浅色模式](Mauve.png)
+![浅色模式](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/Mauve.png)
 
 > [!TIP]
 >
 > 已有的颜色边框，其颜色不会立即随着系统主题变更而刷新。颜色列表会在主题变更后第一次创建着色边框时刷新。换言之，如果想要在修改系统主题色后立即看到当前应用的边框色的更改，请令其失去焦点再获得焦点。
 
-该功能的已知问题：
+该功能在特定软件上的已知问题：
 
-在 VSCode 较新的版本中，VSCode 自己会尝试用主题设置接管窗口边框着色的功能（假如主题指定了边框色），这可能导致冲突，从而出现颜色时不时失效、甚至显示其他颜色边框的问题。
+在 VSCode 较新的版本中，VSCode 自己会尝试用主题设置接管窗口边框着色的功能（假如主题指定了边框色），这可能导致冲突，从而出现颜色时不时失效，甚至显示其他颜色边框的问题。
 
-解决方法是将 VSCode 的 `window.border` 设为 `system` 而非 `default`，这样就可以始终遵循本功能的设置，而不会出现问题。
+解决方法是将 VSCode 的 `window.border` 设为 `system` 而非 `default`，这样就可以始终遵循本功能的设置。
 
 ## 关于作者
 
