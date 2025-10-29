@@ -5,14 +5,21 @@ SetWinDelay 10
 
 CoordMode "Mouse"
 
+#Include PerResizeWindow.ahk
+
 ; 窗口拖动函数：按住指定按键时拖动窗口
 DragWindow() {
     ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
     MouseGetPos &X1, &Y1, &ID
 
-    ; 检查鼠标下窗口是否处于最大化状态，恢复它们到整屏但可拖动的状态
-    if WinGetMinMax(ID)
-        WinRestore(ID)
+    ; 检查鼠标下窗口是否处于最大化状态
+    ; 如果是最大化，将其恢复为占满全屏的窗口化状态，而不是恢复到之前的小窗口
+    if WinGetMinMax(ID) {
+        ; 先激活窗口，确保后续操作针对正确的窗口
+        WinActivate("ahk_id " ID)
+        ; 调用 PerCenterAndResizeWindow(1, 1) 将窗口设置为占满整个工作区的窗口化状态
+        PerCenterAndResizeWindow(1, 1)
+    }
 
     ; 获取窗口初始位置
     WinGetPos &WinX1, &WinY1, , , ID
@@ -41,9 +48,15 @@ DragWindow() {
 
 ResizeWindow() {
     MouseGetPos &X1, &Y1, &ID
-    ; 检查鼠标下窗口是否处于最大化状态，恢复它们到整屏但可拖动的状态
-    if WinGetMinMax(ID)
-        WinRestore(ID)
+    
+    ; 检查鼠标下窗口是否处于最大化状态
+    ; 如果是最大化，将其恢复为占满全屏的窗口化状态，而不是恢复到之前的小窗口
+    if WinGetMinMax(ID) {
+        ; 先激活窗口，确保后续操作针对正确的窗口
+        WinActivate("ahk_id " ID)
+        ; 调用 PerCenterAndResizeWindow(1, 1) 将窗口设置为占满整个工作区的窗口化状态
+        PerCenterAndResizeWindow(1, 1)
+    }
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
