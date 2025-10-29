@@ -48,14 +48,43 @@ DragWindow() {
 
 ResizeWindow() {
     MouseGetPos &X1, &Y1, &ID
-    
-    ; 检查鼠标下窗口是否处于最大化状态
-    ; 如果是最大化，将其恢复为占满全屏的窗口化状态，而不是恢复到之前的小窗口
+
+    ; 如果窗口是最大化状态
     if WinGetMinMax(ID) {
-        ; 先激活窗口，确保后续操作针对正确的窗口
-        WinActivate("ahk_id " ID)
-        ; 调用 PerCenterAndResizeWindow(1, 1) 将窗口设置为占满整个工作区的窗口化状态
-        PerCenterAndResizeWindow(1, 1)
+        ; 等待一小段时间，通过鼠标移动判断是单击还是拖动
+        initialX := X1
+        initialY := Y1
+        Sleep 100  ; 等待 100ms
+
+        MouseGetPos &X2, &Y2
+        mouseMoved := (Abs(X2 - initialX) > 5 || Abs(Y2 - initialY) > 5)
+
+        ; 检查按键是否还在按下
+        if GetKeyState("RButton", "P") {
+            if !mouseMoved {
+                ; 按键按下但鼠标未移动：等待释放，这是单击
+                KeyWait "RButton"  ; 等待右键释放
+
+                ; 单击：将最大化窗口转换为全屏窗口化
+                WinActivate("ahk_id " ID)
+                PerCenterAndResizeWindow(1, 1)
+                ; ToolTip("✅ 已转换为窗口化，现在可以调整大小了")
+                ; SetTimer(ToolTip, -1500)
+                return
+            } else {
+                ; 按键按下且鼠标移动了：这是拖动，提示用户
+                ToolTip("窗口处于最大化状态`n为避免闪烁，请先单击（触发键+右键）将其转为窗口化")
+                SetTimer(ToolTip, -2000)
+                return
+            }
+        } else {
+            ; 按键已释放：单击
+            WinActivate("ahk_id " ID)
+            PerCenterAndResizeWindow(1, 1)
+            ; ToolTip("✅ 已转换为窗口化，现在可以调整大小了")
+            ; SetTimer(ToolTip, -1500)
+            return
+        }
     }
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
