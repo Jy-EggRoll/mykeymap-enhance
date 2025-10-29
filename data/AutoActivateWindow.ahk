@@ -231,11 +231,6 @@ JudgeActivate(targetID) {
         return false
     }
 
-    if (targetID == traywndPopupExist) {
-        ToolTip("鼠标下是徽标键右键菜单")
-        SetTimer(ToolTip, -1000)
-    }
-
     ; 使用静态 Map 存储需要排除的进程名，只在脚本第一次运行时创建一次
     ; 此项目前专注于处理“失去焦点就会关闭”的窗口
     static ExcludedActiveProcessName := Map(
