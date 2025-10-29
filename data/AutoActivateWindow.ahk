@@ -7,6 +7,7 @@ global autoActivateEnabled := false
 global windowStates := Map()  ; 窗口状态映射表
 global mousePos := [0, 0]  ; 鼠标位置记录
 global pendingActivation := false  ; 待激活状态标志
+global lastActiveWindowClass := ""  ; 记录上一次激活窗口的类名，用于检测任务栏切换
 
 /**
  * 窗口状态类，用于记录每个窗口的信息
@@ -33,6 +34,14 @@ AutoActivateWindow(pollingTime := 50) {
         ; 初始化现有窗口状态，将当前所有窗口标记为已访问
         InitializeExistingWindows()
 
+        ; 初始化上一次激活窗口的类名
+        global lastActiveWindowClass
+        try {
+            lastActiveWindowClass := WinGetClass("A")
+        } catch {
+            lastActiveWindowClass := ""
+        }
+
         autoActivateEnabled := true
         ToolTip("窗口自动激活已启动")
         SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
@@ -44,7 +53,9 @@ AutoActivateWindow(pollingTime := 50) {
 
         ; 清空窗口状态记录
         global windowStates
+        global lastActiveWindowClass
         windowStates := Map()
+        lastActiveWindowClass := ""
         ToolTip("窗口自动激活已停止")
         SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
     }
@@ -169,10 +180,40 @@ IsValidWindow(hwnd) {
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 10 像素
  */
 ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
-    global mousePos, windowStates, pendingActivation
+    global mousePos, windowStates, pendingActivation, lastActiveWindowClass
 
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
+        ; 检测用户通过任务栏手动切换窗口
+        ; 核心逻辑：焦点从任务栏 -> 非任务栏窗口 = 用户手动激活
+        currentActiveID := WinExist("A")
+        if (currentActiveID) {
+            try {
+                currentActiveClass := WinGetClass("A")
+
+                ; 检测焦点切换：从任务栏切换到普通窗口
+                if (lastActiveWindowClass == "Shell_TrayWnd" && currentActiveClass != "Shell_TrayWnd") {
+                    ; 用户通过任务栏激活了一个窗口
+                    ; 将这个新激活的窗口标记为"未访问"，阻止自动激活干扰
+                    if (IsValidWindow(currentActiveID)) {
+                        if (windowStates.Has(currentActiveID)) {
+                            windowStates[currentActiveID].mouseVisited := false
+                        } else {
+                            ; 窗口不在跟踪列表，添加并标记为未访问
+                            state := WindowState(currentActiveID)
+                            state.mouseVisited := false
+                            windowStates[currentActiveID] := state
+                        }
+                    }
+                }
+
+                ; 更新上一次激活窗口的类名
+                lastActiveWindowClass := currentActiveClass
+            } catch {
+                ; 静默处理获取窗口类名失败的情况
+            }
+        }
+
         ; 更新鼠标悬停窗口的访问状态
         if (targetID && WinExist(targetID) && IsValidWindow(targetID)) {
             if (windowStates.Has(targetID)) {
