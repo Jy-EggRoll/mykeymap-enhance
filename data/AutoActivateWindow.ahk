@@ -2,6 +2,19 @@
 
 #Include LogError.ahk
 
+/**
+ * 当前脚本的的功能梳理
+ * 提升其维护性和可读性
+ * 自动启用 AutoActivateWindow() 函数
+ * - 非激活模式，启动
+ *   启动两个定时器，维护窗口状态
+ *   标记当前所有窗口为已访问，记录上一次激活窗口的类名
+ *   每 pollingTime 时间，检查一次鼠标下面的窗口是否应该被激活
+ *     
+ *   每 pollingTime 时间，维护一次所有窗口是不是都已访问
+ * - 激活模式，停止
+ */
+
 ; 全局变量用于跟踪自动激活功能的状态
 global autoActivateEnabled := false
 global windowStates := Map()  ; 窗口状态映射表
@@ -164,7 +177,7 @@ IsValidWindow(hwnd) {
         ; 检查窗口样式，排除一些特殊窗口
         style := WinGetStyle(hwnd)
 
-        if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口
+        if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，这是我目前判断常规窗口最有效的方式，其列表和 Windows 任务栏上显示出来的窗口具有高度一致性
             return true
         }
 
@@ -318,39 +331,13 @@ JudgeActivate(targetID) {
         return false
     }
 
-    ;【记录：一些高优先级的窗口拥有高度一致的特性，这些特性出现在开始菜单、桌面、浏览器部分弹出窗口上】
-    /**
-     *     ○ WS_BORDER (0x800000)
-     *     ● WS_POPUP (0x80000000)
-     *     ○ WS_CAPTION (0xC00000)
-     *     ● WS_CLIPSIBLINGS (0x4000000)
-     *     ○ WS_DISABLED (0x8000000)
-     *     ○ WS_DLGFRAME (0x400000)
-     *     ○ WS_GROUP (0x5000)
-     *     ○ WS_HSCROLL (0x100000)
-     *     ○ WS_MAXIMIZE (0x1000000)
-     *     ○ WS_MAXIMIZEBOX (0x10000)
-     *     ○ WS_MINIMIZE (0x5000000)
-     *     ○ WS_MINIMIZEBOX (0x5000)
-     *     ○ WS_OVERLAPPED (0x0)
-     *     ○ WS_OVERLAPPEDWINDOW (0xCF0000)
-     *     ● WS_POPUPWINDOW (0x80880000)
-     *     ○ WS_SIZEBOX (0x40000)
-     *     ○ WS_SYSMENU (0x80000)
-     *     ○ WS_TABSTOP (0x10000)
-     *     ○ WS_THICKFRAME (0x40000)
-     *     ○ WS_VSCROLL (0x50000)
-     *     ● WS_VISIBLE (0x10000000)
-     *     ○ WS_CHILD (0x40000000)
-     */
-
-    if (targetStyle & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口
+    if (targetStyle & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，此处代码有优化空间
         return true
     }
     return false
 }
 
-ShowDebugTooltip() {
+ShowDebugTooltip() {  ; 该函数应该被加入 README 中，作为辅助调试工具，目前有一个通用调试工具，但其是一个独立脚本，需要考虑集成性，但是目前通过 ToolTip 调用必要信息也是足够优雅的
     global windowStates, autoActivateEnabled
 
     info := ""
@@ -363,7 +350,7 @@ ShowDebugTooltip() {
             try {
                 title := WinGetTitle(hwnd)
                 className := WinGetClass(hwnd)
-                info .= "未访问：title=【" title "】class=【" className "】`n---`n"
+                info .= "未访问：" title "`n"  ; 只展示标题，这最具有辨识度，防止其他信息干扰用户
             } catch {
                 info .= "未访问: 未知窗口`n"
             }
@@ -377,7 +364,7 @@ ShowDebugTooltip() {
     }
 
     ToolTip(info)
-    SetTimer(ToolTip, -5000)
+    SetTimer(ToolTip, -3000)  ; 防止遮挡太久
 }
 
 ; 启动时自动启用该功能
