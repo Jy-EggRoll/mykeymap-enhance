@@ -126,6 +126,10 @@ weight:
   </tbody>
 </table>
 
+## 各函数最佳实践的 json 配置片段
+
+您可以在将其复制到 MyKeymap 配置 json 文件的特定部分，并重启 MyKeymap 以应用更改。
+
 ## 额外说明
 
 ### 拖动与调节 DragWindow & ResizeWindow
@@ -234,3 +238,7 @@ Windows 11 自带类似功能，其效果实在不能令人满意。对于第三
 也欢迎浏览作者在 GitHub 上的其他项目。
 
 祝您使用愉快。
+
+## 统计
+
+[![统计](https://starchart.cc/Jy-EggRoll/mykeymap-enhance.svg?variant=adaptive)](https://starchart.cc/Jy-EggRoll/mykeymap-enhance)
