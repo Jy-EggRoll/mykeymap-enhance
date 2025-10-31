@@ -197,8 +197,8 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
 
     MouseGetPos(&mouseX, &mouseY, &targetID)
     try {
-        ; 检测用户通过任务栏手动切换窗口
-        ; 核心逻辑：焦点从任务栏 -> 非任务栏窗口 = 用户手动激活
+        ; 检测用户手动切换窗口
+        ; 核心逻辑：焦点从任务栏或任务列表 -> 窗口 = 用户手动激活
         currentActiveID := WinExist("A")
         if (currentActiveID) {
             try {
@@ -207,6 +207,22 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                 ; 检测焦点切换：从任务栏切换到普通窗口
                 if (lastActiveWindowClass == "Shell_TrayWnd" && currentActiveClass != "Shell_TrayWnd") {
                     ; 用户通过任务栏激活了一个窗口
+                    ; 将这个新激活的窗口标记为"未访问"，阻止自动激活干扰
+                    if (IsValidWindow(currentActiveID)) {
+                        if (windowStates.Has(currentActiveID)) {
+                            windowStates[currentActiveID].mouseVisited := false
+                        } else {
+                            ; 窗口不在跟踪列表，添加并标记为未访问
+                            state := WindowState(currentActiveID)
+                            state.mouseVisited := false
+                            windowStates[currentActiveID] := state
+                        }
+                    }
+                }
+
+                ; 检测用户通过任务列表激活了一个窗口
+                if (lastActiveWindowClass == "XamlExplorerHostIslandWindow" && currentActiveClass != "XamlExplorerHostIslandWindow") {
+                    ; 用户通过任务列表激活了一个窗口
                     ; 将这个新激活的窗口标记为"未访问"，阻止自动激活干扰
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
