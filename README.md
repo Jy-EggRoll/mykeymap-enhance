@@ -54,13 +54,13 @@ weight:
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">DragWindow()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接拖动任意窗口（无需点击标题栏），如果是最大化窗口，该窗口将会被还原为上一个非最大化状态</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接拖动任意窗口（无需点击标题栏），如果在最大化窗口上尝试调用该功能，窗口将被调整为占据全屏的普通窗口</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标左键，例如 <kbd>Caps</kbd> + 鼠标左键</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ResizeWindow()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接调整任意窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，如果是最大化窗口，该窗口将会被还原为上一个非最大化状态</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接调整任意窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，如果在最大化窗口上尝试调用该功能，会发出提示，用户应该先使用触发键+右键单击该窗口，使之变为占据全屏的普通窗口，再进行大小调节，这是为了避免潜在的闪烁问题</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标右键，例如 <kbd>Caps</kbd> + 鼠标右键</td>
     </tr>
     <tr>
@@ -188,6 +188,8 @@ weight:
   - 在软件内点击某超链接，跳出了某窗口，但是鼠标没有大范围移动时，不会导致误触发
   - 在软件内操作，跳出了某窗口，但是出于习惯移动了鼠标，比如在微信中点开了图片，但是由于这是一个新窗口，鼠标没有移动到该窗口上，所以不会误触发
 - **全场景兼容**：内置了完善的判断逻辑，桌面、浏览器、文件资源管理器和开始菜单中的右键菜单都不会被识别为窗口并误激活，功能十分稳定。
+
+不仅如此，该功能还对软件切换做了特殊优化。不管您是从任务栏手动切换软件，还是使用窗口列表切换，新切换出来的窗口都会被加入未访问列表，避免误触发。
 
 效果展示（中途没有完全没有点击过鼠标左键）：
 
