@@ -241,6 +241,10 @@ Windows 11 自带类似功能，其效果实在不能令人满意。对于第三
 
 祝您使用愉快。
 
+## 关于 `file-link-manager-links.json`
+
+这个是我的另一个软件建立的，维护着该仓库到我 MyKeymap 真实目录的硬链接关系，实现了开发仓库和使用仓库的分离（这有助于让我更好地管理和维护该通用仓库）。如果您不使用该软件，可以忽略此文件。该软件由 Go 语言编写，尚在开发阶段，敬请期待。
+
 ## 统计
 
 [![统计](https://starchart.cc/Jy-EggRoll/mykeymap-enhance.svg?variant=adaptive)](https://starchart.cc/Jy-EggRoll/mykeymap-enhance)

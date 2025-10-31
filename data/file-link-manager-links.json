@@ -1,0 +1,11 @@
+{
+    "symlinks": {},
+    "hardlinks": {
+        "windows": [
+            {
+                "primary_relative": "AutoActivateWindow.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\AutoActivateWindow.ahk"
+            }
+        ]
+    }
+}
