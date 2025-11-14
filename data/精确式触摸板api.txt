@@ -1,0 +1,255 @@
+TOUCHPAD_PARAMETERS structure (winuser.h)
+ Important
+
+Some information relates to a prerelease product which may be substantially modified before it's commercially released. Microsoft makes no warranties, express or implied, with respect to the information provided here.
+
+Contains user touchpad settings and system information related to all detected touchpads.
+
+ Note
+
+The term "touchpad" refers to Precision Touchpads. The term "legacy touchpad" refers to older generation touchpads that report themselves to Windows as a mouse.
+
+Syntax
+C++
+typedef struct TOUCHPAD_PARAMETERS {
+  UINT                       versionNumber;
+  UINT                       maxSupportedContacts;
+  LEGACY_TOUCHPAD_FEATURES   legacyTouchpadFeatures;
+  BOOL                       touchpadPresent : 1;
+  BOOL                       legacyTouchpadPresent : 1;
+  BOOL                       externalMousePresent : 1;
+  BOOL                       touchpadEnabled : 1;
+  BOOL                       touchpadActive : 1;
+  BOOL                       feedbackSupported : 1;
+  BOOL                       clickForceSupported : 1;
+  BOOL                       Reserved1 : 25;
+  BOOL                       allowActiveWhenMousePresent : 1;
+  BOOL                       feedbackEnabled : 1;
+  BOOL                       tapEnabled : 1;
+  BOOL                       tapAndDragEnabled : 1;
+  BOOL                       twoFingerTapEnabled : 1;
+  BOOL                       rightClickZoneEnabled : 1;
+  BOOL                       mouseAccelSettingHonored : 1;
+  BOOL                       panEnabled : 1;
+  BOOL                       zoomEnabled : 1;
+  BOOL                       scrollDirectionReversed : 1;
+  BOOL                       Reserved2 : 22;
+  TOUCHPAD_SENSITIVITY_LEVEL sensitivityLevel;
+  UINT                       cursorSpeed;
+  UINT                       feedbackIntensity;
+  UINT                       clickForceSensitivity;
+  UINT                       rightClickZoneWidth;
+  UINT                       rightClickZoneHeight;
+} TOUCHPAD_PARAMETERS, *PTOUCH_PAD_PARAMETERS, TOUCHPAD_PARAMETERS_V1, *PTOUCHPAD_PARAMETERS_V1;
+Members
+versionNumber
+
+The version of the struct.
+
+Caller must set to TOUCHPAD_PARAMETERS_LATEST_VERSION to use the latest version, or to TOUCHPAD_PARAMETERS_VERSION_[#] to use a specific version (). The version must be specified when both reading and writing settings.
+
+ Note
+
+TOUCHPAD_PARAMETERS_VERSION_1 is the only specific version of TOUCHPAD_PARAMETERS_VERSION_[#] currently defined.
+
+maxSupportedContacts
+
+The maximum number of simultaneous contacts (for the touchpad that supports the most) amongst all detected touchpads.1
+
+legacyTouchpadFeatures
+
+The supported features reported by detected legacy touchpads. This will be LEGACY_TOUCHPAD_FEATURE_NONE if no legacy touchpads are detected, or if the legacy touchpads do not support configuration through SPI_SETTOUCHPADPARAMETERS.1
+
+touchpadPresent
+
+A Precision Touchpad is detected.1
+
+legacyTouchpadPresent
+
+A legacy touchpad is detected.1
+
+externalMousePresent
+
+An external mouse is detected. See Precision touchpad tuning for information on exempting a mouse from being considered as external (for the purposes of this status field and behavior of the allowActiveWhenMousePresent setting).1
+
+touchpadEnabled
+
+Touchpad input is enabled.1
+
+touchpadActive
+
+Touchpad input is active. It is active if it is enabled, and either there is no external mouse detected or touchpad input has been configured to stay active despite the presence of an external mouse. This field does not indicate whether any touchpad is actively producing input.1
+
+feedbackSupported
+
+A detected touchpad supports haptic feedback.1
+
+clickForceSupported
+
+A detected touchpad supports haptic click force.1
+
+Reserved1
+
+allowActiveWhenMousePresent
+
+Touchpad input can remain active if an external mouse is detected. When inactive, any input produced by a touchpad is ignored.2
+
+feedbackEnabled
+
+Haptic feedback is enabled on touchpads if supported.2
+
+tapEnabled
+
+Single-finger taps are enabled.2
+
+tapAndDragEnabled
+
+Tap-and-drag is enabled.2
+
+twoFingerTapEnabled
+
+Two-finger tap is enabled.2
+
+rightClickZoneEnabled
+
+Pressing the bottom-right corner of the touchpad results in a right-click instead of a left click.2
+
+If the user has swapped their left and right mouse buttons (GetSystemMetrics(SM_SWAPBUTTON) is true), the right-click zone is mirrored horizontally to the bottom-left corner of the touchpad.
+
+mouseAccelSettingHonored
+
+Mouse motion produced by the touchpad honors the user's mouse acceleration setting (specified by SystemParametersInfo(SPI_GETMOUSE)). If false, the mouse motion always has acceleration applied.2
+
+panEnabled
+
+Two-finger panning is enabled.2
+
+zoomEnabled
+
+Two-finger zooming is enabled.2
+
+scrollDirectionReversed
+
+The direction content scrolls with two-finger panning is reversed. By default, the upward motion of contacts on the touchpad results in content scrolling downward while leftward motion of contacts results in content scrolling rightwards.2
+
+Reserved2
+
+sensitivityLevel
+
+The touchpad sensitivity level. The more sensitive the touchpad, the less suppression of mouse input generation occurs after keyboard activity (see TOUCHPAD_SENSITIVITY_LEVEL enumeration).2
+
+cursorSpeed
+
+The rate at which the mouse motion produced by the touchpad moves the cursor. Valid values are 1-20, inclusive.2
+
+feedbackIntensity
+
+The relative intensity of the touchpad's haptic feedback (if supported). Valid values are 0-100, inclusive.2
+
+clickForceSensitivity
+
+The relative sensitivity of the touchpad's haptic click detection (if supported). Valid values are 0-100, inclusive.2
+
+rightClickZoneWidth
+
+The relative width of the touchpad right-click zone. Valid values are 0-100, inclusive. If non-zero, this value overrides the device configuration.2
+
+rightClickZoneHeight
+
+The relative height of the touchpad right-click zone. Valid values are 0-100, inclusive. If non-zero, this value overrides the device configuration.2
+
+Remarks
+All fields apply only to Precision Touchpads, with the exception of fields that specify "legacy touchpad" or are supported by the legacy touchpad as indicated by the legacyTouchpadFeatures field.
+
+1 Represents the system information that can be used to help inform which user settings are applicable to the current device. They are ignored when calling SystemParametersInfo (A/W) with SPI_SETTOUCHPADPARAMETERS.
+
+2 Represents user settings. Modifications to these fields will result in changing the user's settings when calling SystemParametersInfo (A/W) with SPI_SETTOUCHPADPARAMETERS.
+
+Requirements
+Requirement	Value
+Minimum supported client	Windows 11, version 24H2 [desktop apps only]
+Minimum supported server	None supported
+Header	winuser.h (include Windows.h)
+See also
+TOUCHPAD_SENSITIVITY_LEVEL enumeration, LEGACY_TOUCHPAD_FEATURES enumeration
+
+TOUCHPAD_SENSITIVITY_LEVEL enumeration (winuser.h)
+ Important
+
+Some information relates to a prerelease product which may be substantially modified before it's commercially released. Microsoft makes no warranties, express or implied, with respect to the information provided here.
+
+Identifies values for the touchpad sensitivity setting.
+
+Syntax
+C++
+typedef enum TOUCHPAD_SENSITIVITY_LEVEL {
+  TOUCHPAD_SENSITIVITY_LEVEL_MOST_SENSITIVE = 0x00000000,
+  TOUCHPAD_SENSITIVITY_LEVEL_HIGH_SENSITIVITY = 0x00000001,
+  TOUCHPAD_SENSITIVITY_LEVEL_MEDIUM_SENSITIVITY = 0x00000002,
+  TOUCHPAD_SENSITIVITY_LEVEL_LOW_SENSITIVITY = 0x00000003,
+  TOUCHPAD_SENSITIVITY_LEVEL_LEAST_SENSITIVE = 0x00000004
+} ;
+Constants
+ 
+TOUCHPAD_SENSITIVITY_LEVEL_MOST_SENSITIVE
+Value: 0x00000000
+The touchpad does not suppress mouse input generation after keyboard activity.
+TOUCHPAD_SENSITIVITY_LEVEL_HIGH_SENSITIVITY
+Value: 0x00000001
+The touchpad applies less mouse input suppression after keyboard activity.
+TOUCHPAD_SENSITIVITY_LEVEL_MEDIUM_SENSITIVITY
+Value: 0x00000002
+The touchpad applies its default level of mouse input suppression after keyboard activity.
+TOUCHPAD_SENSITIVITY_LEVEL_LOW_SENSITIVITY
+Value: 0x00000003
+The touchpad applies more mouse input suppression after keyboard activity.
+TOUCHPAD_SENSITIVITY_LEVEL_LEAST_SENSITIVE
+Value: 0x00000004
+The touchpad applies its maximum amount of mouse input suppression after keyboard activity.
+Remarks
+The touchpad sensitivity setting causes the touchpad to suppress generation of mouse input after the user has typed on their keyboard. A higher sensitivity means the touchpad is more sensitive to touchpad input and does not suppress mouse input generation as much after keyboard activity.
+
+Requirements
+Requirement	Value
+Minimum supported client	Windows 11, version 24H2 [desktop apps only]
+Minimum supported server	None supported
+Header	winuser.h (include Windows.h)
+
+TOUCHPREDICTIONPARAMETERS structure (winuser.h)
+Contains hardware input details that can be used to predict touch targets and help compensate for hardware latency when processing touch and gesture input that contains distance and velocity data.
+
+Syntax
+C++
+typedef struct tagTouchPredictionParameters {
+  UINT cbSize;
+  UINT dwLatency;
+  UINT dwSampleTime;
+  UINT bUseHWTimeStamp;
+} TOUCHPREDICTIONPARAMETERS, *PTOUCHPREDICTIONPARAMETERS;
+Members
+cbSize
+
+The size of this structure, in bytes.
+
+dwLatency
+
+Latency in milliseconds.
+
+dwSampleTime
+
+Sample time in milliseconds (used to calculate velocity).
+
+bUseHWTimeStamp
+
+Use timestamps provided by the hardware.
+
+Remarks
+By default, touch prediction is activated. For information on getting pointer data without deactivating touch prediction, see GetUnpredictedMessagePos.
+
+Requirements
+Requirement	Value
+Minimum supported client	Windows 8 [desktop apps only]
+Minimum supported server	Windows Server 2012 [desktop apps only]
+Header	winuser.h (include Windows.h)
+See also
+Structures
