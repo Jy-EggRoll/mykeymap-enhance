@@ -6,6 +6,16 @@
                 "primary_relative": "AutoActivateWindow.ahk",
                 "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\AutoActivateWindow.ahk",
                 "device": "common"
+            },
+            {
+                "primary_relative": "custom_functions.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\custom_functions.ahk",
+                "device": "common"
+            },
+            {
+                "primary_relative": "SmoothScrollSimulate.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\SmoothScrollSimulate.ahk",
+                "device": "common"
             }
         ]
     }

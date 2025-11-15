@@ -23,7 +23,7 @@ weight:
 
 > [!TIP]
 >
-> 从 1.4 版本开始，不再提供示例 json 配置，而是在 README 中提供各个函数的最佳实践和代码片段，这可以最大限度减少配置冲突的可能性，方便您根据自己的使用习惯进行配置。
+> 从 1.4 版本开始，不再提供示例 json 配置，而是在 README 中提供各个函数的最佳实践的配置指导，这可以最大限度减少配置冲突的可能性，也方便您根据自己的使用习惯进行修改。
 
 `custom_function.ahk` 仅保留和官方一样的接口，负责导入各个模块，本身不提供任何实际功能，所以如果希望体验全部功能，请加入全部的 ahk 文件，若您没有自己的自定义函数，可以安全地覆盖 `custom_function.ahk`，如果您有，请自行对比两文件的差异，并将其合并。
 
@@ -52,16 +52,22 @@ weight:
   </thead>
   <tbody>
     <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SmoothScrollSimulate()</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">模拟平滑滚动效果，在绝大多数现代化软件中有很高的可用性，如浏览器。少数软件不支持，如 Windows 文件资源管理器。该效果触发时，可以使软件以像素为单位平滑滚动，效果近似于精确式触摸板或触摸屏，支持左右移动、对角线移动等。</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Win</kbd> + 鼠标右键</td>
+    </tr>
+    <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">DragWindow()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接拖动任意窗口（无需点击标题栏），如果在最大化窗口上尝试调用该功能，窗口将被调整为占据全屏的普通窗口</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标左键，例如 <kbd>Caps</kbd> + 鼠标左键</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标左键（必须是左键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标左键</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ResizeWindow()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接调整任意窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，如果在最大化窗口上尝试调用该功能，会发出提示，用户应该先使用触发键+右键单击该窗口，使之变为占据全屏的普通窗口，再进行大小调节，这是为了避免潜在的闪烁问题</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标右键，例如 <kbd>Caps</kbd> + 鼠标右键</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标右键</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">PerCenterAndResizeWindow(percentageW, percentageH)</td>
@@ -126,13 +132,15 @@ weight:
   </tbody>
 </table>
 
-## 各函数最佳实践的 json 配置片段
-
-您可以在将其复制到 MyKeymap 配置 json 文件的特定部分，并重启 MyKeymap 以应用更改。
+## 各函数最佳实践的配置方式
 
 [TODO]
 
 ## 额外说明
+
+### 平滑滚动 SmoothScrollSimulate
+
+由于作者本人深爱触摸板和触摸屏的滚动体验，遂开发了该功能以模拟现代化软件中的平滑滚动效果。由于帧率有限，录屏无法展示出真实的滚动效果，建议亲自体验。目前理论最高达 100 FPS，由于大多数软件自带了“平滑滚动”功能，实际体验会更好。
 
 ### 拖动与调节 DragWindow & ResizeWindow
 

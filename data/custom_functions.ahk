@@ -8,3 +8,4 @@
 #Include ../data/PerResizeWindow.ahk
 #Include ../data/ChangeBrightness.ahk
 #Include ../data/AutoWindowColorBorder.ahk
+#Include ../data/SmoothScrollSimulate.ahk
