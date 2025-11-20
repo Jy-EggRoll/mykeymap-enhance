@@ -17,8 +17,9 @@ IsLightTheme() {
         ; 返回是否为亮色主题
         return themeValue = 1
     }
-    catch {
-        ; 发生错误时默认返回亮色（例如在不支持的系统版本上）
+    catch Error as e{
+        ; 发生错误时默认返回亮色
+        LogError(e, , DEBUGMODE)
         return true
     }
 }

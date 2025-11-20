@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 #Include Logger.ahk
-DEBUGMODE := true  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
+DEBUGMODE := false  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
 /**
  * 当前脚本的的功能梳理
@@ -52,8 +52,9 @@ AutoActivateWindow(pollingTime := 50) {
         global lastActiveWindowClass
         try {
             lastActiveWindowClass := WinGetClass("A")
-        } catch {
+        } catch Error as e {
             lastActiveWindowClass := ""
+            LogError(e, , DEBUGMODE)
         }
 
         autoActivateEnabled := true
@@ -311,12 +312,12 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
  * 判断是否激活的函数，能处理更多样和复杂的情况，舍弃了一长串逻辑判断的方式
  */
 JudgeActivate(targetID) {
-    activeClass := WinGetClass("A")
-    activeStyle := WinGetStyle("A")
-
     if (WinExist("A") == 0) {  ; 确保有激活窗口，抑制不必要的错误写入
         return false
     }
+
+    activeClass := WinGetClass("A")
+    activeStyle := WinGetStyle("A")
 
     excludeCondition := WinGetClass("A") == "AutoHotkeyGUI" && WinGetProcessName("A") == "MyKeymap.exe"
 
@@ -366,8 +367,9 @@ ShowDebugTooltip() {  ; 该函数应该被加入 README 中，作为辅助调试
                 title := WinGetTitle(hwnd)
                 className := WinGetClass(hwnd)
                 info .= "未访问：" title "`n"  ; 只展示标题，这最具有辨识度，防止其他信息干扰用户
-            } catch {
+            } catch Error as e {
                 info .= "未访问: 未知窗口`n"
+                LogError(e, , DEBUGMODE)
             }
         }
     }

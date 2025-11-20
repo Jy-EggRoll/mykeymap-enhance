@@ -3,8 +3,7 @@
 ; 注意：该脚本极其严格地遵守“获得焦点”即着色边框，“失去焦点”则恢复边框，为了该功能的稳定，不做任何特殊情况处理。若有时您看到边框颜色意外消失，请注意这不是 bug，一定是该窗口丢失了焦点。例 1：收藏页面时，跳出了一个小窗口，浏览器的边框着色消失了；例 2：使用鼠标手势时，浏览器的边框着色消失了。以上两种情况都是正确且合理的。若您实在不适，请自行取消注释我的部分代码。
 
 #Include QueryTheme.ahk
-#Include Logger.ahk
-DEBUGMODE := true  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
+DEBUGMODE := false  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
 ; Windows DWM API 常量
 DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
@@ -13,12 +12,12 @@ DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值，外观看起来是一
 ; 颜色配置（标准 RGB 值），目前的颜色选自 Catppuccin 的 Latte 风味，其中 Peach 色彩鲜艳且适合多种主题，如需添加自己的颜色，请按照相同格式添加 Map，逗号分隔
 COLORS := [
     Map("name", "Peach", "rgb", "254,100,11"),
-    Map("name", "Green", "rgb", "64,160,43")
+    Map("name", "sky", "rgb", "4,165,229")
 ]
 
 COLORS_MODE2 := [
     Map("name", "Peach", "rgb", "254,100,11"),
-    Map("name", "Green", "rgb", "64,160,43")
+    Map("name", "sky", "rgb", "4,165,229")
 ]
 
 borderEnabled := false
@@ -129,8 +128,7 @@ ClearWindowBorder(hwnd) {
  */
 GetCurrentBorderColor(hwnd) {
     global lightTheme
-    if (windowStates[hwnd].mouseVisited == true) {
-
+    if (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited == true) {
         if (lightTheme) {
             return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])
         } else {

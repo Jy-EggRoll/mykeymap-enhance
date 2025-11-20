@@ -32,27 +32,31 @@ SmoothScrollSimulate() {
     LastMouseX := startX
     LastMouseY := startY
 
-    ; 持续跟随直到右键释放
-    while (GetKeyState("RButton", "P")) {
-        MouseGetPos(&currentX, &currentY)
+    try {
+        ; 持续跟随直到右键释放
+        while (GetKeyState("RButton", "P")) {
+            MouseGetPos(&currentX, &currentY)
 
-        deltaX := currentX - LastMouseX
-        deltaY := currentY - LastMouseY
+            deltaX := currentX - LastMouseX
+            deltaY := currentY - LastMouseY
 
-        if (Abs(deltaX) >= 1 || Abs(deltaY) >= 1) {
-            ; Y轴移动控制垂直滚动
-            if (Abs(deltaY) >= 1) {
-                PostMW(deltaY)
+            if (Abs(deltaX) >= 1 || Abs(deltaY) >= 1) {
+                ; Y轴移动控制垂直滚动
+                if (Abs(deltaY) >= 1) {
+                    PostMW(deltaY)
+                }
+                ; X轴移动控制水平滚动
+                if (Abs(deltaX) >= 1) {
+                    PostMW(0, -deltaX)  ;使水平方向滚动也和直觉一致
+                }
+
+                LastMouseX := currentX
+                LastMouseY := currentY
             }
-            ; X轴移动控制水平滚动
-            if (Abs(deltaX) >= 1) {
-                PostMW(0, -deltaX)  ;使水平方向滚动也和直觉一致
-            }
 
-            LastMouseX := currentX
-            LastMouseY := currentY
+            Sleep(10)  ; 添加适当延时控制响应频率
         }
-
-        Sleep(10)  ; 添加适当延时控制响应频率
+    } catch Error as e {
+        LogError(e, , DEBUGMODE)
     }
 }

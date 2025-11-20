@@ -115,6 +115,7 @@ GetShadowThickness(hwnd) {
     } catch Error as e {
         ; borderInfo .= "--- Window Size & Border Info ---`n"
         ; borderInfo .= "Error getting border info: " e.Message "`n"
+        LogError(e, , DEBUGMODE)
     }
 
     return shadowBottom  ; 返回底部阴影厚度作为结果，三个阴影的值没有见到不同的时候

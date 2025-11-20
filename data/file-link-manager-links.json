@@ -1,42 +1,49 @@
 {
-    "symlinks": {},
-    "hardlinks": {
+    "symlinks": {
         "windows": [
             {
-                "primary_relative": "AutoActivateWindow.ahk",
-                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\AutoActivateWindow.ahk",
+                "real_relative": "QueryTheme.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\QueryTheme.ahk",
                 "device": "common"
             },
             {
-                "primary_relative": "custom_functions.ahk",
-                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\custom_functions.ahk",
+                "real_relative": "AutoActivateWindow.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\AutoActivateWindow.ahk",
                 "device": "common"
             },
             {
-                "primary_relative": "SmoothScrollSimulate.ahk",
-                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\SmoothScrollSimulate.ahk",
+                "real_relative": "custom_functions.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\custom_functions.ahk",
                 "device": "common"
             },
             {
-                "primary_relative": "AutoWindowColorBorder.ahk",
-                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\AutoWindowColorBorder.ahk",
+                "real_relative": "SmoothScrollSimulate.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\SmoothScrollSimulate.ahk",
                 "device": "common"
             },
             {
-                "primary_relative": "Logger.ahk",
-                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\Logger.ahk",
+                "real_relative": "AutoWindowColorBorder.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\AutoWindowColorBorder.ahk",
                 "device": "common"
             },
             {
-                "primary_relative": "DragAndResizeWindow.ahk",
-                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\DragAndResizeWindow.ahk",
+                "real_relative": "Logger.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\Logger.ahk",
                 "device": "common"
             },
             {
-                "primary_relative": "ChangeBrightness.ahk",
-                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\ChangeBrightness.ahk",
+                "real_relative": "DragAndResizeWindow.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\DragAndResizeWindow.ahk",
+                "device": "common"
+            },
+            {
+                "real_relative": "ChangeBrightness.ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\ChangeBrightness.ahk",
                 "device": "common"
             }
         ]
+    },
+    "hardlinks": {
+        "windows": []
     }
 }

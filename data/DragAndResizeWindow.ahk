@@ -5,8 +5,6 @@ SetWinDelay 10
 
 CoordMode "Mouse"
 
-#Include PerResizeWindow.ahk
-
 ; 窗口拖动函数：按住指定按键时拖动窗口
 DragWindow() {
     ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
@@ -24,25 +22,29 @@ DragWindow() {
     ; 获取窗口初始位置
     WinGetPos &WinX1, &WinY1, , , ID
 
-    ; 循环执行拖动逻辑，直到按键释放
-    loop {
-        ; 检查按键是否仍被按住，若释放则退出循环
-        if !GetKeyState("LButton", "P")
-            break
+    try {
+        ; 循环执行拖动逻辑，直到按键释放
+        loop {
+            ; 检查按键是否仍被按住，若释放则退出循环
+            if !GetKeyState("LButton", "P")
+                break
 
-        ; 获取当前鼠标位置
-        MouseGetPos &X2, &Y2
+            ; 获取当前鼠标位置
+            MouseGetPos &X2, &Y2
 
-        ; 计算鼠标相对于初始位置的偏移量
-        X2 -= X1
-        Y2 -= Y1
+            ; 计算鼠标相对于初始位置的偏移量
+            X2 -= X1
+            Y2 -= Y1
 
-        ; 根据初始窗口位置和鼠标偏移量，计算窗口新位置
-        WinX2 := (WinX1 + X2)
-        WinY2 := (WinY1 + Y2)
+            ; 根据初始窗口位置和鼠标偏移量，计算窗口新位置
+            WinX2 := (WinX1 + X2)
+            WinY2 := (WinY1 + Y2)
 
-        ; 移动窗口到新位置（只改变位置，不改变大小）
-        WinMove WinX2, WinY2, , , ID
+            ; 移动窗口到新位置（只改变位置，不改变大小）
+            WinMove WinX2, WinY2, , , ID
+        }
+    } catch Error as e {
+        LogError(e, , DEBUGMODE)
     }
 }
 
@@ -105,74 +107,78 @@ ResizeWindow() {
     else
         verticalRegion := 3
 
-    ; 循环执行调整大小逻辑，直到按键释放
-    loop {
-        ; 检查按键是否仍被按住，若释放则退出循环
-        if !GetKeyState("RButton", "P")
-            break
+    try {
+        ; 循环执行调整大小逻辑，直到按键释放
+        loop {
+            ; 检查按键是否仍被按住，若释放则退出循环
+            if !GetKeyState("RButton", "P")
+                break
 
-        ; 获取当前鼠标位置
-        MouseGetPos &X2, &Y2
-        ; 获取窗口当前的位置和大小（避免因其他操作导致的位置偏差）
-        WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
+            ; 获取当前鼠标位置
+            MouseGetPos &X2, &Y2
+            ; 获取窗口当前的位置和大小（避免因其他操作导致的位置偏差）
+            WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
-        ; 计算鼠标相对于初始位置的偏移量
-        deltaX := X2 - X1
-        deltaY := Y2 - Y1
+            ; 计算鼠标相对于初始位置的偏移量
+            deltaX := X2 - X1
+            deltaY := Y2 - Y1
 
-        ; 根据所在区域确定调整方式
-        newX := WinX1
-        newY := WinY1
-        newW := WinW
-        newH := WinH
+            ; 根据所在区域确定调整方式
+            newX := WinX1
+            newY := WinY1
+            newW := WinW
+            newH := WinH
 
-        ; 根据 9 个区域的不同逻辑进行调整
-        if (horizontalRegion = 1) {
-            ; 左区域：调整左边框
-            newX := WinX1 + deltaX
-            newW := WinW - deltaX
+            ; 根据 9 个区域的不同逻辑进行调整
+            if (horizontalRegion = 1) {
+                ; 左区域：调整左边框
+                newX := WinX1 + deltaX
+                newW := WinW - deltaX
+            }
+            else if (horizontalRegion = 3) {
+                ; 右区域：调整右边框
+                newW := WinW + deltaX
+            }
+
+            if (verticalRegion = 1) {
+                ; 上区域：调整上边框
+                newY := WinY1 + deltaY
+                newH := WinH - deltaY
+            }
+            else if (verticalRegion = 3) {
+                ; 下区域：调整下边框
+                newH := WinH + deltaY
+            }
+
+            ; 中间区域四区逻辑
+            if (horizontalRegion = 2 && verticalRegion = 2) {
+                ; 判断鼠标在中间区域的左右（用于确定宽度调整方向）
+                if (X1 < WinX1 + WinW / 2)
+                    WinLeft := 1
+                else
+                    WinLeft := -1
+
+                ; 判断鼠标在中间区域的上下（用于确定高度调整方向）
+                if (Y1 < WinY1 + WinH / 2)
+                    WinUp := 1
+                else
+                    WinUp := -1
+
+                ; 应用四区逻辑
+                newX := WinX1 + (WinLeft + 1) / 2 * deltaX
+                newY := WinY1 + (WinUp + 1) / 2 * deltaY
+                newW := WinW - WinLeft * deltaX
+                newH := WinH - WinUp * deltaY
+            }
+
+            ; 应用调整后的窗口位置和大小
+            WinMove newX, newY, newW, newH, ID
+
+            ; 更新初始鼠标位置为当前位置（避免累积误差）
+            X1 := X2
+            Y1 := Y2
         }
-        else if (horizontalRegion = 3) {
-            ; 右区域：调整右边框
-            newW := WinW + deltaX
-        }
-
-        if (verticalRegion = 1) {
-            ; 上区域：调整上边框
-            newY := WinY1 + deltaY
-            newH := WinH - deltaY
-        }
-        else if (verticalRegion = 3) {
-            ; 下区域：调整下边框
-            newH := WinH + deltaY
-        }
-
-        ; 中间区域四区逻辑
-        if (horizontalRegion = 2 && verticalRegion = 2) {
-            ; 判断鼠标在中间区域的左右（用于确定宽度调整方向）
-            if (X1 < WinX1 + WinW / 2)
-                WinLeft := 1
-            else
-                WinLeft := -1
-
-            ; 判断鼠标在中间区域的上下（用于确定高度调整方向）
-            if (Y1 < WinY1 + WinH / 2)
-                WinUp := 1
-            else
-                WinUp := -1
-
-            ; 应用四区逻辑
-            newX := WinX1 + (WinLeft + 1) / 2 * deltaX
-            newY := WinY1 + (WinUp + 1) / 2 * deltaY
-            newW := WinW - WinLeft * deltaX
-            newH := WinH - WinUp * deltaY
-        }
-
-        ; 应用调整后的窗口位置和大小
-        WinMove newX, newY, newW, newH, ID
-
-        ; 更新初始鼠标位置为当前位置（避免累积误差）
-        X1 := X2
-        Y1 := Y2
+    } catch Error as e {
+        LogError(e, , DEBUGMODE)
     }
 }
