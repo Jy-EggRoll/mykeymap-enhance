@@ -7,10 +7,9 @@
  * @param showConsole 如果控制台未打开，是否打开控制台
  */
 LogInfo(str, filePath := "*", showConsole := false) {
-    if !DllCall("GetStdHandle", "uint", -11, "ptr") {
-        if showConsole {
-            OpenConsole()
-        }
+    if showConsole {
+        OpenConsole()
+    } else {
         return
     }
     timestamp := Format("[" A_YYYY "-" A_MM "-" A_DD " " A_Hour ":" A_Min ":" A_Sec "]")
@@ -27,10 +26,9 @@ LogInfo(str, filePath := "*", showConsole := false) {
  * @param showConsole 如果控制台未打开，是否打开控制台
  */
 LogError(ErrorObj, filePath := "*", showConsole := false) {
-    if !DllCall("GetStdHandle", "uint", -11, "ptr") {
-        if showConsole {
-            OpenConsole()
-        }
+    if showConsole {
+        OpenConsole()
+    } else {
         return
     }
     timestamp := Format("[" A_YYYY "-" A_MM "-" A_DD " " A_Hour ":" A_Min ":" A_Sec "]")

@@ -57,7 +57,7 @@ AutoActivateWindow(pollingTime := 50) {
         }
 
         autoActivateEnabled := true
-        LogInfo("窗口自动激活已启动", "*", DebugMode)
+        LogInfo("窗口自动激活已启动", , DebugMode)
     } else {
         ; 当前已激活，执行停止逻辑
         SetTimer(ActivateWindowUnderMouse, 0)  ; 停止主要逻辑定时器
@@ -69,7 +69,7 @@ AutoActivateWindow(pollingTime := 50) {
         global lastActiveWindowClass
         windowStates := Map()
         lastActiveWindowClass := ""
-        LogInfo("窗口自动激活已停止", "*", DebugMode)
+        LogInfo("窗口自动激活已停止", , DebugMode)
     }
 }
 
@@ -212,34 +212,60 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
+                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            ; for hwnd, state in windowStates {
+                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
+                            ;     DebugMode)
+                            ; }
                         } else {
                             ; 窗口不在跟踪列表，添加并标记为未访问
                             state := WindowState(currentActiveID)
                             state.mouseVisited := false
                             windowStates[currentActiveID] := state
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
+                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            ; for hwnd, state in windowStates {
+                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
+                            ;     DebugMode)
+                            ; }
                         }
                     }
                 }
 
                 ; 检测用户通过任务列表激活了一个窗口
-                if (lastActiveWindowClass == "XamlExplorerHostIslandWindow" && currentActiveClass != "XamlExplorerHostIslandWindow") {
+                if (lastActiveWindowClass == "XamlExplorerHostIslandWindow" && currentActiveClass !=
+                    "XamlExplorerHostIslandWindow") {
                     ; 用户通过任务列表激活了一个窗口
                     ; 将这个新激活的窗口标记为"未访问"，阻止自动激活干扰
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
+                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            ; for hwnd, state in windowStates {
+                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
+                            ;     DebugMode)
+                            ; }
                         } else {
                             ; 窗口不在跟踪列表，添加并标记为未访问
                             state := WindowState(currentActiveID)
                             state.mouseVisited := false
                             windowStates[currentActiveID] := state
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
+                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            ; for hwnd, state in windowStates {
+                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
+                            ;     DebugMode)
+                            ; }
                         }
                     }
                 }
 
                 ; 更新上一次激活窗口的类名
                 lastActiveWindowClass := currentActiveClass
-            } catch Error as e {
+            }
+            catch Error as e {
                 LogError(e, , DebugMode)
             }
         }
