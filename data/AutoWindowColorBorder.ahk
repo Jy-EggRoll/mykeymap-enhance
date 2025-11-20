@@ -4,7 +4,7 @@
 
 #Include QueryTheme.ahk
 #Include Logger.ahk
-DebugMode := true  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
+DEBUGMODE := true  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
 ; Windows DWM API 常量
 DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
@@ -12,19 +12,20 @@ DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值，外观看起来是一
 
 ; 颜色配置（标准 RGB 值），目前的颜色选自 Catppuccin 的 Latte 风味，其中 Peach 色彩鲜艳且适合多种主题，如需添加自己的颜色，请按照相同格式添加 Map，逗号分隔
 COLORS := [
-    Map("name", "Peach", "rgb", "254,100,11")
+    Map("name", "Peach", "rgb", "254,100,11"),
+    Map("name", "Green", "rgb", "64,160,43")
 ]
 
 COLORS_MODE2 := [
-    Map("name", "Peach", "rgb", "254,100,11")
+    Map("name", "Peach", "rgb", "254,100,11"),
+    Map("name", "Green", "rgb", "64,160,43")
 ]
 
-; 全局变量
-global borderEnabled := false
-global currentColorIndex := 1  ; 用来设定默认选择列表中的哪个颜色
-global currentColorIndexMode2 := 1
-global lastActiveWindow := 0
-global lightTheme := IsLightTheme()
+borderEnabled := false
+currentColorIndex := 1  ; 用来设定默认选择列表中的哪个颜色
+currentColorIndexMode2 := 1
+lastActiveWindow := 0
+lightTheme := IsLightTheme()
 
 /**
  * RGB 转 BGR 颜色格式函数
@@ -54,13 +55,13 @@ AutoWindowColorBorder(pollingTime := 50) {
         ; 启动边框功能
         SetTimer(UpdateWindowBorder, pollingTime)
         borderEnabled := true
-        LogInfo("窗口边框着色已启动", , DebugMode)
+        LogInfo("窗口边框着色已启动", , DEBUGMODE)
     } else {
         ; 停止边框功能
         SetTimer(UpdateWindowBorder, 0)
         CleanupBorder()
         borderEnabled := false
-        LogInfo("窗口边框着色已停止", , DebugMode)
+        LogInfo("窗口边框着色已停止", , DEBUGMODE)
     }
 }
 
@@ -74,7 +75,7 @@ SwitchToNextColor() {
 
     if (test != lightTheme) {
         lightTheme := test
-        LogInfo("系统主题变化 已刷新列表", , DebugMode)
+        LogInfo("系统主题变化 已刷新列表", , DEBUGMODE)
     }
 
     if (lightTheme) {
@@ -84,7 +85,7 @@ SwitchToNextColor() {
         currentColorIndex := currentColorIndex >= COLORS.Length ? 1 : currentColorIndex + 1
         colorName := COLORS[currentColorIndex]["name"]
     }
-    LogInfo("已切换到下一个颜色：" colorName, , DebugMode)
+    LogInfo("已切换到下一个颜色：" colorName, , DEBUGMODE)
 }
 
 /**
@@ -108,7 +109,7 @@ SetWindowBorder(hwnd, color) {
         return (result = 0)
     }
     catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
         return false
     }
 }
@@ -126,12 +127,21 @@ ClearWindowBorder(hwnd) {
  * 获取当前边框颜色
  * @return {Integer} 当前边框颜色值
  */
-GetCurrentBorderColor() {
-    global currentColorIndex, COLORS, currentColorIndexMode2, COLORS_MODE2, lightTheme
-    if (lightTheme) {
-        return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])
+GetCurrentBorderColor(hwnd) {
+    global lightTheme
+    if (windowStates[hwnd].mouseVisited == true) {
+
+        if (lightTheme) {
+            return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])
+        } else {
+            return RGBtoBGR(COLORS[currentColorIndex]["rgb"])
+        }
     } else {
-        return RGBtoBGR(COLORS[currentColorIndex]["rgb"])
+        if (lightTheme) {
+            return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2 + 1]["rgb"])
+        } else {
+            return RGBtoBGR(COLORS[currentColorIndex + 1]["rgb"])
+        }
     }
 }
 
@@ -153,22 +163,19 @@ UpdateWindowBorder() {
             if (lastActiveWindow != 0) {
                 if (ClearWindowBorder(lastActiveWindow)) {
                     LogInfo("成功清除 [" WinGetTitle(lastActiveWindow) "] [" WinGetClass(lastActiveWindow) "] [" lastActiveWindow "] 的边框颜色", ,
-                    DebugMode)
+                    DEBUGMODE)
                 }
             }
         }
         if (currentActiveWindow != 0) {  ; 尽可能保证激活的窗口一定可以被设置边框颜色，这相当于每 pollingTime 就尝试设置一次
-            borderColor := GetCurrentBorderColor()
+            borderColor := GetCurrentBorderColor(currentActiveWindow)
             if (SetWindowBorder(currentActiveWindow, borderColor)) {
-                ; LogInfo("成功设置 [" WinGetTitle(currentActiveWindow) "] [" WinGetClass(currentActiveWindow) "] [" currentActiveWindow "] 的边框颜色为 " .
-                ; borderColor, ,
-                ; DebugMode)
                 lastActiveWindow := currentActiveWindow  ; 只有设置成功后才更新 lastActiveWindow，这保证了颜色可以被正确清除
             }
         }
     }
     catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
     }
 }
 
@@ -184,7 +191,7 @@ CleanupBorder() {
         lastActiveWindow := 0
     }
     catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
     }
 }
 

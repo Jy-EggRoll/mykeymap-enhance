@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 #Include Logger.ahk
-DebugMode := true  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
+DEBUGMODE := true  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
 /**
  * 当前脚本的的功能梳理
@@ -17,11 +17,11 @@ DebugMode := true  ; 是否启用开发模式，设为 true 会打开控制台�
  */
 
 ; 全局变量用于跟踪自动激活功能的状态
-global autoActivateEnabled := false
-global windowStates := Map()  ; 窗口状态映射表
-global mousePos := [0, 0]  ; 鼠标位置记录
-global pendingActivation := false  ; 待激活状态标志
-global lastActiveWindowClass := ""  ; 记录上一次激活窗口的类名，用于检测任务栏切换
+autoActivateEnabled := false
+windowStates := Map()  ; 窗口状态映射表
+mousePos := [0, 0]  ; 鼠标位置记录
+pendingActivation := false  ; 待激活状态标志
+lastActiveWindowClass := ""  ; 记录上一次激活窗口的类名，用于检测任务栏切换
 
 /**
  * 窗口状态类，用于记录每个窗口的信息
@@ -57,7 +57,7 @@ AutoActivateWindow(pollingTime := 50) {
         }
 
         autoActivateEnabled := true
-        LogInfo("窗口自动激活已启动", , DebugMode)
+        LogInfo("窗口自动激活已启动", , DEBUGMODE)
     } else {
         ; 当前已激活，执行停止逻辑
         SetTimer(ActivateWindowUnderMouse, 0)  ; 停止主要逻辑定时器
@@ -69,7 +69,7 @@ AutoActivateWindow(pollingTime := 50) {
         global lastActiveWindowClass
         windowStates := Map()
         lastActiveWindowClass := ""
-        LogInfo("窗口自动激活已停止", , DebugMode)
+        LogInfo("窗口自动激活已停止", , DEBUGMODE)
     }
 }
 
@@ -94,7 +94,7 @@ InitializeExistingWindows() {
             }
         }
     } catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
     }
 }
 
@@ -140,7 +140,7 @@ MaintainWindowStates() {
         }
 
     } catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
     }
 }
 
@@ -160,7 +160,7 @@ CheckForUnvisitedWindows() {
         }
         return true
     } catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
         return true
     }
 }
@@ -174,16 +174,16 @@ IsValidWindow(hwnd) {
             return false
         }
 
-        ; 检查窗口样式，排除一些特殊窗口
+        ; 检查窗口样式
         style := WinGetStyle(hwnd)
 
-        if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，这是我目前判断常规窗口最有效的方式，其列表和 Windows 任务栏上显示出来的窗口具有高度一致性
+        if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，这是目前判断常规窗口最有效的方式，其列表和 Windows 任务栏上显示出来的窗口高度一致
             return true
         }
 
         return false
     } catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
         return false
     }
 }
@@ -212,22 +212,22 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
-                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
+                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
                             ; for hwnd, state in windowStates {
                             ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DebugMode)
+                            ;     DEBUGMODE)
                             ; }
                         } else {
                             ; 窗口不在跟踪列表，添加并标记为未访问
                             state := WindowState(currentActiveID)
                             state.mouseVisited := false
                             windowStates[currentActiveID] := state
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
-                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
+                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
                             ; for hwnd, state in windowStates {
                             ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DebugMode)
+                            ;     DEBUGMODE)
                             ; }
                         }
                     }
@@ -241,22 +241,22 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
-                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
+                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
                             ; for hwnd, state in windowStates {
                             ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DebugMode)
+                            ;     DEBUGMODE)
                             ; }
                         } else {
                             ; 窗口不在跟踪列表，添加并标记为未访问
                             state := WindowState(currentActiveID)
                             state.mouseVisited := false
                             windowStates[currentActiveID] := state
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DebugMode)
-                            ; LogInfo("当前全部窗口列表：", , DebugMode)
+                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
+                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
                             ; for hwnd, state in windowStates {
                             ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DebugMode)
+                            ;     DEBUGMODE)
                             ; }
                         }
                     }
@@ -266,7 +266,7 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                 lastActiveWindowClass := currentActiveClass
             }
             catch Error as e {
-                LogError(e, , DebugMode)
+                LogError(e, , DEBUGMODE)
             }
         }
 
@@ -303,7 +303,7 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
         }
     }
     catch Error as e {
-        LogError(e, , DebugMode)
+        LogError(e, , DEBUGMODE)
     }
 }
 
@@ -311,49 +311,21 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
  * 判断是否激活的函数，能处理更多样和复杂的情况，舍弃了一长串逻辑判断的方式
  */
 JudgeActivate(targetID) {
-    ; 将所有 WinGet 函数的结果存储在变量中，避免重复调用，提高性能
-    targetClass := WinGetClass(targetID)
-    activeID := WinExist("A")
-    traywndPopupExist := WinExist("ahk_class Xaml_WindowedPopupClass")
-    activeProcessName := WinGetProcessName("A")
     activeClass := WinGetClass("A")
     activeStyle := WinGetStyle("A")
-    targetStyle := WinGetStyle(targetID)
 
-    ; classTarget := WinGetClass(targetID)
-    ; titleA := WinGetTitle("A")
-    ; processNameTarget := WinGetProcessName(targetID)
-
-    if (activeID == 0) {  ; 确保有激活窗口，抑制不必要的错误写入
+    if (WinExist("A") == 0) {  ; 确保有激活窗口，抑制不必要的错误写入
         return false
     }
 
-    ; 使用静态 Map 存储需要排除的进程名，只在脚本第一次运行时创建一次
-    ; 此项目前专注于处理“失去焦点就会关闭”的窗口
-    static ExcludedActiveProcessName := Map(
-        ; "StartMenuExperienceHost.exe", true,  ; 排除开始菜单的右键菜单
-        ; "SearchHost.exe", true,  ; 排除 Win 11 开始菜单
-        ; "SearchApp.exe", true,  ; 排除 Win 10 开始菜单
-        ; "ShellHost.exe", true,  ; 排除控制面板等（和 Win + a 启动的一致）
-        ; "ShellExperienceHost.exe", true,  ; 排除消息面板（和 Win + n 启动的一致）
-        "MyKeymap.exe", true,  ; 排除 MyKeymap 的部分窗口，如亮度调节窗口
-        "Listary.exe", true  ; 排除 Listary 的搜索窗口
-    )
-    if (ExcludedActiveProcessName.Has(activeProcessName)) {
+    excludeCondition := WinGetClass("A") == "AutoHotkeyGUI" && WinGetProcessName("A") == "MyKeymap.exe"
+
+    if (excludeCondition) {
         return false
     }
 
-    ; 使用静态 Map 存储需要排除的 target 类名
-    ; static ExcludedClassTarget := Map(
-    ;     "ahk_class Xaml_WindowedPopupClass", true  ; 用于在开始菜单存在时并打开徽标键右键菜单时，确保右键菜单不会消失
-    ; )
-
-    ; if (ExcludedClassTarget.Has(classTarget)) {
-    ;     return false
-    ; }
-
-    ; 使用静态 Map 存储需要排除的 A 类名
-    static ExcludedActiveClass := Map(
+    ; 特殊的类名
+    static specialActiveClass := Map(
         "Progman", true,  ; 桌面，保证用户点击桌面后，功能仍正常
         "WorkerW", true,  ; 桌面的层
         "Shell_TrayWnd", true,  ; 任务栏，保证用户点击任务栏后，功能仍正常
@@ -362,11 +334,11 @@ JudgeActivate(targetID) {
 
     if (activeStyle & 0x80000000 && !(activeStyle & 0x40000) || activeStyle & 0x80880000 && !(activeStyle & 0x40000)) {
         ; 如果活动窗口【具有 WS_POPUP 样式同时不能调节窗口大小】或者【具有 WS_POPUPWINDOW 样式且不能调整大小】，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单，又或是一些具有奇怪逻辑的组件（比如微信、微信的的表情面板）。当它们出现并抢夺了焦点时，自动激活功能应该停止，以确保这些窗口出现在前台，让用户处理
-        if (ExcludedActiveClass.Has(activeClass)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这是不应该的，所以做了二次处理
-            if (traywndPopupExist) {  ; 防止 Windows 徽标键右键菜单因失去焦点而消失，适用于点击或触发 Win + x 的情况
+        if (specialActiveClass.Has(activeClass)) {  ; 在这些窗口中，也有一些异类，比如设置、桌面，在点击这些地方后，激活的窗口将具有 popup 属性，此时激活其他窗口功能会被终止，这是不应该的，所以做了二次处理
+            if (WinExist("ahk_class Xaml_WindowedPopupClass")) {  ; 防止 Windows 徽标键右键菜单因失去焦点而消失，适用于点击或触发 Win + x 的情况
                 return false
             }
-            if (targetClass == "Xaml_WindowedPopupClass") {
+            if (WinGetClass(targetID) == "Xaml_WindowedPopupClass") {
                 return false
             }
             return true
@@ -374,7 +346,7 @@ JudgeActivate(targetID) {
         return false
     }
 
-    if (targetStyle & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，此处代码有优化空间
+    if (IsValidWindow(targetID)) {  ; 逻辑复用
         return true
     }
     return false
