@@ -3,7 +3,7 @@
 LastMouseX := 0
 LastMouseY := 0
 
-; 滚轮消息发送函数，在大多数软件中有效，对于完全不支持平滑滚动的程序可能无效，如文件资源管理器
+; 滚轮消息发送函数，在大多数软件中有效，部分软件无效，如文件资源管理器
 PostMW(deltay, deltax := 0) {
     MouseGetPos(&x, &y, &id, &control)
 

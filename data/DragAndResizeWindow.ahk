@@ -68,21 +68,17 @@ ResizeWindow() {
                 ; 单击：将最大化窗口转换为全屏窗口化
                 WinActivate("ahk_id " ID)
                 PerCenterAndResizeWindow(1, 1)
-                ; ToolTip("✅ 已转换为窗口化，现在可以调整大小了")
-                ; SetTimer(ToolTip, -1500)
                 return
             } else {
                 ; 按键按下且鼠标移动了：这是拖动，提示用户
-                ToolTip("窗口处于最大化状态`n为避免闪烁，请先单击（触发键+右键）将其转为窗口化")
-                SetTimer(ToolTip, -2000)
+                ToolTip("窗口处于最大化状态`n为避免闪烁 请先单击（触发键+右键）将其转为窗口化再执行拖动操作")
+                SetTimer(ToolTip, -3000)
                 return
             }
         } else {
             ; 按键已释放：单击
             WinActivate("ahk_id " ID)
             PerCenterAndResizeWindow(1, 1)
-            ; ToolTip("✅ 已转换为窗口化，现在可以调整大小了")
-            ; SetTimer(ToolTip, -1500)
             return
         }
     }

@@ -1,6 +1,9 @@
 #Requires AutoHotkey v2.0
 
-; 检查当前系统是否为亮色主题
+/**
+ * 检查当前系统是否为亮色主题
+ * @return {Boolean} 是否为亮色主题
+ */
 IsLightTheme() {
     ; 注册表路径，存储主题相关设置
     regPath := "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"

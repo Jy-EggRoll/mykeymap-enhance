@@ -1,6 +1,7 @@
 #Requires AutoHotkey v2.0
 
-#Include LogError.ahk
+#Include Logger.ahk
+DebugMode := true  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
 /**
  * 当前脚本的的功能梳理
@@ -56,8 +57,7 @@ AutoActivateWindow(pollingTime := 50) {
         }
 
         autoActivateEnabled := true
-        ToolTip("窗口自动激活已启动")
-        SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
+        LogInfo("窗口自动激活已启动", "*", DebugMode)
     } else {
         ; 当前已激活，执行停止逻辑
         SetTimer(ActivateWindowUnderMouse, 0)  ; 停止主要逻辑定时器
@@ -69,8 +69,7 @@ AutoActivateWindow(pollingTime := 50) {
         global lastActiveWindowClass
         windowStates := Map()
         lastActiveWindowClass := ""
-        ToolTip("窗口自动激活已停止")
-        SetTimer(ToolTip, -1000)  ; 1 秒后隐藏提示
+        LogInfo("窗口自动激活已停止", "*", DebugMode)
     }
 }
 
@@ -95,7 +94,7 @@ InitializeExistingWindows() {
             }
         }
     } catch Error as e {
-        ; 静默处理错误
+        LogError(e, , DebugMode)
     }
 }
 
@@ -141,7 +140,7 @@ MaintainWindowStates() {
         }
 
     } catch Error as e {
-        ; 静默处理错误，避免影响主要功能
+        LogError(e, , DebugMode)
     }
 }
 
@@ -161,6 +160,7 @@ CheckForUnvisitedWindows() {
         }
         return true
     } catch Error as e {
+        LogError(e, , DebugMode)
         return true
     }
 }
@@ -183,6 +183,7 @@ IsValidWindow(hwnd) {
 
         return false
     } catch Error as e {
+        LogError(e, , DebugMode)
         return false
     }
 }
@@ -238,8 +239,8 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
 
                 ; 更新上一次激活窗口的类名
                 lastActiveWindowClass := currentActiveClass
-            } catch {
-                ; 静默处理获取窗口类名失败的情况
+            } catch Error as e {
+                LogError(e, , DebugMode)
             }
         }
 
@@ -276,7 +277,7 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
         }
     }
     catch Error as e {
-        ; 静默处理错误
+        LogError(e, , DebugMode)
     }
 }
 

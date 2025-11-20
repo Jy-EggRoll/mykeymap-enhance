@@ -16,6 +16,26 @@
                 "primary_relative": "SmoothScrollSimulate.ahk",
                 "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\SmoothScrollSimulate.ahk",
                 "device": "common"
+            },
+            {
+                "primary_relative": "AutoWindowColorBorder.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\AutoWindowColorBorder.ahk",
+                "device": "common"
+            },
+            {
+                "primary_relative": "Logger.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\Logger.ahk",
+                "device": "common"
+            },
+            {
+                "primary_relative": "DragAndResizeWindow.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\DragAndResizeWindow.ahk",
+                "device": "common"
+            },
+            {
+                "primary_relative": "ChangeBrightness.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\ChangeBrightness.ahk",
+                "device": "common"
             }
         ]
     }
