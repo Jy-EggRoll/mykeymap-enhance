@@ -1,5 +1,11 @@
 #Requires AutoHotkey v2.0
 
+#Include Logger.ahk
+
+class SmoothScrollSimulateDebug {
+    static mode := false
+}
+
 LastMouseX := 0
 LastMouseY := 0
 
@@ -57,6 +63,6 @@ SmoothScrollSimulate() {
             Sleep(10)  ; 添加适当延时控制响应频率
         }
     } catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , SmoothScrollSimulateDebug.mode)
     }
 }

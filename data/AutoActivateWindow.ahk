@@ -1,20 +1,12 @@
 #Requires AutoHotkey v2.0
 
 #Include Logger.ahk
-DEBUGMODE := false  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
-/**
- * 当前脚本的的功能梳理
- * 提升其维护性和可读性
- * 自动启用 AutoActivateWindow() 函数
- * - 非激活模式，启动
- *   启动两个定时器，维护窗口状态
- *   标记当前所有窗口为已访问，记录上一次激活窗口的类名
- *   每 pollingTime 时间，检查一次鼠标下面的窗口是否应该被激活
- *     
- *   每 pollingTime 时间，维护一次所有窗口是不是都已访问
- * - 激活模式，停止
- */
+class AutoActivateWindowDebug {
+    static mode := false
+}
+
+AutoActivateWindowDebug.mode := false  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
 ; 全局变量用于跟踪自动激活功能的状态
 autoActivateEnabled := false
@@ -54,11 +46,11 @@ AutoActivateWindow(pollingTime := 50) {
             lastActiveWindowClass := WinGetClass("A")
         } catch Error as e {
             lastActiveWindowClass := ""
-            LogError(e, , DEBUGMODE)
+            LogError(e, , AutoActivateWindowDebug.mode)
         }
 
         autoActivateEnabled := true
-        LogInfo("窗口自动激活已启动", , DEBUGMODE)
+        LogInfo("窗口自动激活已启动", , AutoActivateWindowDebug.mode)
     } else {
         ; 当前已激活，执行停止逻辑
         SetTimer(ActivateWindowUnderMouse, 0)  ; 停止主要逻辑定时器
@@ -70,7 +62,7 @@ AutoActivateWindow(pollingTime := 50) {
         global lastActiveWindowClass
         windowStates := Map()
         lastActiveWindowClass := ""
-        LogInfo("窗口自动激活已停止", , DEBUGMODE)
+        LogInfo("窗口自动激活已停止", , AutoActivateWindowDebug.mode)
     }
 }
 
@@ -95,7 +87,7 @@ InitializeExistingWindows() {
             }
         }
     } catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoActivateWindowDebug.mode)
     }
 }
 
@@ -124,6 +116,7 @@ MaintainWindowStates() {
                 ; 如果是新窗口，添加到状态记录
                 if (!windowStates.Has(hwnd)) {
                     windowStates[hwnd] := WindowState(hwnd)
+                    LogInfo("发现新窗口，添加到跟踪列表：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
                 }
             }
         }
@@ -138,10 +131,11 @@ MaintainWindowStates() {
 
         for i, hwnd in toRemove {
             windowStates.Delete(hwnd)
+            LogInfo("从列表中移除了 " hwnd " 窗口，因为它已不存在", , AutoActivateWindowDebug.mode)
         }
 
     } catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoActivateWindowDebug.mode)
     }
 }
 
@@ -156,12 +150,13 @@ CheckForUnvisitedWindows() {
         for hwnd, state in windowStates {
             if (!state.mouseVisited && WinExist(hwnd)) {
                 ; 发现未访问的窗口，完全禁用自动激活
+                ; LogInfo("发现未访问窗口，自动激活功能被禁用：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
                 return false
             }
         }
         return true
     } catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoActivateWindowDebug.mode)
         return true
     }
 }
@@ -179,12 +174,14 @@ IsValidWindow(hwnd) {
         style := WinGetStyle(hwnd)
 
         if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，这是目前判断常规窗口最有效的方式，其列表和 Windows 任务栏上显示出来的窗口高度一致
+            ; LogInfo("识别到有效窗口：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
             return true
         }
 
+        ; LogInfo("识别到无效窗口：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
         return false
     } catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoActivateWindowDebug.mode)
         return false
     }
 }
@@ -213,23 +210,7 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
-                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
-                            ; for hwnd, state in windowStates {
-                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DEBUGMODE)
-                            ; }
-                        } else {
-                            ; 窗口不在跟踪列表，添加并标记为未访问
-                            state := WindowState(currentActiveID)
-                            state.mouseVisited := false
-                            windowStates[currentActiveID] := state
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
-                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
-                            ; for hwnd, state in windowStates {
-                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DEBUGMODE)
-                            ; }
+                            LogInfo("【从任务栏手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), , AutoActivateWindowDebug.mode)
                         }
                     }
                 }
@@ -242,23 +223,7 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
-                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
-                            ; for hwnd, state in windowStates {
-                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DEBUGMODE)
-                            ; }
-                        } else {
-                            ; 窗口不在跟踪列表，添加并标记为未访问
-                            state := WindowState(currentActiveID)
-                            state.mouseVisited := false
-                            windowStates[currentActiveID] := state
-                            LogInfo("标记为未访问窗口: " WinGetTitle(currentActiveID), , DEBUGMODE)
-                            ; LogInfo("当前全部窗口列表：", , DEBUGMODE)
-                            ; for hwnd, state in windowStates {
-                            ;     LogInfo("窗口: " WinGetTitle(hwnd) " - 状态: " (state.mouseVisited ? "已访问" : "未访问"), ,
-                            ;     DEBUGMODE)
-                            ; }
+                            LogInfo("【从任务列表手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), , AutoActivateWindowDebug.mode)
                         }
                     }
                 }
@@ -267,7 +232,7 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                 lastActiveWindowClass := currentActiveClass
             }
             catch Error as e {
-                LogError(e, , DEBUGMODE)
+                LogError(e, , AutoActivateWindowDebug.mode)
             }
         }
 
@@ -304,7 +269,7 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
         }
     }
     catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoActivateWindowDebug.mode)
     }
 }
 
@@ -369,7 +334,7 @@ ShowDebugTooltip() {  ; 该函数应该被加入 README 中，作为辅助调试
                 info .= "未访问：" title "`n"  ; 只展示标题，这最具有辨识度，防止其他信息干扰用户
             } catch Error as e {
                 info .= "未访问: 未知窗口`n"
-                LogError(e, , DEBUGMODE)
+                LogError(e, , AutoActivateWindowDebug.mode)
             }
         }
     }

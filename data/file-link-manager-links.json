@@ -41,6 +41,16 @@
                 "primary_relative": "ChangeBrightness.ahk",
                 "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\ChangeBrightness.ahk",
                 "device": "common"
+            },
+            {
+                "primary_relative": "BlockSend.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\BlockSend.ahk",
+                "device": "common"
+            },
+            {
+                "primary_relative": "PerResizeWindow.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\PerResizeWindow.ahk",
+                "device": "common"
             }
         ]
     }

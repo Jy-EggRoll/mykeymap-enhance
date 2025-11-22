@@ -1,5 +1,11 @@
 #Requires AutoHotkey v2.0
 
+#Include Logger.ahk
+
+class DragAndResizeWindowDebug {
+    static mode := false
+}
+
 ; 设置窗口操作的延迟时间为 10 ms，拖动可以达到 100 帧
 SetWinDelay 10
 
@@ -44,7 +50,7 @@ DragWindow() {
             WinMove WinX2, WinY2, , , ID
         }
     } catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , DragAndResizeWindowDebug.mode)
     }
 }
 
@@ -179,6 +185,6 @@ ResizeWindow() {
             Y1 := Y2
         }
     } catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , DragAndResizeWindowDebug.mode)
     }
 }

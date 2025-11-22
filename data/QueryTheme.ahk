@@ -1,5 +1,11 @@
 #Requires AutoHotkey v2.0
 
+#Include Logger.ahk
+
+class QueryThemeDebug {
+    static mode := false
+}
+
 /**
  * 检查当前系统是否为亮色主题
  * @return {Boolean} 是否为亮色主题
@@ -19,7 +25,7 @@ IsLightTheme() {
     }
     catch Error as e{
         ; 发生错误时默认返回亮色
-        LogError(e, , DEBUGMODE)
+        LogError(e, , QueryThemeDebug.mode)
         return true
     }
 }

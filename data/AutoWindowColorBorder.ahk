@@ -2,10 +2,14 @@
 
 ; 注意：该脚本极其严格地遵守“获得焦点”即着色边框，“失去焦点”则恢复边框，为了该功能的稳定，不做任何特殊情况处理。若有时您看到边框颜色意外消失，请注意这不是 bug，一定是该窗口丢失了焦点。例 1：收藏页面时，跳出了一个小窗口，浏览器的边框着色消失了；例 2：使用鼠标手势时，浏览器的边框着色消失了。以上两种情况都是正确且合理的。若您实在不适，请自行取消注释我的部分代码。
 
+#Include Logger.ahk
 #Include QueryTheme.ahk
-DEBUGMODE := false  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
 
-; Windows DWM API 常量
+class AutoWindowColorBorderDebug {
+    static mode := false
+}
+
+; Windows DWM API
 DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
 DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值，外观看起来是一般是淡灰色的，可能与不同软件亦有关
 
@@ -54,13 +58,13 @@ AutoWindowColorBorder(pollingTime := 50) {
         ; 启动边框功能
         SetTimer(UpdateWindowBorder, pollingTime)
         borderEnabled := true
-        LogInfo("窗口边框着色已启动", , DEBUGMODE)
+        LogInfo("窗口边框着色已启动", , AutoWindowColorBorderDebug.mode)
     } else {
         ; 停止边框功能
         SetTimer(UpdateWindowBorder, 0)
         CleanupBorder()
         borderEnabled := false
-        LogInfo("窗口边框着色已停止", , DEBUGMODE)
+        LogInfo("窗口边框着色已停止", , AutoWindowColorBorderDebug.mode)
     }
 }
 
@@ -74,7 +78,7 @@ SwitchToNextColor() {
 
     if (test != lightTheme) {
         lightTheme := test
-        LogInfo("系统主题变化 已刷新列表", , DEBUGMODE)
+        LogInfo("系统主题变化 已刷新列表", , AutoWindowColorBorderDebug.mode)
     }
 
     if (lightTheme) {
@@ -84,7 +88,7 @@ SwitchToNextColor() {
         currentColorIndex := currentColorIndex >= COLORS.Length ? 1 : currentColorIndex + 1
         colorName := COLORS[currentColorIndex]["name"]
     }
-    LogInfo("已切换到下一个颜色：" colorName, , DEBUGMODE)
+    LogInfo("已切换到下一个颜色：" colorName, , AutoWindowColorBorderDebug.mode)
 }
 
 /**
@@ -108,7 +112,7 @@ SetWindowBorder(hwnd, color) {
         return (result = 0)
     }
     catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoWindowColorBorderDebug.mode)
         return false
     }
 }
@@ -134,7 +138,7 @@ GetCurrentBorderColor(hwnd) {
         } else {
             return RGBtoBGR(COLORS[currentColorIndex]["rgb"])
         }
-    } else {
+    } else {  ; 鼠标未访问过的窗口，总是会选取下一个颜色，视情况决定要不要新开一个颜色列表
         if (lightTheme) {
             return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2 + 1]["rgb"])
         } else {
@@ -161,19 +165,19 @@ UpdateWindowBorder() {
             if (lastActiveWindow != 0) {
                 if (ClearWindowBorder(lastActiveWindow)) {
                     LogInfo("成功清除 [" WinGetTitle(lastActiveWindow) "] [" WinGetClass(lastActiveWindow) "] [" lastActiveWindow "] 的边框颜色", ,
-                    DEBUGMODE)
+                    AutoWindowColorBorderDebug.mode)
                 }
             }
         }
         if (currentActiveWindow != 0) {  ; 尽可能保证激活的窗口一定可以被设置边框颜色，这相当于每 pollingTime 就尝试设置一次
             borderColor := GetCurrentBorderColor(currentActiveWindow)
-            if (SetWindowBorder(currentActiveWindow, borderColor)) {
+            if (SetWindowBorder(currentActiveWindow, borderColor)) {  ; 此功能不区分是否是常规意义上的窗口，一些弹框窗口也会被设置边框颜色，只要其可以被设置成功
                 lastActiveWindow := currentActiveWindow  ; 只有设置成功后才更新 lastActiveWindow，这保证了颜色可以被正确清除
             }
         }
     }
     catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoWindowColorBorderDebug.mode)
     }
 }
 
@@ -189,7 +193,7 @@ CleanupBorder() {
         lastActiveWindow := 0
     }
     catch Error as e {
-        LogError(e, , DEBUGMODE)
+        LogError(e, , AutoWindowColorBorderDebug.mode)
     }
 }
 

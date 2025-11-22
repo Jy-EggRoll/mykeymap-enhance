@@ -9,3 +9,4 @@
 #Include ../data/ChangeBrightness.ahk
 #Include ../data/AutoWindowColorBorder.ahk
 #Include ../data/SmoothScrollSimulate.ahk
+#Include ../data/BlockSend.ahk
