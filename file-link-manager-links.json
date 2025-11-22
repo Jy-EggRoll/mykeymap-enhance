@@ -1,10 +1,23 @@
 {
-    "symlinks": {},
+    "symlinks": {
+        "windows": [
+            {
+                "real_relative": "data/mykeymap-enhance-ahk",
+                "fake_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\mykeymap-enhance-ahk",
+                "device": "common"
+            }
+        ]
+    },
     "hardlinks": {
         "windows": [
             {
                 "primary_relative": "README.md",
                 "secondary_absolute": "D:\\GitRepo\\my-blog\\main\\content\\post\\项目介绍——mykeymap-enhance\\index.md",
+                "device": "common"
+            },
+            {
+                "primary_relative": "data/custom_functions.ahk",
+                "secondary_absolute": "D:\\GitRepo\\my-config\\Soft\\MyKeymap-2.0-beta33\\data\\custom_functions.ahk",
                 "device": "common"
             }
         ]

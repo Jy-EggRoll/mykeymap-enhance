@@ -3,10 +3,10 @@
 ; 使用如下写法，来加载当前目录下的其他 AutoHotKey v2 脚本
 ; #Include ../data/test.ahk
 
-#Include ../data/AutoActivateWindow.ahk
-#Include ../data/DragAndResizeWindow.ahk
-#Include ../data/PerResizeWindow.ahk
-#Include ../data/ChangeBrightness.ahk
-#Include ../data/AutoWindowColorBorder.ahk
-#Include ../data/SmoothScrollSimulate.ahk
-#Include ../data/BlockSend.ahk
+#Include ../data/mykeymap-enhance-ahk/AutoActivateWindow.ahk
+#Include ../data/mykeymap-enhance-ahk/DragAndResizeWindow.ahk
+#Include ../data/mykeymap-enhance-ahk/PerResizeWindow.ahk
+#Include ../data/mykeymap-enhance-ahk/ChangeBrightness.ahk
+#Include ../data/mykeymap-enhance-ahk/AutoWindowColorBorder.ahk
+#Include ../data/mykeymap-enhance-ahk/SmoothScrollSimulate.ahk
+#Include ../data/mykeymap-enhance-ahk/BlockSend.ahk
