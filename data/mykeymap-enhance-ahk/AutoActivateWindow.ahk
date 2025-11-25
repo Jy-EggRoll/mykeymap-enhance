@@ -116,7 +116,8 @@ MaintainWindowStates() {
                 ; 如果是新窗口，添加到状态记录
                 if (!windowStates.Has(hwnd)) {
                     windowStates[hwnd] := WindowState(hwnd)
-                    LogInfo("发现新窗口，添加到跟踪列表：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
+                    LogInfo("发现新窗口，添加到跟踪列表：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", ,
+                    AutoActivateWindowDebug.mode)
                 }
             }
         }
@@ -132,6 +133,17 @@ MaintainWindowStates() {
         for i, hwnd in toRemove {
             windowStates.Delete(hwnd)
             LogInfo("从列表中移除了 " hwnd " 窗口，因为它已不存在", , AutoActivateWindowDebug.mode)
+        }
+
+        ; 移除不再处于前台的未访问窗口
+        for hwnd, state in windowStates {
+            if (!state.mouseVisited && WinExist(hwnd)) {
+                if (WinExist("A") != hwnd) {
+                    state.mouseVisited := true
+                    LogInfo("窗口已不在前台，标记为已访问：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", ,
+                    AutoActivateWindowDebug.mode)
+                }
+            }
         }
 
     } catch Error as e {
@@ -223,7 +235,8 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("【从任务列表手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), , AutoActivateWindowDebug.mode)
+                            LogInfo("【从任务列表手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), , AutoActivateWindowDebug.mode
+                            )
                         }
                     }
                 }
