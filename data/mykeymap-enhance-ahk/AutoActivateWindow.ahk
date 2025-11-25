@@ -200,10 +200,10 @@ IsValidWindow(hwnd) {
 
 /**
  * 实际执行激活操作的函数
- * @param timeoutMouse 激活的鼠标等待时间，默认为 50 ms
+ * @param timeoutInput 激活的输入等待时间，默认为 50 ms
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 10 像素
  */
-ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
+ActivateWindowUnderMouse(timeoutInput := 50, mouseMovementAmplitude := 10) {
     global mousePos, windowStates, pendingActivation, lastActiveWindowClass
 
     MouseGetPos(&mouseX, &mouseY, &targetID)
@@ -266,8 +266,8 @@ ActivateWindowUnderMouse(timeoutMouse := 50, mouseMovementAmplitude := 10) {
         }
 
         if ((Abs(mouseX - mousePos[1]) > mouseMovementAmplitude || Abs(mouseY - mousePos[2]) > mouseMovementAmplitude) &&
-        A_TimeIdleMouse >= timeoutMouse) {  ; 宽高 2 * mouseMovementAmplitude px 区域的点击容错
-            ; 鼠标位置在 pollingTime ms 内发生了明显移动，且有 timeoutMouse ms 的时间没有移动了，则启用“待激活”模式
+        A_TimeIdle >= timeoutInput) {
+            ; 鼠标位置在 pollingTime ms 内发生了明显移动，且有 timeoutInput ms 的时间没有移动了，则启用“待激活”模式
             pendingActivation := true
             mousePos := [mouseX, mouseY]  ; 立即更新位置
         }
