@@ -1,8 +1,8 @@
 ---
-title: 项目介绍——my-keymap
+title: 项目介绍——mykeymap-enhance
 description: 我的 MyKeymap 自定义功能仓库，不依赖于 MyKeymap 就可以运行，可以视为我的自定义 AutoHotkey 库 | My MyKeymap custom function repository runs without relying on MyKeymap and can be considered my custom AutoHotkey library
 date: 2025-08-14
-lastmod: 2025-10-21
+lastmod: 2025-12-05
 image: 
 categories:
     - 项目
