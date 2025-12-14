@@ -299,7 +299,9 @@ JudgeActivate(targetID) {
 
     excludeCondition := WinGetClass("A") == "AutoHotkeyGUI" && WinGetProcessName("A") == "MyKeymap.exe"
 
-    if (excludeCondition) {
+    win10RightMenu := WinExist("ahk_class #32768")
+
+    if (excludeCondition || win10RightMenu) {
         return false
     }
 
