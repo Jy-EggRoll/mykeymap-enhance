@@ -2,6 +2,8 @@
 
 #Include Logger.ahk
 
+#WinActivateForce  ; 防止在窗口快速被激活时导致闪烁，这是 ahk 的已知问题
+
 class AutoActivateWindowDebug {
     static mode := false
 }
