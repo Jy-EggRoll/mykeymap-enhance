@@ -4,6 +4,7 @@
 
 #Include Logger.ahk
 #Include QueryTheme.ahk
+#Include AutoActivateWindow.ahk
 
 class AutoWindowColorBorderDebug {
     static mode := false
@@ -131,7 +132,7 @@ ClearWindowBorder(hwnd) {
  * @return {Integer} 当前边框颜色值
  */
 GetCurrentBorderColor(hwnd) {
-    global lightTheme
+    global lightTheme, windowStates
     if (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited == true) {
         if (lightTheme) {
             return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])
