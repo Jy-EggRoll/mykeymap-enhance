@@ -294,6 +294,10 @@ JudgeActivate(targetID) {
         return false
     }
 
+    if (WinExist("A") == targetID) {  ; 如果目标窗口已经是激活窗口，则不需要激活
+        return false
+    }
+
     activeClass := WinGetClass("A")
     activeStyle := WinGetStyle("A")
 
