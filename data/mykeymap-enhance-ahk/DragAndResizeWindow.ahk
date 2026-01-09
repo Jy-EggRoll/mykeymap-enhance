@@ -11,6 +11,123 @@ SetWinDelay 10
 
 CoordMode "Mouse"
 
+/**
+ * 收集吸附边界
+ * @param excludeHwnd 要排除的窗口句柄（当前正在操作的窗口）
+ * @param snapThreshold 吸附阈值，0 表示禁用
+ * @returns {vLines: [], hLines: [], threshold: 0, dpiThreshold: 0} 垂直线和水平线数组
+ */
+CollectSnapBoundaries(excludeHwnd, snapThreshold := 0) {
+    vLines := []  ; 垂直线（X 坐标）
+    hLines := []  ; 水平线（Y 坐标）
+
+    ; 如果阈值为 0，返回空数组
+    if (snapThreshold <= 0) {
+        return { vLines: vLines, hLines: hLines, threshold: 0, dpiThreshold: 0 }
+    }
+
+    ; 计算 DPI 感知后的阈值
+    dpi := DllCall("GetDpiForSystem", "UInt")
+    scaleFactor := dpi / 96.0
+    dpiThreshold := Round(snapThreshold * scaleFactor)
+
+    try {
+        ; 收集所有显示器工作区边界
+        monitorCount := SysGet(80)
+        loop monitorCount {
+            MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+            vLines.Push(l)  ; 左边界
+            vLines.Push(r)  ; 右边界
+            hLines.Push(t)  ; 上边界
+            hLines.Push(b)  ; 下边界
+        }
+
+        ; 收集其他前台窗口的边界（去除阴影）
+        windowList := WinGetList()
+        loop windowList.Length {
+            hwnd := windowList[A_Index]
+
+            ; 跳过当前操作的窗口
+            if (hwnd == excludeHwnd) {
+                continue
+            }
+
+            ; 只处理可见的、非最小化的、可调整大小的窗口
+            if (!WinExist(hwnd)) {
+                continue
+            }
+
+            ; 检查是否最小化
+            if (WinGetMinMax(hwnd) == -1) {
+                continue
+            }
+
+            ; 检查窗口样式：可调整大小的窗口
+            style := WinGetStyle(hwnd)
+            if (!(style & 0x40000)) {
+                continue
+            }
+
+            ; 获取窗口位置
+            WinGetPos(&winX, &winY, &winW, &winH, hwnd)
+
+            ; 获取阴影厚度
+            shadowThickness := GetShadowThickness(hwnd)
+
+            ; 计算去除阴影后的边界
+            ; 根据 PerResizeWindow.ahk 中的实现：
+            ; - 左边：winX + shadowThickness
+            ; - 上边：winY（上边不需要移除阴影）
+            ; - 右边：winX + winW - shadowThickness
+            ; - 下边：winY + winH - shadowThickness
+            left := winX + shadowThickness
+            top := winY
+            right := winX + winW - shadowThickness
+            bottom := winY + winH - shadowThickness
+
+            vLines.Push(left)
+            vLines.Push(right)
+            hLines.Push(top)
+            hLines.Push(bottom)
+        }
+    } catch Error as e {
+        LogError(e, , DragAndResizeWindowDebug.mode)
+    }
+
+    return { vLines: vLines, hLines: hLines, threshold: snapThreshold, dpiThreshold: dpiThreshold }
+}
+
+/**
+ * 查找最近的吸附线
+ * @param coord 当前坐标
+ * @param lines 边界线数组
+ * @param threshold DPI 感知后的阈值
+ * @returns 最近的吸附坐标，如果没有则返回原坐标
+ */
+FindNearestSnapLine(coord, lines, threshold) {
+    if (lines.Length == 0 || threshold <= 0) {
+        return coord
+    }
+
+    minDist := threshold + 1
+    snapTo := coord
+
+    for line in lines {
+        dist := Abs(coord - line)
+        if (dist < minDist) {
+            minDist := dist
+            snapTo := line
+        }
+    }
+
+    ; 只有在阈值内才吸附
+    if (minDist <= threshold) {
+        return snapTo
+    }
+
+    return coord
+}
+
 ; 光标管理类：保存和恢复光标状态（兼容其他光标管理软件，如 InputTip）
 class CursorManager {
     static savedCursors := Map()
@@ -118,7 +235,8 @@ SetSystemCursor(Cursor := "") {
 }
 
 ; 窗口拖动函数：按住指定按键时拖动窗口
-DragWindow() {
+; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 10
+DragWindow(snapThreshold := 10) {
     ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
     MouseGetPos &X1, &Y1, &ID
 
@@ -131,11 +249,17 @@ DragWindow() {
         PerCenterAndResizeWindow(1, 1)
     }
 
-    ; 获取窗口初始位置
-    WinGetPos &WinX1, &WinY1, , , ID
+    ; 获取窗口初始位置和大小
+    WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
+
+    ; 获取当前窗口的阴影厚度
+    shadowThickness := GetShadowThickness(ID)
 
     ; 设置四向移动光标
     SetSystemCursor("SIZEALL")
+
+    ; 收集吸附边界（在循环前只收集一次）
+    snapData := CollectSnapBoundaries(ID, snapThreshold)
 
     try {
         ; 循环执行拖动逻辑，直到按键释放
@@ -152,8 +276,37 @@ DragWindow() {
             Y2 -= Y1
 
             ; 根据初始窗口位置和鼠标偏移量，计算窗口新位置
-            WinX2 := (WinX1 + X2)
-            WinY2 := (WinY1 + Y2)
+            WinX2 := WinX1 + X2
+            WinY2 := WinY1 + Y2
+
+            ; 如果启用了吸附，计算去除阴影后的边界并检查吸附
+            if (snapData.threshold > 0) {
+                ; 计算去除阴影后的窗口边界
+                left := WinX2 + shadowThickness
+                top := WinY2
+                right := WinX2 + WinW - shadowThickness
+                bottom := WinY2 + WinH - shadowThickness
+
+                ; 寻找最近的吸附线（优先左边和上边，如果没有则尝试右边和下边）
+                snappedLeft := FindNearestSnapLine(left, snapData.vLines, snapData.dpiThreshold)
+                snappedRight := FindNearestSnapLine(right, snapData.vLines, snapData.dpiThreshold)
+                snappedTop := FindNearestSnapLine(top, snapData.hLines, snapData.dpiThreshold)
+                snappedBottom := FindNearestSnapLine(bottom, snapData.hLines, snapData.dpiThreshold)
+
+                ; 水平方向：优先左边，如果左边没吸附则尝试右边
+                if (snappedLeft != left) {
+                    WinX2 := snappedLeft - shadowThickness
+                } else if (snappedRight != right) {
+                    WinX2 := snappedRight + shadowThickness - WinW
+                }
+
+                ; 垂直方向：优先上边，如果上边没吸附则尝试下边
+                if (snappedTop != top) {
+                    WinY2 := snappedTop
+                } else if (snappedBottom != bottom) {
+                    WinY2 := snappedBottom + shadowThickness - WinH
+                }
+            }
 
             ; 移动窗口到新位置（只改变位置，不改变大小）
             WinMove WinX2, WinY2, , , ID
@@ -165,7 +318,9 @@ DragWindow() {
     }
 }
 
-ResizeWindow() {
+; 窗口调整大小函数：按住指定按键时调整窗口大小
+; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 10
+ResizeWindow(snapThreshold := 10) {
     MouseGetPos &X1, &Y1, &ID
 
     ; 如果窗口是最大化状态
@@ -203,6 +358,9 @@ ResizeWindow() {
     }
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
+
+    ; 获取当前窗口的阴影厚度
+    shadowThickness := GetShadowThickness(ID)
 
     ; 计算窗口的 1 / 3 宽度和高度，用于划分 9 个区域
     thirdW := WinW / 3
@@ -244,6 +402,9 @@ ResizeWindow() {
 
     ; 设置光标
     SetSystemCursor(cursorType)
+
+    ; 收集吸附边界（在循环前只收集一次）
+    snapData := CollectSnapBoundaries(ID, snapThreshold)
 
     try {
         ; 循环执行调整大小逻辑，直到按键释放
@@ -307,6 +468,79 @@ ResizeWindow() {
                 newY := WinY1 + (WinUp + 1) / 2 * deltaY
                 newW := WinW - WinLeft * deltaX
                 newH := WinH - WinUp * deltaY
+            }
+
+            ; 如果启用了吸附，计算去除阴影后的边界并检查吸附
+            if (snapData.threshold > 0) {
+                ; 计算去除阴影后的窗口边界
+                left := newX + shadowThickness
+                top := newY
+                right := newX + newW - shadowThickness
+                bottom := newY + newH - shadowThickness
+
+                ; 根据正在调整的边来决定吸附哪些边
+                if (horizontalRegion = 1) {
+                    ; 调整左边
+                    snappedLeft := FindNearestSnapLine(left, snapData.vLines, snapData.dpiThreshold)
+                    if (snappedLeft != left) {
+                        newX := snappedLeft - shadowThickness
+                        newW := newW + (left - snappedLeft)
+                    }
+                } else if (horizontalRegion = 3) {
+                    ; 调整右边
+                    snappedRight := FindNearestSnapLine(right, snapData.vLines, snapData.dpiThreshold)
+                    if (snappedRight != right) {
+                        newW := snappedRight - newX + shadowThickness
+                    }
+                }
+
+                if (verticalRegion = 1) {
+                    ; 调整上边
+                    snappedTop := FindNearestSnapLine(top, snapData.hLines, snapData.dpiThreshold)
+                    if (snappedTop != top) {
+                        newY := snappedTop
+                        newH := newH + (top - snappedTop)
+                    }
+                } else if (verticalRegion = 3) {
+                    ; 调整下边
+                    snappedBottom := FindNearestSnapLine(bottom, snapData.hLines, snapData.dpiThreshold)
+                    if (snappedBottom != bottom) {
+                        newH := snappedBottom - newY + shadowThickness
+                    }
+                }
+
+                ; 中间区域也需要吸附
+                if (horizontalRegion = 2 && verticalRegion = 2) {
+                    if (WinLeft == 1) {
+                        ; 调整左边
+                        snappedLeft := FindNearestSnapLine(left, snapData.vLines, snapData.dpiThreshold)
+                        if (snappedLeft != left) {
+                            newX := snappedLeft - shadowThickness
+                            newW := newW + (left - snappedLeft)
+                        }
+                    } else {
+                        ; 调整右边
+                        snappedRight := FindNearestSnapLine(right, snapData.vLines, snapData.dpiThreshold)
+                        if (snappedRight != right) {
+                            newW := snappedRight - newX + shadowThickness
+                        }
+                    }
+
+                    if (WinUp == 1) {
+                        ; 调整上边
+                        snappedTop := FindNearestSnapLine(top, snapData.hLines, snapData.dpiThreshold)
+                        if (snappedTop != top) {
+                            newY := snappedTop
+                            newH := newH + (top - snappedTop)
+                        }
+                    } else {
+                        ; 调整下边
+                        snappedBottom := FindNearestSnapLine(bottom, snapData.hLines, snapData.dpiThreshold)
+                        if (snappedBottom != bottom) {
+                            newH := snappedBottom - newY + shadowThickness
+                        }
+                    }
+                }
             }
 
             ; 应用调整后的窗口位置和大小
