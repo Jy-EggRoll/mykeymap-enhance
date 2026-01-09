@@ -235,8 +235,8 @@ SetSystemCursor(Cursor := "") {
 }
 
 ; 窗口拖动函数：按住指定按键时拖动窗口
-; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 10
-DragWindow(snapThreshold := 10) {
+; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
+DragWindow(snapThreshold := 0) {
     ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
     MouseGetPos &X1, &Y1, &ID
 
@@ -321,8 +321,8 @@ DragWindow(snapThreshold := 10) {
 }
 
 ; 窗口调整大小函数：按住指定按键时调整窗口大小
-; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 10
-ResizeWindow(snapThreshold := 10) {
+; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
+ResizeWindow(snapThreshold := 0) {
     MouseGetPos &X1, &Y1, &ID
 
     ; 如果窗口是最大化状态
