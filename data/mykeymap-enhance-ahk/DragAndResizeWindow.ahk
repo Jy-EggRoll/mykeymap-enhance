@@ -255,7 +255,7 @@ DragWindow(snapThreshold := 0) {
     ; 获取窗口初始位置和大小
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
-    if (snapThreshold <= 0) {  ; 当用户禁用吸附时，不应该有任何性能开销
+    if (snapThreshold > 0) {  ; 只有当用户启用吸附时才收集，避免不必要的性能开销
         ; 获取当前窗口的阴影厚度
         shadowThickness := GetShadowThickness(ID)
 
@@ -361,7 +361,7 @@ ResizeWindow(snapThreshold := 0) {
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
-    if (snapThreshold <= 0) {  ; 当用户禁用吸附时，不应该有任何性能开销
+    if (snapThreshold > 0) {  ; 只有当用户启用吸附时才收集，避免不必要的性能开销
         ; 获取当前窗口的阴影厚度
         shadowThickness := GetShadowThickness(ID)
 
