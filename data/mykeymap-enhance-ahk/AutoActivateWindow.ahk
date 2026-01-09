@@ -267,6 +267,11 @@ ActivateWindowUnderMouse(timeoutInput := 50, mouseMovementAmplitude := 10) {
             return
         }
 
+        if (GetKeyState("LButton", "P") || GetKeyState("RButton", "P") || GetKeyState("MButton", "P") || GetKeyState("XButton1", "P") || GetKeyState("XButton2", "P")) {  ; 如果鼠标任何键被按下，则完全禁用自动激活，这可以确保当用户在复制文字时，鼠标可以自由地移开窗口，同时也考虑到了其他特殊长按情况
+            pendingActivation := false
+            return
+        }
+
         if ((Abs(mouseX - mousePos[1]) > mouseMovementAmplitude || Abs(mouseY - mousePos[2]) > mouseMovementAmplitude) &&
         A_TimeIdle >= timeoutInput) {
             ; 鼠标位置在 pollingTime ms 内发生了明显移动，且有 timeoutInput ms 的时间没有移动了，则启用“待激活”模式
