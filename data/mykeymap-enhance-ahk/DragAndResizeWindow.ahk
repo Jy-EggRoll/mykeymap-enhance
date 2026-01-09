@@ -11,48 +11,73 @@ SetWinDelay 10
 
 CoordMode "Mouse"
 
-; 光标管理类：保存和恢复光标状态
+; 光标管理类：保存和恢复光标状态（兼容其他光标管理软件，如 InputTip）
 class CursorManager {
     static savedCursors := Map()
     static isSaved := false
 
-    ; 保存当前所有系统光标的句柄
-    static SaveCurrentCursors() {
-        static SystemCursors := Map(
-            "ARROW", 32512,
-            "IBEAM", 32513,
-            "WAIT", 32514,
-            "CROSS", 32515,
-            "UPARROW", 32516,
-            "SIZENWSE", 32642,
-            "SIZENESW", 32643,
-            "SIZEWE", 32644,
-            "SIZENS", 32645,
-            "SIZEALL", 32646,
-            "NO", 32648,
-            "HAND", 32649,
-            "APPSTARTING", 32550,
-            "HELP", 32651
-        )
+    ; 系统光标 ID 常量
+    static SystemCursorIDs := Map(
+        "ARROW", 32512,
+        "IBEAM", 32513,
+        "WAIT", 32514,
+        "CROSS", 32515,
+        "UPARROW", 32516,
+        "SIZENWSE", 32642,
+        "SIZENESW", 32643,
+        "SIZEWE", 32644,
+        "SIZENS", 32645,
+        "SIZEALL", 32646,
+        "NO", 32648,
+        "HAND", 32649,
+        "APPSTARTING", 32550,
+        "HELP", 32651
+    )
 
+    ; 保存当前每个类型的光标句柄
+    static SaveCurrentCursors() {
         if !CursorManager.isSaved {
-            for name, id in SystemCursors {
-                hCursor := DllCall("GetCursor", "Ptr")
-                CursorManager.savedCursors[name] := DllCall("CopyIcon", "Ptr", hCursor, "Ptr")
+            ; 遍历每种光标类型，保存当前实际使用的光标句柄
+            for name, id in CursorManager.SystemCursorIDs {
+                ; 使用 LoadImage 获取当前系统中该类型光标的句柄
+                ; 这样可以获取到 InputTip 等软件设置的光标
+                hCursor := DllCall("LoadImage"
+                    , "Ptr", 0                    ; hInst = NULL (系统光标)
+                    , "Ptr", id                   ; 光标资源 ID
+                    , "UInt", 2                   ; IMAGE_CURSOR
+                    , "Int", 0                    ; 宽度(0=默认)
+                    , "Int", 0                    ; 高度(0=默认)
+                    , "UInt", 0x8000              ; LR_SHARED
+                    , "Ptr")
+
+                if (hCursor != 0) {
+                    ; 复制光标句柄以保存
+                    CursorManager.savedCursors[name] := DllCall("CopyIcon", "Ptr", hCursor, "Ptr")
+                }
             }
             CursorManager.isSaved := true
         }
     }
 
-    ; 恢复到保存的光标状态
+    ; 恢复到保存的光标状态（不调用系统恢复，保持兼容性）
     static RestoreCursors() {
-        ; 先调用系统恢复，然后恢复到之前保存的状态
-        DllCall("SystemParametersInfo", "UInt", 0x57, "UInt", 0, "Ptr", 0, "UInt", 0)
-        CursorManager.isSaved := false
+        if CursorManager.isSaved && CursorManager.savedCursors.Count > 0 {
+            ; 使用保存的光标句柄恢复，而不是调用系统恢复 API
+            for name, id in CursorManager.SystemCursorIDs {
+                if CursorManager.savedCursors.Has(name) {
+                    hSaved := CursorManager.savedCursors[name]
+                    if (hSaved != 0) {
+                        ; 复制句柄并设置
+                        DllCall("SetSystemCursor", "Ptr", DllCall("CopyIcon", "Ptr", hSaved, "Ptr"), "UInt", id)
+                    }
+                }
+            }
+            CursorManager.isSaved := false
+        }
     }
 }
 
-; 设置系统光标
+; 设置系统光标（兼容其他光标管理软件，如 InputTip）
 SetSystemCursor(Cursor := "") {
     static SystemCursors := Map(
         "ARROW", 32512,
@@ -72,22 +97,22 @@ SetSystemCursor(Cursor := "") {
     )
 
     if (Cursor = "") {
-        ; 恢复到设置之前的状态
+        ; 恢复到设置之前的状态（使用保存的句柄，不调用系统恢复）
         CursorManager.RestoreCursors()
         return
     }
 
     if SystemCursors.Has(Cursor) {
-        ; 首次设置光标时，保存当前状态
+        ; 首次设置光标时，保存当前状态（包括其他软件设置的光标，如 InputTip）
         CursorManager.SaveCurrentCursors()
 
-        ; 先恢复系统默认，避免连续设置时的冲突
-        DllCall("SystemParametersInfo", "UInt", 0x57, "UInt", 0, "Ptr", 0, "UInt", 0)
-
-        ; 设置新光标
+        ; 直接设置新光标，不调用系统恢复
         hCursor := DllCall("LoadCursor", "Ptr", 0, "Ptr", SystemCursors[Cursor], "Ptr")
-        for id in SystemCursors {
-            DllCall("SetSystemCursor", "Ptr", DllCall("CopyIcon", "Ptr", hCursor, "Ptr"), "UInt", SystemCursors[id])
+        if (hCursor != 0) {
+            ; 为所有光标类型设置相同的光标
+            for id in SystemCursors {
+                DllCall("SetSystemCursor", "Ptr", DllCall("CopyIcon", "Ptr", hCursor, "Ptr"), "UInt", SystemCursors[id])
+            }
         }
     }
 }
