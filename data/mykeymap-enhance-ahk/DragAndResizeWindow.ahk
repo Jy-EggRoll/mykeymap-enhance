@@ -249,17 +249,19 @@ DragWindow(snapThreshold := 10) {
         PerCenterAndResizeWindow(1, 1)
     }
 
-    ; 获取窗口初始位置和大小
-    WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
-
-    ; 获取当前窗口的阴影厚度
-    shadowThickness := GetShadowThickness(ID)
-
     ; 设置四向移动光标
     SetSystemCursor("SIZEALL")
 
-    ; 收集吸附边界（在循环前只收集一次）
-    snapData := CollectSnapBoundaries(ID, snapThreshold)
+    ; 获取窗口初始位置和大小
+    WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
+
+    if (snapThreshold <= 0) {  ; 当用户禁用吸附时，不应该有任何性能开销
+        ; 获取当前窗口的阴影厚度
+        shadowThickness := GetShadowThickness(ID)
+
+        ; 收集吸附边界（在循环前只收集一次）
+        snapData := CollectSnapBoundaries(ID, snapThreshold)
+    }
 
     try {
         ; 循环执行拖动逻辑，直到按键释放
@@ -279,7 +281,7 @@ DragWindow(snapThreshold := 10) {
             WinX2 := WinX1 + X2
             WinY2 := WinY1 + Y2
 
-            ; 如果启用了吸附，计算去除阴影后的边界并检查吸附
+            ; 如果启用了吸附，计算去除阴影后的边界并检查吸附，禁用时不进行任何计算
             if (snapData.threshold > 0) {
                 ; 计算去除阴影后的窗口边界
                 left := WinX2 + shadowThickness
@@ -359,8 +361,13 @@ ResizeWindow(snapThreshold := 10) {
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
-    ; 获取当前窗口的阴影厚度
-    shadowThickness := GetShadowThickness(ID)
+    if (snapThreshold <= 0) {  ; 当用户禁用吸附时，不应该有任何性能开销
+        ; 获取当前窗口的阴影厚度
+        shadowThickness := GetShadowThickness(ID)
+
+        ; 收集吸附边界（在循环前只收集一次）
+        snapData := CollectSnapBoundaries(ID, snapThreshold)
+    }
 
     ; 计算窗口的 1 / 3 宽度和高度，用于划分 9 个区域
     thirdW := WinW / 3
@@ -402,9 +409,6 @@ ResizeWindow(snapThreshold := 10) {
 
     ; 设置光标
     SetSystemCursor(cursorType)
-
-    ; 收集吸附边界（在循环前只收集一次）
-    snapData := CollectSnapBoundaries(ID, snapThreshold)
 
     try {
         ; 循环执行调整大小逻辑，直到按键释放
