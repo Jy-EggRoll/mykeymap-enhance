@@ -282,7 +282,7 @@ DragWindow(snapThreshold := 0) {
             WinY2 := WinY1 + Y2
 
             ; 如果启用了吸附，计算去除阴影后的边界并检查吸附，禁用时不进行任何计算
-            if (snapData.threshold > 0) {
+            if (snapThreshold > 0) {
                 ; 计算去除阴影后的窗口边界
                 left := WinX2 + shadowThickness
                 top := WinY2
@@ -475,7 +475,7 @@ ResizeWindow(snapThreshold := 0) {
             }
 
             ; 如果启用了吸附，计算去除阴影后的边界并检查吸附
-            if (snapData.threshold > 0) {
+            if (snapThreshold > 0) {
                 ; 计算去除阴影后的窗口边界
                 left := newX + shadowThickness
                 top := newY
