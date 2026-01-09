@@ -11,6 +11,87 @@ SetWinDelay 10
 
 CoordMode "Mouse"
 
+; 光标管理类：保存和恢复光标状态
+class CursorManager {
+    static savedCursors := Map()
+    static isSaved := false
+
+    ; 保存当前所有系统光标的句柄
+    static SaveCurrentCursors() {
+        static SystemCursors := Map(
+            "ARROW", 32512,
+            "IBEAM", 32513,
+            "WAIT", 32514,
+            "CROSS", 32515,
+            "UPARROW", 32516,
+            "SIZENWSE", 32642,
+            "SIZENESW", 32643,
+            "SIZEWE", 32644,
+            "SIZENS", 32645,
+            "SIZEALL", 32646,
+            "NO", 32648,
+            "HAND", 32649,
+            "APPSTARTING", 32550,
+            "HELP", 32651
+        )
+
+        if !CursorManager.isSaved {
+            for name, id in SystemCursors {
+                hCursor := DllCall("GetCursor", "Ptr")
+                CursorManager.savedCursors[name] := DllCall("CopyIcon", "Ptr", hCursor, "Ptr")
+            }
+            CursorManager.isSaved := true
+        }
+    }
+
+    ; 恢复到保存的光标状态
+    static RestoreCursors() {
+        ; 先调用系统恢复，然后恢复到之前保存的状态
+        DllCall("SystemParametersInfo", "UInt", 0x57, "UInt", 0, "Ptr", 0, "UInt", 0)
+        CursorManager.isSaved := false
+    }
+}
+
+; 设置系统光标
+SetSystemCursor(Cursor := "") {
+    static SystemCursors := Map(
+        "ARROW", 32512,
+        "IBEAM", 32513,
+        "WAIT", 32514,
+        "CROSS", 32515,
+        "UPARROW", 32516,
+        "SIZENWSE", 32642,
+        "SIZENESW", 32643,
+        "SIZEWE", 32644,
+        "SIZENS", 32645,
+        "SIZEALL", 32646,
+        "NO", 32648,
+        "HAND", 32649,
+        "APPSTARTING", 32550,
+        "HELP", 32651
+    )
+
+    if (Cursor = "") {
+        ; 恢复到设置之前的状态
+        CursorManager.RestoreCursors()
+        return
+    }
+
+    if SystemCursors.Has(Cursor) {
+        ; 首次设置光标时，保存当前状态
+        CursorManager.SaveCurrentCursors()
+
+        ; 先恢复系统默认，避免连续设置时的冲突
+        DllCall("SystemParametersInfo", "UInt", 0x57, "UInt", 0, "Ptr", 0, "UInt", 0)
+
+        ; 设置新光标
+        hCursor := DllCall("LoadCursor", "Ptr", 0, "Ptr", SystemCursors[Cursor], "Ptr")
+        for id in SystemCursors {
+            DllCall("SetSystemCursor", "Ptr", DllCall("CopyIcon", "Ptr", hCursor, "Ptr"), "UInt", SystemCursors[id])
+        }
+    }
+}
+
 ; 窗口拖动函数：按住指定按键时拖动窗口
 DragWindow() {
     ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
@@ -27,6 +108,9 @@ DragWindow() {
 
     ; 获取窗口初始位置
     WinGetPos &WinX1, &WinY1, , , ID
+
+    ; 设置四向移动光标
+    SetSystemCursor("SIZEALL")
 
     try {
         ; 循环执行拖动逻辑，直到按键释放
@@ -51,6 +135,8 @@ DragWindow() {
         }
     } catch Error as e {
         LogError(e, , DragAndResizeWindowDebug.mode)
+    } finally {
+        SetSystemCursor("")  ; 保证光标可以恢复
     }
 }
 
@@ -112,6 +198,27 @@ ResizeWindow() {
         verticalRegion := 2
     else
         verticalRegion := 3
+
+    ; 根据区域设置合适的光标
+    cursorType := ""
+    if (horizontalRegion = 1 && verticalRegion = 1) {
+        cursorType := "SIZENWSE"
+    } else if (horizontalRegion = 3 && verticalRegion = 1) {
+        cursorType := "SIZENESW"
+    } else if (horizontalRegion = 1 && verticalRegion = 3) {
+        cursorType := "SIZENESW"
+    } else if (horizontalRegion = 3 && verticalRegion = 3) {
+        cursorType := "SIZENWSE"
+    } else if (horizontalRegion = 1 || horizontalRegion = 3) {
+        cursorType := "SIZEWE"
+    } else if (verticalRegion = 1 || verticalRegion = 3) {
+        cursorType := "SIZENS"
+    } else if (horizontalRegion = 2 && verticalRegion = 2) {
+        cursorType := "SIZEALL"
+    }
+
+    ; 设置光标
+    SetSystemCursor(cursorType)
 
     try {
         ; 循环执行调整大小逻辑，直到按键释放
@@ -186,5 +293,7 @@ ResizeWindow() {
         }
     } catch Error as e {
         LogError(e, , DragAndResizeWindowDebug.mode)
+    } finally {
+        SetSystemCursor("")  ; 保证光标可以恢复
     }
 }
