@@ -3,7 +3,7 @@
 #Include Logger.ahk
 
 class DragAndResizeWindowDebug {
-    static mode := false
+    static mode := true
 }
 
 ; 设置窗口操作的延迟时间为 10 ms，拖动可以达到 100 帧
@@ -315,6 +315,8 @@ DragWindow(snapThreshold := 0) {
         }
     } catch Error as e {
         LogError(e, , DragAndResizeWindowDebug.mode)
+        LogInfo("发生错误，将立即跳出函数", , DragAndResizeWindowDebug.mode)
+        return
     } finally {
         SetSystemCursor("")  ; 保证光标可以恢复
     }
@@ -556,6 +558,8 @@ ResizeWindow(snapThreshold := 0) {
         }
     } catch Error as e {
         LogError(e, , DragAndResizeWindowDebug.mode)
+        LogInfo("发生错误，将立即跳出函数", , DragAndResizeWindowDebug.mode)
+        return
     } finally {
         SetSystemCursor("")  ; 保证光标可以恢复
     }
