@@ -14,12 +14,6 @@
         ]
     },
     "hardlinks": {
-        "windows": [
-            {
-                "primary_relative": "README.md",
-                "secondary_absolute": "D:\\GitRepo\\my-blog\\main\\content\\post\\项目介绍——mykeymap-enhance\\index.md",
-                "device": "common"
-            }
-        ]
+        "windows": null
     }
 }
