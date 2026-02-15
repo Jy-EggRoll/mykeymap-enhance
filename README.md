@@ -1,6 +1,6 @@
 ---
-title: 项目介绍——mykeymap-enhance
-description: 我的 MyKeymap 自定义功能仓库，不依赖于 MyKeymap 就可以运行，可以视为我的自定义 AutoHotkey 库 | My MyKeymap custom function repository runs without relying on MyKeymap and can be considered my custom AutoHotkey library
+title: 项目介绍-mykeymap-enhance
+description: 我的 MyKeymap 自定义功能仓库，不依赖于 MyKeymap 就可以运行，可以视为我的自定义 AutoHotkey 库
 date: 2025-08-14
 lastmod: 2025-12-05
 image: 
@@ -9,13 +9,12 @@ categories:
 tags:
     - MyKeymap
     - AutoHotkey
-    - GitHub
 weight: 
 ---
 
 ## 重要说明
 
-此文章暂时处于“不精确”的状态，因为最近有几项重大优化和改动正在开发中，预计会在 2025 年底完成，届时我会更新本文档以反映最新的状态。
+此文章暂时处于“不精确”的状态，因为最近有几项重大优化和改动尚未完全同步至仓库，请辛苦自行参阅 Release 页面的更新日志。
 
 ## 仓库地址
 
@@ -138,13 +137,9 @@ weight:
 
 ## 各函数最佳实践的配置方式
 
-暂未补全。
+[TODO]
 
 ## 额外说明
-
-### 平滑滚动 SmoothScrollSimulate
-
-由于作者本人深爱触摸板和触摸屏的滚动体验，遂开发了该功能以模拟现代化软件中的平滑滚动效果。由于帧率有限，录屏无法展示出真实的滚动效果，建议亲自体验。目前理论最高达 100 FPS，由于大多数软件自带了“平滑滚动”功能，实际体验会更好。
 
 ### 拖动与调节 DragWindow & ResizeWindow
 
@@ -241,12 +236,6 @@ Windows 11 自带类似功能，其效果实在不能令人满意。对于第三
 >
 > 已有的颜色边框，其颜色不会立即随着系统主题变更而刷新。颜色列表会在主题变更后第一次创建着色边框时刷新。换言之，如果想要在修改系统主题色后立即看到当前应用的边框色的更改，请令其失去焦点再获得焦点。
 
-该功能在特定软件上的已知问题：
-
-在 VSCode 较新的版本中，VSCode 自己会尝试用主题设置接管窗口边框着色的功能（假如主题指定了边框色），这可能导致冲突，从而出现颜色时不时失效，甚至显示其他颜色边框的问题。
-
-解决方法是将 VSCode 的 `window.border` 设为 `system` 而非 `default`，这样就可以始终遵循本功能的设置。
-
 ## 关于作者
 
 个人网站：<https://eggroll.pages.dev/>
@@ -254,10 +243,6 @@ Windows 11 自带类似功能，其效果实在不能令人满意。对于第三
 也欢迎浏览作者在 GitHub 上的其他项目。
 
 祝您使用愉快。
-
-## 关于 `file-link-manager-links.json`
-
-这个是我的另一个软件建立的，维护着该仓库到我 MyKeymap 真实目录的硬链接关系，实现了开发仓库和使用仓库的分离（这有助于让我更好地管理和维护该通用仓库）。如果您不使用该软件，可以忽略此文件。该软件由 Go 语言编写，尚在开发阶段，敬请期待。
 
 ## 统计
 
