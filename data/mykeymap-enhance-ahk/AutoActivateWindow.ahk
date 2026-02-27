@@ -187,6 +187,11 @@ IsValidWindow(hwnd) {
         ; 检查窗口样式
         style := WinGetStyle(hwnd)
 
+        title := WinGetTitle(hwnd)
+        if (title == "") {  ; 通常，无 title 窗口不应该触发激活
+            return false
+        }
+
         if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，这是目前判断常规窗口最有效的方式，其列表和 Windows 任务栏上显示出来的窗口高度一致
             ; LogInfo("识别到有效窗口：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
             return true
