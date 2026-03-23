@@ -10,3 +10,4 @@
 #Include ../data/mykeymap-enhance-ahk/AutoWindowColorBorder.ahk
 #Include ../data/mykeymap-enhance-ahk/SmoothScrollSimulate.ahk
 #Include ../data/mykeymap-enhance-ahk/BlockSend.ahk
+#Include ../data/mykeymap-enhance-ahk/ReadFileToInput.ahk
