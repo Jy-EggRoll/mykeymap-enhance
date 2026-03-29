@@ -1,0 +1,83 @@
+name: Package Development Release
+
+on:
+    push:
+        tags:
+            - "[0-9]+.[0-9]+.[0-9]+.dev.[0-9]+" # 匹配 x.y.z.dev.n 格式的开发版本标签
+    workflow_dispatch: # 支持手动运行
+
+permissions:
+    contents: write
+
+jobs:
+    package:
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Get version info
+              id: get_version
+              run: |
+                  if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+                      $version = "dev-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+                      echo "Manual run - using timestamp version: $version"
+                  } else {
+                      $version = $env:GITHUB_REF -replace 'refs/tags/', ''
+                      echo "Tag triggered - using tag version: $version"
+                  }
+                  echo "version=$version" >> $env:GITHUB_OUTPUT
+              shell: pwsh
+
+            - name: Package data directory
+              run: |
+                  if (Test-Path -Path "data") {
+                      Compress-Archive -Path data\* -DestinationPath data.zip
+                      Write-Host "Successfully created data.zip"
+                  }
+              shell: pwsh
+
+            - name: Create development release (for tag runs only)
+              if: github.event_name != 'workflow_dispatch'
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ steps.get_version.outputs.version }}
+                  name: "mykeymap-enhance v${{ steps.get_version.outputs.version }} (开发版)"
+                  body: |
+                      # 🚧 开发版本 - 仅供测试
+
+                      这是一个开发版本，仅供测试使用。请谨慎使用，可能包含不稳定或实验性功能。
+
+                      ## 注意事项
+
+                      ⚠️ 仅通过 GitHub Release 提供下载
+                      ⚠️ 可能包含未经充分测试的功能
+                      ⚠️ 数据文件可能随时变化
+
+                      ---
+
+                      ## 版本信息
+
+                      - 版本号: ${{ steps.get_version.outputs.version }}
+                      - 构建时间: ${{ github.run_id }}
+                      - 提交: ${{ github.sha }}
+
+                      ---
+
+                      📦 **安装方式**：下载 data.zip 后解压覆盖到 MyKeymap 安装目录。
+                  files: |
+                      data.zip
+                  draft: false
+                  prerelease: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: data-package-${{ steps.get_version.outputs.version }}
+                  path: data.zip
+                  retention-days: 30

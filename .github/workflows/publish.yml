@@ -1,0 +1,116 @@
+# 该工作流只能通过正式版本的标签自动触发
+
+name: Publish Release
+
+on:
+    push:
+        tags:
+            - "[0-9]+.[0-9]+.[0-9]+" # 匹配 x.y.z 格式的正式版本标签
+
+permissions:
+    contents: write
+
+jobs:
+    publish:
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Get tag version
+              id: get_version
+              run: |
+                  $VERSION = $env:GITHUB_REF -replace 'refs/tags/', ''
+                  echo "version=$VERSION" >> $env:GITHUB_OUTPUT
+                  echo "Publishing version: $VERSION"
+
+            - name: Package data directory
+              run: |
+                  if (Test-Path -Path "data") {
+                      Compress-Archive -Path data\* -DestinationPath data.zip
+                      Write-Host "Successfully created data.zip"
+                  }
+              shell: pwsh
+
+            - name: Find previous version tag
+              id: previous_tag
+              run: |
+                  $currentTag = "${{ steps.get_version.outputs.version }}"
+                  $tags = git tag --list --sort=-version:refname
+                  $previousTag = ""
+
+                  foreach ($tag in $tags) {
+                      if ($tag -match '^[0-9]+\.[0-9]+\.[0-9]+$' -and $tag -ne $currentTag) {
+                          $previousTag = $tag
+                          break
+                      }
+                  }
+
+                  if ($previousTag) {
+                      echo "Found previous tag: $previousTag"
+                      echo "previous_tag=$previousTag" >> $env:GITHUB_OUTPUT
+                  } else {
+                      echo "No previous tag found"
+                      echo "previous_tag=" >> $env:GITHUB_OUTPUT
+                  }
+              shell: pwsh
+
+            - name: Generate release notes
+              id: release_notes
+              run: |
+                  $currentTag = "${{ steps.get_version.outputs.version }}"
+                  $previousTag = "${{ steps.previous_tag.outputs.previous_tag }}"
+
+                  "@"
+                  "# 发布详情"
+                  ""
+                  "@" | Out-File -FilePath release_notes.md -Encoding utf8
+
+                  $releaseNoteFile = "ReleaseNote/v${currentTag}.txt"
+                  if (Test-Path $releaseNoteFile) {
+                      Write-Host "Found release note file: $releaseNoteFile"
+                      Get-Content $releaseNoteFile | Out-File -FilePath release_notes.md -Append -Encoding utf8
+                      "" | Out-File -FilePath release_notes.md -Append -Encoding utf8
+                  }
+
+                  "## 详细提交记录" | Out-File -FilePath release_notes.md -Append -Encoding utf8
+                  "" | Out-File -FilePath release_notes.md -Append -Encoding utf8
+
+                  if ([string]::IsNullOrEmpty($previousTag)) {
+                      Write-Host "Generate change log from initial commit to $currentTag"
+                      git log "$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M" | Out-File -FilePath release_notes.md -Append -Encoding utf8
+                  } else {
+                      Write-Host "Generate change log from $previousTag to $currentTag"
+                      git log "$previousTag..$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M" | Out-File -FilePath release_notes.md -Append -Encoding utf8
+                  }
+
+                  if ((Test-Path release_notes.md) -and ((Get-Content release_notes.md | Measure-Object -Line).Lines -le 3)) {
+                      "- 无明显变更" | Out-File -FilePath release_notes.md -Append -Encoding utf8
+                  }
+
+                  Write-Host "Generated release notes:"
+                  Get-Content release_notes.md
+              shell: pwsh
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ steps.get_version.outputs.version }}
+                  name: "mykeymap-enhance v${{ steps.get_version.outputs.version }}"
+                  body_path: release_notes.md
+                  files: |
+                      data.zip
+                  draft: false
+                  prerelease: false
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: data-package-${{ steps.get_version.outputs.version }}
+                  path: data.zip
+                  retention-days: 90
