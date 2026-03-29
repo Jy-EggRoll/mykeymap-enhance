@@ -1,5 +1,9 @@
 # mykeymap-enhance 更新日志
 
+## 1.8.7
+
+🐛 fix: 出错时正确提前 return
+
 ## 1.8.6
 
 - 🔨 chore: 杂项，测试工作流

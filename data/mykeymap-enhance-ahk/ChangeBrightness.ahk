@@ -92,8 +92,8 @@ IncBrightness(dealt) {
     val := m["brightness"]
     if (m["brightness"] == "") {
         ToolTip("本次亮度获取出现异常，可能是驱动超时，请稍候重试")
-        return
         SetTimer(ToolTip, -3000)
+        return
     } else {
         val := m["brightness"] + dealt
     }
