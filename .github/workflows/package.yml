@@ -22,17 +22,20 @@ jobs:
             - name: Get version info
               id: get_version
               run: |
-                  if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-                      $version = "dev-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-                      echo "Manual run - using timestamp version: $version"
-                  } else {
-                      $version = $env:GITHUB_REF -replace 'refs/tags/', ''
-                      echo "Tag triggered - using tag version: $version"
-                  }
-                  echo "version=$version" >> $env:GITHUB_OUTPUT
-              shell: pwsh
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    # 手动运行时，使用当前日期作为版本标识
+                    VERSION="dev-$(date +%Y%m%d-%H%M%S)"
+                    echo "Manual run - using timestamp version: $VERSION"
+                  else
+                    # Tag 触发时，从 tag 获取版本
+                    VERSION=${GITHUB_REF#refs/tags/}
+                    echo "Tag triggered - using tag version: $VERSION"
+                  fi
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+              shell: bash
 
-            - name: Package data directory
+            - name: Get build time
+              id: get_build_time
               run: |
                   if (Test-Path -Path "data") {
                       Compress-Archive -Path data\* -DestinationPath data.zip

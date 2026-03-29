@@ -38,62 +38,72 @@ jobs:
             - name: Find previous version tag
               id: previous_tag
               run: |
-                  $currentTag = "${{ steps.get_version.outputs.version }}"
-                  $tags = git tag --list --sort=-version:refname
-                  $previousTag = ""
+                  # 获取当前标签
+                  CURRENT_TAG="${{ steps.get_version.outputs.version }}"
 
-                  foreach ($tag in $tags) {
-                      if ($tag -match '^[0-9]+\.[0-9]+\.[0-9]+$' -and $tag -ne $currentTag) {
-                          $previousTag = $tag
-                          break
-                      }
-                  }
+                  # 获取所有正式版本标签，按版本号排序，找到当前标签之前的最新标签
+                  PREVIOUS_TAG=$(git tag -l --sort=-version:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$CURRENT_TAG$" | head -n1)
 
-                  if ($previousTag) {
-                      echo "Found previous tag: $previousTag"
-                      echo "previous_tag=$previousTag" >> $env:GITHUB_OUTPUT
-                  } else {
-                      echo "No previous tag found"
-                      echo "previous_tag=" >> $env:GITHUB_OUTPUT
-                  }
-              shell: pwsh
+                  if [ -n "$PREVIOUS_TAG" ]; then
+                    echo "Found previous tag: $PREVIOUS_TAG"
+                    echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+                  else
+                    echo "No previous tag found"
+                    echo "previous_tag=" >> $GITHUB_OUTPUT
+                  fi
+              shell: bash
 
             - name: Generate release notes
               id: release_notes
               run: |
-                  $currentTag = "${{ steps.get_version.outputs.version }}"
-                  $previousTag = "${{ steps.previous_tag.outputs.previous_tag }}"
+                  CURRENT_TAG="${{ steps.get_version.outputs.version }}"
+                  PREVIOUS_TAG="${{ steps.previous_tag.outputs.previous_tag }}"
 
-                  "@"
-                  "# 发布详情"
-                  ""
-                  "@" | Out-File -FilePath release_notes.md -Encoding utf8
 
-                  $releaseNoteFile = "ReleaseNote/v${currentTag}.txt"
-                  if (Test-Path $releaseNoteFile) {
-                      Write-Host "Found release note file: $releaseNoteFile"
-                      Get-Content $releaseNoteFile | Out-File -FilePath release_notes.md -Append -Encoding utf8
-                      "" | Out-File -FilePath release_notes.md -Append -Encoding utf8
-                  }
+                  # 检查是否有 CHANGELOG.md 文件并提取相关版本信息
+                  if [ -f "CHANGELOG.md" ]; then
+                    echo "## 更新内容" >> release_notes.md
+                    
+                    # 尝试从 CHANGELOG 中提取当前版本的更新内容
+                    awk -v version="$CURRENT_TAG" '
+                      /^##/ { 
+                        if (found) exit
+                        if ($0 ~ version) found=1
+                        next
+                      }
+                      found && /^##/ { exit }
+                      found { print }
+                    ' CHANGELOG.md >> release_notes.md
+                  fi
 
-                  "## 详细提交记录" | Out-File -FilePath release_notes.md -Append -Encoding utf8
-                  "" | Out-File -FilePath release_notes.md -Append -Encoding utf8
+                  echo "## 提交记录" >> release_notes.md
+                  echo "" >> release_notes.md
 
-                  if ([string]::IsNullOrEmpty($previousTag)) {
-                      Write-Host "Generate change log from initial commit to $currentTag"
-                      git log "$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M" | Out-File -FilePath release_notes.md -Append -Encoding utf8
-                  } else {
-                      Write-Host "Generate change log from $previousTag to $currentTag"
-                      git log "$previousTag..$currentTag" --pretty=format:"- %s (%h) - %cd" --date=format:"%Y-%m-%d %H:%M" | Out-File -FilePath release_notes.md -Append -Encoding utf8
-                  }
+                  # 生成提交记录（保留开发版本相关的提交）
+                  if [ -z "$PREVIOUS_TAG" ]; then
+                    echo "生成从初始提交到 $CURRENT_TAG 的提交记录"
+                    git log --pretty=format:"- %s (%h)" --no-merges >> release_notes.md
+                  else
+                    echo "生成从 $PREVIOUS_TAG 到 $CURRENT_TAG 的提交记录"
+                    git log "$PREVIOUS_TAG..$CURRENT_TAG" --pretty=format:"- %s (%h)" --no-merges >> release_notes.md
+                  fi
 
-                  if ((Test-Path release_notes.md) -and ((Get-Content release_notes.md | Measure-Object -Line).Lines -le 3)) {
-                      "- 无明显变更" | Out-File -FilePath release_notes.md -Append -Encoding utf8
-                  }
+                  # 如果没有提交记录，添加默认信息
+                  if [ ! -s release_notes.md ] || [ $(wc -l < release_notes.md) -le 5 ]; then
+                    echo "- 版本发布" >> release_notes.md
+                  fi
 
-                  Write-Host "Generated release notes:"
-                  Get-Content release_notes.md
-              shell: pwsh
+                  echo "" >> release_notes.md
+                  echo "" >> release_notes.md
+                  echo "---" >> release_notes.md
+                  echo "" >> release_notes.md
+                  echo "📦 **安装说明：**" >> release_notes.md
+                  echo "" >> release_notes.md
+                  echo "下载压缩包，解压到 mykeymap 目录的对应位置下" >> release_notes.md
+
+                  echo "生成的发布说明："
+                  cat release_notes.md
+              shell: bash
 
             - name: Create GitHub Release
               uses: softprops/action-gh-release@v2
