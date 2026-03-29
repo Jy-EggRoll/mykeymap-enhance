@@ -29,9 +29,9 @@ GetBrightness(monIndex) {
         brightness := monitorCol.GetBrightness(monIndex)["Current"]
     } catch Error as e {
         ; 使用wmi获取亮度
-        for property in ComObjGet("winmgmts:\\.\root\WMI").ExecQuery("SELECT * FROM WmiMonitorBrightness")
-            brightness := property.CurrentBrightness
-    }
+            for property in ComObjGet("winmgmts:\\.\root\WMI").ExecQuery("SELECT * FROM WmiMonitorBrightness")
+                brightness := property.CurrentBrightness
+        }
     return brightness
 }
 
@@ -89,7 +89,13 @@ IncBrightness(dealt) {
         return
     }
     m := monitors.Get(currentIndex)
-    val := m["brightness"] + dealt
+    val := m["brightness"]
+    if (m["brightness"] == "") {
+        ToolTip("本次亮度获取出现异常，可能是驱动超时，请稍候重试")
+        SetTimer(ToolTip, -3000)
+    } else {
+        val = m["brightness"] + dealt
+    }
     if val > 100 {
         val := 100
     }
@@ -113,7 +119,13 @@ DecBrightness(dealt) {
         return
     }
     m := monitors.Get(currentIndex)
-    val := m["brightness"] - dealt
+    val := m["brightness"]
+    if (m["brightness"] == "") {
+        ToolTip("本次亮度获取出现异常，可能是驱动超时，请稍候重试")
+        SetTimer(ToolTip, -3000)
+    } else {
+        val = m["brightness"] - dealt
+    }
     if val < 0 {
         val := 0
     }
