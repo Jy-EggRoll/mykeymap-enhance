@@ -94,7 +94,7 @@ IncBrightness(dealt) {
         ToolTip("本次亮度获取出现异常，可能是驱动超时，请稍候重试")
         SetTimer(ToolTip, -3000)
     } else {
-        val = m["brightness"] + dealt
+        val := m["brightness"] + dealt
     }
     if val > 100 {
         val := 100
@@ -124,7 +124,7 @@ DecBrightness(dealt) {
         ToolTip("本次亮度获取出现异常，可能是驱动超时，请稍候重试")
         SetTimer(ToolTip, -3000)
     } else {
-        val = m["brightness"] - dealt
+        val := m["brightness"] - dealt
     }
     if val < 0 {
         val := 0
