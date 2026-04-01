@@ -15,14 +15,17 @@ DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
 DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值，外观看起来是一般是淡灰色的，可能与不同软件亦有关
 
 ; 颜色配置（标准 RGB 值），目前的颜色选自 Catppuccin 的 Latte 风味，其中 Peach 色彩鲜艳且适合多种主题，如需添加自己的颜色，请按照相同格式添加 Map，逗号分隔
+; mauve 色用于标记置顶窗口
 COLORS := [
     Map("name", "Peach", "rgb", "254,100,11"),
-    Map("name", "sky", "rgb", "4,165,229")
+    Map("name", "sky", "rgb", "4,165,229"),
+    Map("name", "mauve", "rgb", "136,57,239")
 ]
 
 COLORS_MODE2 := [
     Map("name", "Peach", "rgb", "254,100,11"),
-    Map("name", "sky", "rgb", "4,165,229")
+    Map("name", "sky", "rgb", "4,165,229"),
+    Map("name", "mauve", "rgb", "136,57,239")
 ]
 
 borderEnabled := false
@@ -133,6 +136,16 @@ ClearWindowBorder(hwnd) {
  */
 GetCurrentBorderColor(hwnd) {
     global lightTheme, windowStates
+    
+    ; 检查窗口是否是置顶状态
+    try {
+        exStyle := WinGetExStyle(hwnd)
+        if (exStyle & 0x8) {  ; 0x8 标识窗口是否置顶
+            mauveColor := RGBtoBGR(COLORS[COLORS.Length]["rgb"])  ; 最后一个颜色作为置顶窗口的专用颜色
+            return mauveColor
+        }
+    }
+    
     if (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited == true) {
         if (lightTheme) {
             return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])
