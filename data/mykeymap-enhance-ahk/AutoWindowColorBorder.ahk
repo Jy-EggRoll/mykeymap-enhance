@@ -177,7 +177,10 @@ UpdateWindowBorder() {
         if (currentActiveWindow != lastActiveWindow && currentActiveWindow != 0) {  ; currentActiveWindow 不能为零，否则易产生无效的清除死循环
             ; 立即清除失去焦点的窗口边框
             if (lastActiveWindow != 0) {
-                if (ClearWindowBorder(lastActiveWindow)) {
+                ; 检查窗口是否是置顶状态，置顶窗口不消除边框
+                exStyle := WinGetExStyle(lastActiveWindow)
+                isTopmost := (exStyle & 0x8)  ; 0x8 表示置顶
+                if (!isTopmost && ClearWindowBorder(lastActiveWindow)) {
                     LogInfo("成功清除 [" WinGetTitle(lastActiveWindow) "] [" WinGetClass(lastActiveWindow) "] [" lastActiveWindow "] 的边框颜色", ,
                     AutoWindowColorBorderDebug.mode)
                 }
