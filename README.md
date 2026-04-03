@@ -2,7 +2,7 @@
 title: 项目介绍-mykeymap-enhance
 description: 我的 MyKeymap 自定义功能仓库，不依赖于 MyKeymap 就可以运行，可以视为我的自定义 AutoHotkey 库
 date: 2025-08-14
-lastmod: 2025-12-05
+lastmod: 2026-04-03
 image: 
 categories:
     - 项目
@@ -11,10 +11,6 @@ tags:
     - AutoHotkey
 weight: 
 ---
-
-## 重要说明
-
-此文章暂时处于“不精确”的状态，因为最近有几项重大优化和改动尚未完全同步至仓库，请辛苦自行参阅 Release 页面的更新日志。
 
 ## 仓库地址
 
@@ -87,63 +83,75 @@ weight:
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SplitScreen(gridNum, gridIndex)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">gridNum：网格数量，gridIndex：实际位置</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">描述较长，见下文，该函数是对上面两个函数的进一步封装</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">根据网格数量和索引将窗口调整到屏幕对应位置，支持 2、3、4、9 格分屏</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">使用 MyKeymap 的命令实现分屏，如 41、92</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoActivateWindow(pollingTime := 50)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">pollingTime：轮询时间，默认为 50 ms</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或一个指令，方便随时启停</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数。鼠标悬停处自动激活窗口，无需点击。默认随 MyKeymap 启动</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或指令，方便随时启停</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">IncBrightness(dealt)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">增加屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">增加当前选中显示器的屏幕亮度</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">DecBrightness(dealt)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">降低屏幕亮度，默认为 1 号显示器，每次 MyKeymap 启动重置为 1 号显示器</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">降低当前选中显示器的屏幕亮度</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">NextMonitor()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">调整下一个显示器的亮度，只要 MyKeymap 不重启，当前被调节的显示器就不会再改变，直到触发该函数</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换到下一个显示器的亮度调节</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">PreviousMonitor()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">调整上一个显示器的亮度，只要 MyKeymap 不重启，当前被调节的显示器就不会再改变，直到触发该函数</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换到上一个显示器的亮度调节</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoWindowColorBorder()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数，未启动时调用则启动，已启动调用则停止，默认随 MyKeymap 启动</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或一个指令，方便随时启停</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数。为活动窗口添加彩色边框，置顶窗口显示特殊的 mauve 色边框。默认随 MyKeymap 启动</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或指令，方便随时启停</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SwitchToNextColor()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换到下一个边框颜色，达到最后一个则循环到第一个，颜色列表请在代码中自定义</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换到下一个边框颜色</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SetTaskbarCombine(mode := "")</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选 "Always" (始终合并) 或 "Never" (从不合并)，为空则自动翻转</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换所有显示器的任务栏图标合并状态，无需重启资源管理器</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ReadFileToInput(filePath)</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">文件路径</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">读取文件内容并快速输入到光标位置，适用于隐私文本（如密码）快速输入，单行文本，不超过 10KB</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键</td>
     </tr>
   </tbody>
 </table>
 
-## 各函数最佳实践的配置方式
-
-[TODO]
-
-## 额外说明
+## 功能详解
 
 ### 拖动与调节 DragWindow & ResizeWindow
 
 两款函数核心功能受 [AltSnap](https://github.com/RamonUnch/AltSnap) 启发，实现上参考了 AHK 官方的示例脚本。
+
+- **DragWindow**：按住拖动键并点击任意位置即可拖动窗口，无需点击标题栏
+- **ResizeWindow**：将窗口划分为 9 个区域（左上/上/右上/左/中/右/左下/下/右下），拖动对应区域即可调整大小
+- **吸附功能**：支持窗口与屏幕边缘、其他窗口边缘的自动吸附
 
 效果展示：
 
@@ -204,37 +212,61 @@ weight:
 
 ### 亮度调节 IncBrightness & DecBrightness
 
-不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。由于不显示 GUI，显示器状态状态变化时（如插入了外接显示器）需要重启 MyKeymap，以保证功能正常（当状态变化时，尝试调用该功能会自动出现提示）。
+不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。由于不显示 GUI，显示器配置变化时（如插入外接显示器）需要重启 MyKeymap。
+
+配合 `NextMonitor()` 和 `PreviousMonitor()` 可切换调节的显示器。
 
 ### 活动窗口边框着色 AutoWindowColorBorder
 
 > [!WARNING]
 >
-> 此功能依赖于 Windows 11 API，在 Windows 10 上 **完全无效**。
+> 此功能依赖于 Windows 11 DWM API，在 Windows 10 上**完全无效**。
 
-Windows 11 自带类似功能，其效果实在不能令人满意。对于第三方软件，更是常常出现失效的情况，比如微信就无法享受该效果。
+为活动窗口添加彩色边框，与自动激活窗口相辅相成，为识别激活窗口提供多一层保障。
 
-我使用 AHK 调用系统核心 API，实现了该效果，对第三方软件兼容性极佳，效果也很好。
+**颜色规则**：
 
-该功能默认随 MyKeymap 启动，和自动激活窗口相辅相成，为识别激活的窗口又多了一层保障。
-
-效果展示：
-
-![着色](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/边框着色.png)
-
-动态效果如下（请留意紫色的边框）：
+- 置顶窗口：显示特殊的 mauve（紫色）边框
+- 未访问窗口：根据主题显示一种边框色
+- 已访问窗口：显示另一种边框色
+- 失去焦点时：非置顶窗口会消除边框，置顶窗口保留边框颜色
 
 ![着色动态效果](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/着色动态效果.gif)
 
-如果颜色不合适，请使用 SwitchToNextColor() 来切换颜色，颜色列表在代码中自定义。目前颜色可以随着系统主题自动变更，深色主题对应无后缀列表，浅色主题对应 Mode2 列表。两种模式的默认边框颜色分别如下：
+使用 `SwitchToNextColor()` 切换颜色，颜色列表在代码中自定义。
 
-![深色模式-Peach](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/Peach.png)
+### 任务栏图标合并 SetTaskbarCombine
 
-![浅色模式](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/Mauve.png)
+通过修改注册表并发送广播，优雅地切换所有显示器的任务栏合并状态，无需重启资源管理器。
 
-> [!TIP]
->
-> 已有的颜色边框，其颜色不会立即随着系统主题变更而刷新。颜色列表会在主题变更后第一次创建着色边框时刷新。换言之，如果想要在修改系统主题色后立即看到当前应用的边框色的更改，请令其失去焦点再获得焦点。
+- **Always**：始终合并图标
+- **Never**：从不合并图标
+- 空参数：自动翻转当前状态
+
+### 平滑滚动模拟 SmoothScrollSimulate
+
+按住鼠标右键并移动，模拟现代化软件中的平滑滚动效果。支持：
+
+- 垂直滚动
+- 水平滚动
+- 对角线移动
+
+在绝大多数现代化软件中可用，如浏览器。少数软件不支持，如 Windows 文件资源管理器。
+
+### 文件快速输入 ReadFileToInput
+
+读取文件内容并快速输入到光标位置，适用于隐私文本（如密码）的快速输入。
+
+**限制**：
+
+- 单行文本
+- 文件大小不超过 10KB
+
+## 额外工具
+
+### GetWindowFeature (窗口特征提取器)
+
+独立的窗口信息查看工具，可以查看窗口的标题、位置、类名等详细信息，用于开发和调试。
 
 ## 关于作者
 
