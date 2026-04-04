@@ -119,23 +119,54 @@ WindowJump() {
     ; 2. static 变量：保持 GUI 对象和图像列表句柄在函数调用间持久化
     ; MyGui: GUI 对象，0 表示尚未创建
     ; hIL: ImageList 句柄，用于存储窗口图标
+    ; iconCache: 图标缓存 Map
     static MyGui := 0
     static hIL := 0
+    static iconCache := Map()
+    static lastTheme := ""  ; 记录上一次的主题状态
+    static lastAccent := ""  ; 记录上一次的强调色
 
     LogInfo("WindowJump 被调用", , WindowJumpDebug.mode)
 
     ; 3. 如果 GUI 已存在（复现窗口）
     if (MyGui) {
-        LogInfo("GUI 已存在，复现窗口", , WindowJumpDebug.mode)
-        ; 清空搜索框内容
-        MyGui["SearchInput"].Value := ""
-        ; 将焦点设置到搜索框，方便直接输入
-        MyGui["SearchInput"].Focus()
-        ; 刷新列表显示所有窗口
-        RefreshList(MyGui["ResultList"], &hIL)
-        ; 在屏幕中心显示窗口
-        MyGui.Show("Center")
-        return
+        global IsDarkMode, AccentColor
+        ; 检查主题或强调色是否变化
+        currentTheme := IsDarkMode ? "dark" : "light"
+        currentAccent := AccentColor
+        themeChanged := (lastTheme != "" && lastTheme != currentTheme)
+        accentChanged := (lastAccent != "" && lastAccent != currentAccent)
+
+        LogInfo("检查主题变化: lastTheme=" . lastTheme . " currentTheme=" . currentTheme . " lastAccent=" . lastAccent .
+            " currentAccent=" . currentAccent, , WindowJumpDebug.mode)
+
+        if (themeChanged || accentChanged) {
+            LogInfo("主题变化(" . lastTheme . "->" . currentTheme . ")，强调色变化(" . lastAccent . "->" . currentAccent .
+                ")，销毁并重建 GUI", , WindowJumpDebug.mode)
+            MyGui.Destroy()
+            MyGui := 0
+            hIL := 0
+            iconCache := Map()
+        }
+        lastTheme := currentTheme
+        lastAccent := currentAccent
+
+        if (MyGui) {
+            LogInfo("GUI 已存在，复现窗口", , WindowJumpDebug.mode)
+            ; 清空搜索框内容
+            MyGui["SearchInput"].Value := ""
+            ; 将焦点设置到搜索框，方便直接输入
+            MyGui["SearchInput"].Focus()
+            ; 刷新列表显示所有窗口
+            RefreshList(MyGui["ResultList"], &hIL, &iconCache)
+            ; 在屏幕中心显示窗口
+            MyGui.Show("Center")
+            return
+        }
+    } else {
+        global IsDarkMode, AccentColor
+        lastTheme := IsDarkMode ? "dark" : "light"
+        lastAccent := AccentColor
     }
 
     ; ==============================================================================
@@ -264,7 +295,7 @@ WindowJump() {
     ; 初始化窗口列表
     ; ==============================================================================
     ; 首次显示时，列出所有可跳转的窗口
-    RefreshList(ResultList, &hIL)
+    RefreshList(ResultList, &hIL, &iconCache)
 
     ; ==============================================================================
     ; 事件绑定
@@ -279,7 +310,7 @@ WindowJump() {
     ;     *: 可变参数占位符（忽略额外参数）
 
     ; 搜索框内容改变时触发搜索更新
-    EditBox.OnEvent("Change", (obj, *) => UpdateSearch(obj, MyGui["ResultList"], hIL))
+    EditBox.OnEvent("Change", (obj, *) => UpdateSearch(obj, MyGui["ResultList"], hIL, &iconCache))
 
     ; 双击列表项时激活对应窗口
     ResultList.OnEvent("DoubleClick", (obj, row) => ActivateWin(obj, row))
@@ -360,22 +391,20 @@ CheckWinFocus(guiObj) {
 ; &hIL: 图像列表句柄的引用（因为需要在函数中销毁重建）
 ; ==============================================================================
 
-RefreshList(LV, &hIL) {
+RefreshList(LV, &hIL, &iconCache) {
+    global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
     LogInfo("开始刷新窗口列表", , WindowJumpDebug.mode)
 
     ; 1. 清空 ListView 所有行
-    ; LV.Delete(): 删除所有行，无参数表示删除全部
     LV.Delete()
 
-    ; 2. 销毁旧的图像列表
-    ; IL_Destroy(ImageListID): 释放图像列表占用的资源
-    ;   -返回 1 成功，0 失败
+    ; 2. 销毁旧的图像列表（图标随 ImageList 销毁，索引失效）
     if (hIL) {
         IL_Destroy(hIL)
     }
+    iconCache := Map()
 
     ; 3. 创建新的图像列表
-    ; 初始容量 20，每次增长 10，支持更多窗口图标
     hIL := IL_Create(20, 10, 0)
 
     ; 4. 重新绑定图像列表到 ListView
@@ -383,54 +412,18 @@ RefreshList(LV, &hIL) {
 
     windowCount := 0
 
-    ; ==============================================================================
-    ; 获取所有窗口
-    ; ==============================================================================
-    ; WinGetList(WinTitle, WinText, ExcludeTitle, ExcludeText)
-    ;   -返回: 匹配条件的窗口句柄（HWND）数组
-    ;   -无参数: 获取所有窗口
-    ;   -按 Z-order（堆叠顺序）排序，最前面的窗口排在数组前面
     for hwnd in WinGetList() {
         try {
-            ; ==============================================================================
-            ; 获取窗口信息
-            ; ==============================================================================
-
-            ; WinGetTitle(WinTitle): 获取窗口标题
-            ;   -WinTitle: 窗口句柄（HWND）或其他识别方式
-            ;   -返回: 窗口标题字符串
             title := WinGetTitle(hwnd)
-
-            ; WinGetProcessName(WinTitle): 获取窗口所属进程名
-            ;   -返回: 进程名（如 "notepad.exe"）
             process := WinGetProcessName(hwnd)
-
-            ; WinGetStyle(WinTitle): 获取窗口标准样式
-            ;   -返回: 窗口样式位标志（32位整数）
-            ;   -0x40000 (WS_VISIBLE): 可视窗口样式位
             style := WinGetStyle(hwnd)
 
-            ; ==============================================================================
-            ; 过滤窗口
-            ; ==============================================================================
-            ; 条件：
-            ;   1. 窗口必须有标题（排除无标题的临时窗口如菜单）
-            ;   2. 窗口必须可见（WS_VISIBLE 样式）
-            ;   3. 窗口不是当前 GUI（排除自己）
             if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
-                ; 获取窗口图标索引并添加到列表
-                iconIdx := GetUwpIconIndex(hwnd, hIL)
-
-                ; LV.Add(Options, Field1, Field2, ...)
-                ;   -Options: 行选项
-                ;     IconN: 使用图像列表中第 N 个图标
-                ;   -FieldN: 各列的内容
-                ; 添加行，格式为 " [进程名] 窗口标题"
+                iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
                 LV.Add("Icon" . iconIdx, " [" . process . "] " . title, hwnd, "0")
                 windowCount++
             }
         }
-        ; try-catch: 忽略无法访问的窗口（如系统窗口）
     }
 
     LogInfo("刷新完成，共添加 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
@@ -457,7 +450,8 @@ RefreshList(LV, &hIL) {
 ; hIL: 图像列表句柄
 ; ==============================================================================
 
-UpdateSearch(EditObj, LV, hIL) {
+UpdateSearch(EditObj, LV, hIL, &iconCache) {
+    global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
     LogInfo("搜索内容改变: [" . EditObj.Value . "]", , WindowJumpDebug.mode)
 
     ; 1. 获取当前搜索文本
@@ -466,7 +460,7 @@ UpdateSearch(EditObj, LV, hIL) {
     ; 2. 如果搜索框为空，显示全部窗口
     if (currentInput == "") {
         LogInfo("搜索框为空，刷新全部列表", , WindowJumpDebug.mode)
-        RefreshList(LV, &hIL)
+        RefreshList(LV, &hIL, &iconCache)
         return
     }
 
@@ -537,7 +531,8 @@ UpdateSearch(EditObj, LV, hIL) {
             if (res.isShortcut) {
                 iconIdx := GetFileIconIndex(res.hwnd, hIL)
             } else {
-                iconIdx := GetUwpIconIndex(res.hwnd, hIL)
+                process := WinGetProcessName(res.hwnd)
+                iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
             }
             LV.Add("Icon" . iconIdx, res.text, res.hwnd, res.isShortcut ? "1" : "0")
         }
@@ -552,10 +547,22 @@ UpdateSearch(EditObj, LV, hIL) {
 ; ==============================================================================
 ; GetIconIndex - 获取窗口图标索引
 ; ==============================================================================
-; hwnd: 窗口句柄
-; hIL: 图像列表句柄
-; 返回: 图像列表中的图标索引（1-based）
-; ==============================================================================
+
+GetIconIndexByProcess(process, hIL, iconCache) {
+    if (iconCache.Has(process)) {
+        LogInfo("图标缓存命中: process=" . process . " idx=" . iconCache[process], , WindowJumpDebug.mode)
+        return iconCache[process]
+    }
+    hwnd := WinExist("ahk_exe " . process)
+    if (!hwnd) {
+        LogInfo("图标获取失败(无窗口): process=" . process, , WindowJumpDebug.mode)
+        return 1
+    }
+    iconIdx := GetUwpIconIndex(hwnd, hIL)
+    iconCache[process] := iconIdx
+    LogInfo("图标缓存未命中，获取新图标: process=" . process . " hwnd=" . hwnd . " idx=" . iconIdx, , WindowJumpDebug.mode)
+    return iconIdx
+}
 
 GetIconIndex(hwnd, hIL) {
     ; ==============================================================================
