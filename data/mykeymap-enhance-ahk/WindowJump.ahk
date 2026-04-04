@@ -218,47 +218,47 @@ UpdateSearch(EditObj, LV) {
 }
 
 FuzzyScore(query, target) {
-    if !(qLen := StrLen(query))
+    if !(query := Trim(query))
         return 0
 
-    ; 移除噪声后缀 .exe
     target := StrReplace(target, ".exe", "")
+    totalScore := 0
 
-    score := 0, tIdx := 1, lastIdx := 0, consecutive := 0
-    pEnd := InStr(target, "]")
+    ; 按空格拆分词元，支持乱序
+    tokens := StrSplit(query, " ")
 
-    loop qLen {
-        char := SubStr(query, A_Index, 1)
-        found := InStr(target, char, false, tIdx)
-        if (!found) {
-            return 0
+    for _, token in tokens {
+        if (token == "") {
+            continue
         }
-        ; 基础分：进程名内 20，标题内 10
-        score += (found <= pEnd) ? 20 : 10
+        ; 针对每个词元进行单向匹配
+        tScore := 0, tIdx := 1, lastIdx := 0, consecutive := 0
+        pEnd := InStr(target, "]")
 
-        ; 连续性奖励大于首字母加分
-        if (lastIdx && found == lastIdx + 1) {
-            consecutive++
-            ; 连续匹配累计强化加分
-            score += (20 * consecutive)
-        } else {
-            consecutive := 0
-            ; 距离惩罚：断开匹配时扣分
-            if (lastIdx) {
-                score -= (found - lastIdx) * 10
+        loop StrLen(token) {
+            char := SubStr(token, A_Index, 1)
+            found := InStr(target, char, false, tIdx)
+
+            if (!found) {
+                return 0
             }
+            tScore += (found <= pEnd) ? 20 : 10
+            if (lastIdx && found == lastIdx + 1) {
+                consecutive++, tScore += (20 * consecutive)
+            } else {
+                consecutive := 0
+                if (lastIdx) {
+                    tScore -= (found - lastIdx) * 10
+                }
+            }
+            prev := (found > 1) ? SubStr(target, found - 1, 1) : ""
+            if (prev == "[" || prev == " ") tScore += 30
+                lastIdx := found
+            tIdx := found + 1
         }
-
-        ; 边界奖励：仅给少量固定加分，不作为主导
-        prev := (found > 1) ? SubStr(target, found - 1, 1) : ""
-        if (prev == "[" || prev == " ") {
-            score += 30
-        }
-
-        lastIdx := found
-        tIdx := found + 1
+        totalScore += tScore
     }
-    return score
+    return totalScore
 }
 
 ActivateWin(LV, RowNumber) {
