@@ -363,9 +363,8 @@ RefreshList(LV, &hIL) {
 ; ==============================================================================
 
 UpdateSearch(EditObj, LV, hIL) {
-    ; 1. 获取当前搜索文本并转换为小写
-    ; StrLower(String): 将字符串转为小写（用于不区分大小写的匹配）
-    currentInput := StrLower(EditObj.Value)
+    ; 1. 获取当前搜索文本
+    currentInput := Trim(EditObj.Value)
 
     ; 2. 如果搜索框为空，显示全部窗口
     if (currentInput == "") {
@@ -373,11 +372,13 @@ UpdateSearch(EditObj, LV, hIL) {
         return
     }
 
+    ; 转换为小写用于匹配
+    searchLower := StrLower(currentInput)
+
     ; 3. 清空列表准备重新填充
     LV.Delete()
 
     ; 4. 存储匹配结果
-    ; 数组元素为对象：{ score: 匹配分数, text: 显示文本, hwnd: 窗口句柄 }
     results := []
 
     ; ==============================================================================
@@ -391,41 +392,25 @@ UpdateSearch(EditObj, LV, hIL) {
 
             ; 过滤条件
             if (title == "" || !(style & 0x40000) || hwnd == EditObj.Gui.Hwnd) {
-                continue    ; 跳过不符合条件的窗口
+                continue
             }
 
-            ; 5. 构造搜索目标文本并计算模糊匹配分数
-            ; 格式："[进程名] 窗口标题"（小写）
+            ; 构造搜索目标文本
             fullText := StrLower("[" . process . "] " . title)
 
-            ; FuzzyScore: 自定义模糊匹配评分函数
-            ;   返回 0 表示不匹配，正数表示匹配程度（越高越相关）
-            score := FuzzyScore(currentInput, fullText)
+            ; 使用 FuzzyScore 进行匹配（已集成拼音匹配）
+            score := FuzzyScore(searchLower, fullText)
 
-            ; 使用拼音库进行匹配（支持简拼和全拼）
-            ; 简拼：如 "wj" 匹配 "文件"
-            ; 全拼：如 "wenjian" 匹配 "文件"
-            ; IbPinyin_Match 返回是否匹配
-            ; notations = 简拼 | 全拼
-            if (IbPinyin_Match(currentInput, title, IbPinyin_AsciiFirstLetter | IbPinyin_Ascii)) {
-                ; 拼音匹配成功，赋予一个较高的基础分
-                score := Max(score, 50)
-            }
-
-            ; 6. 只保留匹配的结果（score > 0）
+            ; 保留匹配结果
             if (score > 0) {
                 results.Push({ score: score, text: " [" . process . "] " . title, hwnd: hwnd })
             }
         }
     }
 
-    ; ==============================================================================
-    ; 排序结果
-    ; ==============================================================================
-    ; 按匹配分数从高到低排序
-    ; 使用冒泡排序（代码简洁，实际数据量小性能可接受）
+    ; 5. 排序结果（按分数从高到低）
     if (results.Length > 0) {
-        loop (results.Length) {
+        loop results.Length {
             i := A_Index
             while (i > 1 && results[i - 1].score < results[i].score) {
                 temp := results[i]
@@ -435,10 +420,7 @@ UpdateSearch(EditObj, LV, hIL) {
             }
         }
 
-        ; ==============================================================================
         ; 填充 ListView（限制最多显示 30 条）
-        ; ==============================================================================
-        ; Min(Value1, Value2): 返回较小值
         loop (Min(results.Length, 30)) {
             res := results[A_Index]
             iconIdx := GetIconIndex(res.hwnd, hIL)
@@ -446,7 +428,7 @@ UpdateSearch(EditObj, LV, hIL) {
         }
     }
 
-    ; 7. 确保有选中项
+    ; 6. 确保有选中项
     if (LV.GetCount() > 0) {
         LV.Modify(1, "Select Focus")
     }
@@ -519,99 +501,48 @@ GetIconIndex(hwnd, hIL) {
 ; ==============================================================================
 
 FuzzyScore(query, target) {
-    ; 1. 空搜索词返回 0
-    ; Trim(String): 去除字符串首尾空白字符
     if !(query := Trim(query)) {
         return 0
     }
 
-    ; 2. 移除 .exe 后缀以便更好地匹配进程名
-    ; StrReplace(String, Search, Replace, &OutputVarCount, Limit)
-    ;   -Search: 要搜索的子字符串
-    ;   -Replace: 替换为的内容
-    ;   -&OutputVarCount: 可选，输出替换次数
-    ;   -Limit: 限制替换次数，-1 表示全部替换
     target := StrReplace(target, ".exe", "")
 
     totalScore := 0
+    matchedTokens := 0
 
-    ; ==============================================================================
-    ; 词元分割
-    ; ==============================================================================
-    ; StrSplit(String, Delimiters, OmitChars, MaxParts)
-    ;   -Delimiters: 分隔符（这里是空格）
-    ;   -返回: 数组
-    ; 将搜索词按空格分割为多个词元，支持多关键词搜索
+    ; 词元分割（空格分割）
     tokens := StrSplit(query, " ")
 
-    ; ==============================================================================
-    ; 逐词元计算匹配分数
-    ; ==============================================================================
+    ; 逐词元匹配
     for _, token in tokens {
         if (token == "") {
             continue
         }
 
-        tScore := 0        ; 当前词元得分
-        tIdx := 1         ; 搜索起始位置
-        lastIdx := 0      ; 上一个匹配字符位置
-        consecutive := 0  ; 连续匹配计数
+        tokenScore := 0
 
-        ; 找到进程名和标题的分隔点 "]"
-        ; InStr(Haystack, Needle, CaseSensitive, StartingPos, Occurrence)
-        ;   -Haystack: 要搜索的字符串
-        ;   -Needle: 要查找的子字符串
-        ;   -CaseSensitive: 是否区分大小写（false=不区分）
-        ;   -StartingPos: 起始位置（1-based）
-        ;   -Occurrence: 第几次出现
-        ;   -返回: 找到的位置（1-based），未找到返回 0
-        pEnd := InStr(target, "]")
-
-        ; ==============================================================================
-        ; 逐字符匹配
-        ; ==============================================================================
-        ; StrLen(String): 返回字符串长度（字符数）
-        loop StrLen(token) {
-            ; SubStr(String, StartPos, Length)
-            ;   -String: 源字符串
-            ;   -StartPos: 起始位置（1-based）
-            ;   -Length: 截取长度（省略到末尾）
-            char := SubStr(token, A_Index, 1)
-
-            ; 在目标文本中查找该字符（从上次位置之后开始）
-            found := InStr(target, char, false, tIdx)
-            if (!found) {
-                return 0    ; 当前词元有字符未匹配，返回 0
+        ; 方法1：词元连续匹配（完整包含）
+        if InStr(target, token) {
+            tokenScore := 1000
+            ; 开头匹配加分
+            if InStr(target, token, true, 1, 1) {
+                tokenScore += 200
             }
-
-            ; ==============================================================================
-            ; 评分规则
-            ; ==============================================================================
-
-            ; 基本分数：每匹配一个字符加 30 分
-            tScore += 30
-
-            ; 加分：匹配位置在进程名部分（] 之前）加 20 分，否则加 10 分
-            tScore += (found <= pEnd) ? 20 : 10
-
-            ; 加分：连续匹配（字符在目标中连续出现）加更多分
-            if (lastIdx && found == lastIdx + 1) {
-                consecutive++
-                tScore += (50 * consecutive)
-            }
-
-            ; 加分：如果前一个字符是 "[" 或空格（词边界），加 40 分
-            prev := (found > 1) ? SubStr(target, found - 1, 1) : ""
-            if (prev == "[" || prev == " ") {
-                tScore += 40
-            }
-
-            lastIdx := found
-            tIdx := found + 1
+        }
+        ; 方法2：拼音匹配（简拼+全拼）
+        else if IbPinyin_Match(token, target, IbPinyin_AsciiFirstLetter | IbPinyin_Ascii) {
+            tokenScore := 800
         }
 
-        ; 累加词元分数
-        totalScore += tScore
+        if (tokenScore > 0) {
+            totalScore += tokenScore
+            matchedTokens++
+        }
+    }
+
+    ; 所有词元都匹配才返回分数（AND 逻辑）
+    if (matchedTokens < tokens.Length) {
+        return 0
     }
 
     return totalScore
