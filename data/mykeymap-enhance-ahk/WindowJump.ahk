@@ -817,7 +817,7 @@ UpdateTheme() {
         ; >>: 右移位运算
         r := rawColor & 0xFF          ; 红色分量（ABGR 中的 A 位置）
         g := (rawColor >> 8) & 0xFF   ; 绿色分量
-        b := (rawColor >> 16) & 0xFF   ; 蓝色分量
+        b := (rawColor >> 16) & 0xFF  ; 蓝色分量
 
         ; 转换为 RGB 格式的数字值
         accentNum := (r << 16) | (g << 8) | b
@@ -842,11 +842,11 @@ UpdateTheme() {
     ;   -Weight: 混合权重（0-1，越大越接近目标色）
     if (IsDarkMode) {
         ; 深色模式：背景向黑色偏移 90%
-        BgColor := MixColor(accentNum, 0x000000, 0.90)
-        ; 字体白色
-        FontColor := "FFFFFF"
+        BgColor := MixColor(accentNum, 0x111111, 0.90)
+        ; 字体灰白色
+        FontColor := "c6c6c6"
         ; 列表背景稍亮一点（偏移 80%）
-        ListViewBg := MixColor(accentNum, 0x000000, 0.80)
+        ListViewBg := MixColor(accentNum, 0x111111, 0.80)
     } else {
         ; 浅色模式：背景向白色偏移 90%
         BgColor := MixColor(accentNum, 0xFFFFFF, 0.90)
