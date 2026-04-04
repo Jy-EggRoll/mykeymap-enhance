@@ -519,9 +519,7 @@ class VD {
     this.goToDesktopNum(desktopNum_ofWindow, !activateYourWindow)
     if (activateYourWindow) {
       Sleep 50
-      DllCall("user32\SendInput", "UInt", 1, "Ptr", Buffer(24), "Int", 0)
-      DllCall("user32\SetForegroundWindow", "Ptr", theHwnd)
-      DllCall("user32\SetActiveWindow", "Ptr", theHwnd)
+      WinActivate "ahk_id " theHwnd
     }
   }
   static MoveWindowToDesktopNum(wintitle, desktopNum) {
