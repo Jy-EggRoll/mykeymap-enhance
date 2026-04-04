@@ -64,6 +64,9 @@ InitShortcuts() {
     }
 }
 
+; 运行脚本时立即执行一次，减少视觉闪烁
+InitShortcuts()
+
 ; 获取快捷方式列表
 GetShortcuts(&shortcuts) {
     global shortcutsDir
