@@ -8,8 +8,6 @@ class AutoActivateWindowDebug {
     static mode := true
 }
 
-AutoActivateWindowDebug.mode := false  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
-
 ; 全局变量用于跟踪自动激活功能的状态
 autoActivateEnabled := false
 windowStates := Map()  ; 窗口状态映射表

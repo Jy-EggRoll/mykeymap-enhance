@@ -999,7 +999,6 @@ ActivateWin(LV, RowNumber) {
                 global lastActiveWindowClass
                 lastActiveWindowClass := "AutoHotkeyGUI"
                 WinActivate("ahk_id " . hwnd)
-                LV.Gui.Hide()
             }
             LV.Gui.Hide()
         }
