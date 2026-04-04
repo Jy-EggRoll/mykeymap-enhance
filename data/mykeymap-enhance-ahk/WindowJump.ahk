@@ -419,7 +419,7 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
             style := WinGetStyle(hwnd)
 
             if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
-                desktopNum := VD.getDesktopNumOfHWND(hwnd)
+                desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
                 if (desktopNum > 0) {
                     desktopInfo := " [桌面" . desktopNum . "]"
                 } else if (desktopNum == -1) {
@@ -452,7 +452,7 @@ RefreshAllWindows(LV, hIL, iconCache) {
             process := WinGetProcessName(hwnd)
             style := WinGetStyle(hwnd)
             if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
-                desktopNum := VD.getDesktopNumOfHWND(hwnd)
+                desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
                 if (desktopNum > 0) {
                     desktopInfo := " [桌面" . desktopNum . "]"
                 } else if (desktopNum == -1) {
@@ -522,7 +522,7 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
                 continue
             }
 
-            desktopNum := VD.getDesktopNumOfHWND(hwnd)
+            desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
             if (desktopNum > 0) {
                 desktopInfo := " [桌面" . desktopNum . "]"
             } else if (desktopNum == -1) {
@@ -1047,7 +1047,7 @@ ActivateWin(LV, RowNumber) {
                 LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
                 global lastActiveWindowClass
                 lastActiveWindowClass := "AutoHotkeyGUI"
-                targetDesktopNum := VD.getDesktopNumOfHWND(hwnd)
+                targetDesktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
                 currentDesktopNum := VD.getCurrentDesktopNum()
                 if (targetDesktopNum > 0 && targetDesktopNum != currentDesktopNum) {
                     VD.goToDesktopOfWindow("ahk_id " . hwnd)
