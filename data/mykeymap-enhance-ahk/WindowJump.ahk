@@ -16,6 +16,72 @@
 #Include ../mykeymap-enhance-ahk/PinYinLib/IbPinyin.ahk
 
 ; ==============================================================================
+; 快捷方式管理
+; ==============================================================================
+
+; shortcutsDir 全局变量
+global shortcutsDir := ""
+
+; 初始化快捷方式目录
+InitShortcuts() {
+    static initialized := false
+
+    if initialized {
+        return
+    }
+    initialized := true
+
+    global shortcutsDir
+    shortcutsDir := A_Temp "\WindowJump_Shortcuts"
+
+    if DirExist(shortcutsDir) {
+        loop files, shortcutsDir "\*", "FD" {
+            try FileDelete(A_LoopFileFullPath)
+        }
+    } else {
+        DirCreate(shortcutsDir)
+    }
+
+    try {
+        if DirExist(A_ProgramsCommon) {
+            FileCopy(A_ProgramsCommon "\*.lnk", shortcutsDir "\", true)
+        }
+        if DirExist(A_Programs) {
+            FileCopy(A_Programs "\*.lnk", shortcutsDir "\", true)
+        }
+    }
+
+    try {
+        oFolder := ComObject("Shell.Application").NameSpace("shell:AppsFolder")
+        if (Type(oFolder) != "String") {
+            for item in oFolder.Items {
+                shortcutPath := shortcutsDir "\" item.Name ".lnk"
+                if !FileExist(shortcutPath) {
+                    try FileCreateShortcut("shell:appsfolder\" item.Path, shortcutPath)
+                }
+            }
+        }
+    }
+}
+
+; 获取快捷方式列表
+GetShortcuts(&shortcuts) {
+    global shortcutsDir
+    shortcuts := []
+
+    if !DirExist(shortcutsDir) {
+        InitShortcuts()
+    }
+
+    loop files, shortcutsDir "\*.lnk", "F" {
+        try {
+            name := StrReplace(A_LoopFileName, ".lnk", "")
+            shortcuts.Push({ name: name, path: A_LoopFileFullPath })
+        }
+    }
+}
+
+; ==============================================================================
 ; 全局配置
 ; ==============================================================================
 
@@ -152,7 +218,7 @@ WindowJump() {
     ;   Background/ c: 背景色和文字颜色
     ;   参数数组: 列标题（这里实际只用一列存储窗口信息，第二列隐藏存储 HWND）
     ResultList := MyGui.Add("ListView", "x20 y95 w560 r11 -Multi -Hdr -E0x200 vResultList +LV0x140 Background" .
-        ListViewBg . " c" . FontColor, ["Display", "HWND"])
+        ListViewBg . " c" . FontColor, ["Display", "HWND", "IsShortcut"])
 
     ; ==============================================================================
     ; 绑定图像列表到 ListView
@@ -171,8 +237,8 @@ WindowJump() {
     ;     540: 列宽度（像素）
     ; 设置第一列宽度为 540px（容纳窗口标题）
     ResultList.ModifyCol(1, 540)
-    ; 隐藏第二列（用于存储窗口 HWND，对用户不可见）
     ResultList.ModifyCol(2, 0)
+    ResultList.ModifyCol(3, 0)
 
     ; ==============================================================================
     ; 初始化窗口列表
@@ -327,14 +393,14 @@ RefreshList(LV, &hIL) {
             ;   3. 窗口不是当前 GUI（排除自己）
             if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
                 ; 获取窗口图标索引并添加到列表
-                iconIdx := GetIconIndex(hwnd, hIL)
+                iconIdx := GetUwpIconIndex(hwnd, hIL)
 
                 ; LV.Add(Options, Field1, Field2, ...)
                 ;   -Options: 行选项
                 ;     IconN: 使用图像列表中第 N 个图标
                 ;   -FieldN: 各列的内容
                 ; 添加行，格式为 " [进程名] 窗口标题"
-                LV.Add("Icon" . iconIdx, " [" . process . "] " . title, hwnd)
+                LV.Add("Icon" . iconIdx, " [" . process . "] " . title, hwnd, "0")
             }
         }
         ; try-catch: 忽略无法访问的窗口（如系统窗口）
@@ -403,8 +469,18 @@ UpdateSearch(EditObj, LV, hIL) {
 
             ; 保留匹配结果
             if (score > 0) {
-                results.Push({ score: score, text: " [" . process . "] " . title, hwnd: hwnd })
+                results.Push({ score: score, text: " [" . process . "] " . title, hwnd: hwnd, isShortcut: false })
             }
+        }
+    }
+
+    ; 快捷方式匹配
+    GetShortcuts(&shortcuts)
+    for shortcut in shortcuts {
+        fullText := StrLower(shortcut.name)
+        score := FuzzyScore(searchLower, fullText)
+        if (score > 0) {
+            results.Push({ score: score // 2, text: ">>> " . shortcut.name, hwnd: shortcut.path, isShortcut: true })
         }
     }
 
@@ -423,8 +499,12 @@ UpdateSearch(EditObj, LV, hIL) {
         ; 填充 ListView（限制最多显示 30 条）
         loop (Min(results.Length, 30)) {
             res := results[A_Index]
-            iconIdx := GetIconIndex(res.hwnd, hIL)
-            LV.Add("Icon" . iconIdx, res.text, res.hwnd)
+            if (res.isShortcut) {
+                iconIdx := GetFileIconIndex(res.hwnd, hIL)
+            } else {
+                iconIdx := GetUwpIconIndex(res.hwnd, hIL)
+            }
+            LV.Add("Icon" . iconIdx, res.text, res.hwnd, res.isShortcut ? "1" : "0")
         }
     }
 
@@ -490,6 +570,41 @@ GetIconIndex(hwnd, hIL) {
 
     ; 如果所有方法都失败，返回 1（使用默认图标）
     return 1
+}
+
+; ==============================================================================
+; GetFileIconIndex - 获取文件/快捷方式图标索引
+; ==============================================================================
+
+GetFileIconIndex(filePath, hIL) {
+    targetPath := ""
+
+    try {
+        if (StrEndsWith(filePath, ".lnk")) {
+            FileGetShortcut filePath, &targetPath
+        }
+    }
+
+    iconPath := targetPath ? targetPath : filePath
+    return IL_Add(hIL, iconPath)
+}
+
+; ==============================================================================
+; GetUwpIconIndex - 获取 UWP 应用图标索引
+; ==============================================================================
+
+GetUwpIconIndex(hwnd, hIL) {
+    try {
+        exePath := WinGetProcessPath(hwnd)
+        if exePath {
+            return IL_Add(hIL, exePath)
+        }
+    }
+    return 1
+}
+
+StrEndsWith(str, suffix) {
+    return SubStr(str, -StrLen(suffix) + 1) = suffix
 }
 
 ; ==============================================================================
@@ -779,18 +894,14 @@ ActivateWin(LV, RowNumber) {
         ;   -返回: 对应单元格的文本
         ; 第二列存储了窗口 HWND（作为字符串）
         hwnd := LV.GetText(RowNumber, 2)
+        isShortcut := LV.GetText(RowNumber, 3) = "1"
 
-        ; 如果成功获取到窗口句柄
         if (hwnd) {
-            ; ==============================================================================
-            ; 激活窗口
-            ; ==============================================================================
-            ; WinActivate(WinTitle, WinText, ExcludeTitle, ExcludeText)
-            ;   -WinTitle: 窗口标题、类名或 AHK ID（"ahk_id " + HWND）
-            ;   -激活指定窗口，将其置于前台
-            WinActivate("ahk_id " . hwnd)
-
-            ; 隐藏搜索窗口
+            if (isShortcut) {
+                Run(hwnd)
+            } else {
+                WinActivate("ahk_id " . hwnd)
+            }
             LV.Gui.Hide()
         }
     } catch {
