@@ -1,4 +1,4 @@
-#Include ./Monitor.ahk
+#Include ./MonitorLib/Monitor.ahk
 
 global currentIndex := 1
 global previousMonCount := SysGet(80)
