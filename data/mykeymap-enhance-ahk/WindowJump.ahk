@@ -1,11 +1,3 @@
-; ==============================================================================
-; WindowJump.ahk - 窗口快速跳转工具
-; ==============================================================================
-; 功能：通过模糊搜索快速切换窗口，支持中文拼音首字母匹配
-; 依赖：AutoHotkey v2.0+
-; 作者：EggRoll
-; ==============================================================================
-
 #WinActivateForce
 
 #Include ./LoggerLib/Logger.ahk
@@ -272,7 +264,7 @@ WindowJump() {
     ;     LVS_SHOWSELALWAYS (0x0200): 始终显示选中项
     ;   Background/ c: 背景色和文字颜色
     ;   参数数组: 列标题（这里实际只用一列存储窗口信息，第二列隐藏存储 HWND）
-    ResultList := MyGui.Add("ListView", "x20 y95 w560 r11 -Multi -Hdr -E0x200 vResultList +LV0x140 Background" .
+    ResultList := MyGui.Add("ListView", "x20 y95 w560 r14 -Multi -Hdr -E0x200 vResultList +LV0x140 Background" .
         ListViewBg . " c" . FontColor, ["Display", "HWND", "IsShortcut"])
 
     ; ==============================================================================

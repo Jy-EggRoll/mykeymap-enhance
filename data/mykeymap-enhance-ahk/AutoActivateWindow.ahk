@@ -205,7 +205,7 @@ IsValidWindow(hwnd) {
 
 /**
  * 实际执行激活操作的函数
- * @param timeoutInput 激活的输入等待时间，默认为 50 ms
+ * @param timeoutInput 激活的输入等待时间，默认为 200 ms
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 10 像素
  */
 ActivateWindowUnderMouse(timeoutInput := 200, mouseMovementAmplitude := 10) {
