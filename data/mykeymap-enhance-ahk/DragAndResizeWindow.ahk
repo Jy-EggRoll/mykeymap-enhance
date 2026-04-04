@@ -3,7 +3,7 @@
 #Include ./LoggerLib/Logger.ahk
 
 class DragAndResizeWindowDebug {
-    static mode := true
+    static mode := false
 }
 
 ; 设置窗口操作的延迟时间为 10 ms，拖动可以达到 100 帧

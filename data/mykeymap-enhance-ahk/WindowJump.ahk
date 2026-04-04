@@ -10,7 +10,7 @@
 #Include ./AutoActivateWindow.ahk
 
 class WindowJumpDebug {
-    static mode := true
+    static mode := false
 }
 
 ; #Requires AutoHotkey v2.0

@@ -3,7 +3,7 @@
 #Include ../LoggerLib/Logger.ahk
 
 class QueryThemeDebug {
-    static mode := true
+    static mode := false
 }
 
 /**
