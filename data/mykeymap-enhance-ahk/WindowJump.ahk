@@ -7,6 +7,7 @@
 ; ==============================================================================
 
 #Include ./LoggerLib/Logger.ahk
+#Include ./AutoActivateWindow.ahk
 
 class WindowJumpDebug {
     static mode := true
@@ -989,12 +990,16 @@ ActivateWin(LV, RowNumber) {
         LogInfo("激活窗口: hwnd=" . hwnd . " isShortcut=" . isShortcut, , WindowJumpDebug.mode)
 
         if (hwnd) {
+            global windowStates
             if (isShortcut) {
                 LogInfo("运行快捷方式: " . hwnd, , WindowJumpDebug.mode)
                 Run(hwnd)
             } else {
                 LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
+                global lastActiveWindowClass
+                lastActiveWindowClass := "AutoHotkeyGUI"
                 WinActivate("ahk_id " . hwnd)
+                LV.Gui.Hide()
             }
             LV.Gui.Hide()
         }

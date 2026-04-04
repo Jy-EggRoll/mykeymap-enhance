@@ -242,8 +242,19 @@ ActivateWindowUnderMouse(timeoutInput := 200, mouseMovementAmplitude := 10) {
                     if (IsValidWindow(currentActiveID)) {
                         if (windowStates.Has(currentActiveID)) {
                             windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("【从任务列表手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), , AutoActivateWindowDebug.mode
-                            )
+                            LogInfo("【从任务列表手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), ,
+                            AutoActivateWindowDebug.mode)
+                        }
+                    }
+                }
+
+                ; 检测从 WindowJump 激活的窗口
+                if (lastActiveWindowClass == "AutoHotkeyGUI" && currentActiveClass != "AutoHotkeyGUI") {
+                    if (IsValidWindow(currentActiveID)) {
+                        if (windowStates.Has(currentActiveID)) {
+                            windowStates[currentActiveID].mouseVisited := false
+                            LogInfo("【从 WindowJump 手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), ,
+                            AutoActivateWindowDebug.mode)
                         }
                     }
                 }
