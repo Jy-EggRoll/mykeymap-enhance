@@ -123,6 +123,7 @@ WindowJump() {
     static MyGui := 0
     static hIL := 0
     static iconCache := Map()
+    static shortcutCache := Map()
     static lastTheme := ""  ; 记录上一次的主题状态
     static lastAccent := ""  ; 记录上一次的强调色
 
@@ -157,8 +158,8 @@ WindowJump() {
             MyGui["SearchInput"].Value := ""
             ; 将焦点设置到搜索框，方便直接输入
             MyGui["SearchInput"].Focus()
-            ; 刷新列表显示所有窗口
-            RefreshList(MyGui["ResultList"], &hIL, &iconCache)
+            ; 刷新列表显示所有窗口（使用缓存）
+            RefreshAllWindows(MyGui["ResultList"], hIL, iconCache)
             ; 在屏幕中心显示窗口
             MyGui.Show("Center")
             return
@@ -295,7 +296,7 @@ WindowJump() {
     ; 初始化窗口列表
     ; ==============================================================================
     ; 首次显示时，列出所有可跳转的窗口
-    RefreshList(ResultList, &hIL, &iconCache)
+    RefreshList(ResultList, &hIL, &iconCache, &shortcutCache)
 
     ; ==============================================================================
     ; 事件绑定
@@ -310,7 +311,7 @@ WindowJump() {
     ;     *: 可变参数占位符（忽略额外参数）
 
     ; 搜索框内容改变时触发搜索更新
-    EditBox.OnEvent("Change", (obj, *) => UpdateSearch(obj, MyGui["ResultList"], hIL, &iconCache))
+    EditBox.OnEvent("Change", (obj, *) => UpdateSearch(obj, MyGui["ResultList"], hIL, &iconCache, &shortcutCache))
 
     ; 双击列表项时激活对应窗口
     ResultList.OnEvent("DoubleClick", (obj, row) => ActivateWin(obj, row))
@@ -391,9 +392,9 @@ CheckWinFocus(guiObj) {
 ; &hIL: 图像列表句柄的引用（因为需要在函数中销毁重建）
 ; ==============================================================================
 
-RefreshList(LV, &hIL, &iconCache) {
+RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
     global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
-    LogInfo("开始刷新窗口列表", , WindowJumpDebug.mode)
+    LogInfo("开始刷新窗口列表（重建模式）", , WindowJumpDebug.mode)
 
     ; 1. 清空 ListView 所有行
     LV.Delete()
@@ -403,6 +404,7 @@ RefreshList(LV, &hIL, &iconCache) {
         IL_Destroy(hIL)
     }
     iconCache := Map()
+    shortcutCache := Map()
 
     ; 3. 创建新的图像列表
     hIL := IL_Create(20, 10, 0)
@@ -427,16 +429,25 @@ RefreshList(LV, &hIL, &iconCache) {
     }
 
     LogInfo("刷新完成，共添加 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
+}
 
-    ; ==============================================================================
-    ; 选中和聚焦第一行
-    ; ==============================================================================
-    ; LV.GetCount(): 获取行数
-    ; LV.Modify(RowNumber, Options)
-    ;   -RowNumber: 行号（0 表示所有行）
-    ;   -Options: 修改选项
-    ;     Select: 选中
-    ;     Focus: 聚焦（键盘操作焦点）
+RefreshAllWindows(LV, hIL, iconCache) {
+    LogInfo("RefreshAllWindows: 使用现有缓存刷新列表", , WindowJumpDebug.mode)
+    LV.Delete()
+    windowCount := 0
+    for hwnd in WinGetList() {
+        try {
+            title := WinGetTitle(hwnd)
+            process := WinGetProcessName(hwnd)
+            style := WinGetStyle(hwnd)
+            if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
+                iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
+                LV.Add("Icon" . iconIdx, " [" . process . "] " . title, hwnd, "0")
+                windowCount++
+            }
+        }
+    }
+    LogInfo("RefreshAllWindows 完成，共 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
     if (LV.GetCount() > 0) {
         LV.Modify(1, "Select Focus")
     }
@@ -450,17 +461,17 @@ RefreshList(LV, &hIL, &iconCache) {
 ; hIL: 图像列表句柄
 ; ==============================================================================
 
-UpdateSearch(EditObj, LV, hIL, &iconCache) {
+UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
     LogInfo("搜索内容改变: [" . EditObj.Value . "]", , WindowJumpDebug.mode)
 
     ; 1. 获取当前搜索文本
     currentInput := Trim(EditObj.Value)
 
-    ; 2. 如果搜索框为空，显示全部窗口
+    ; 2. 如果搜索框为空，显示全部窗口（不清空缓存，只刷新列表）
     if (currentInput == "") {
-        LogInfo("搜索框为空，刷新全部列表", , WindowJumpDebug.mode)
-        RefreshList(LV, &hIL, &iconCache)
+        LogInfo("搜索框为空，显示全部窗口（使用缓存）", , WindowJumpDebug.mode)
+        RefreshAllWindows(LV, hIL, iconCache)
         return
     }
 
@@ -529,7 +540,13 @@ UpdateSearch(EditObj, LV, hIL, &iconCache) {
         loop (Min(results.Length, 30)) {
             res := results[A_Index]
             if (res.isShortcut) {
-                iconIdx := GetFileIconIndex(res.hwnd, hIL)
+                if (shortcutCache.Has(res.hwnd)) {
+                    iconIdx := shortcutCache[res.hwnd]
+                } else {
+                    iconIdx := GetFileIconIndex(res.hwnd, hIL)
+                    shortcutCache[res.hwnd] := iconIdx
+                    LogInfo("快捷方式缓存未命中: path=" . res.hwnd, , WindowJumpDebug.mode)
+                }
             } else {
                 process := WinGetProcessName(res.hwnd)
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
@@ -550,17 +567,15 @@ UpdateSearch(EditObj, LV, hIL, &iconCache) {
 
 GetIconIndexByProcess(process, hIL, iconCache) {
     if (iconCache.Has(process)) {
-        LogInfo("图标缓存命中: process=" . process . " idx=" . iconCache[process], , WindowJumpDebug.mode)
         return iconCache[process]
     }
     hwnd := WinExist("ahk_exe " . process)
     if (!hwnd) {
-        LogInfo("图标获取失败(无窗口): process=" . process, , WindowJumpDebug.mode)
         return 1
     }
     iconIdx := GetUwpIconIndex(hwnd, hIL)
     iconCache[process] := iconIdx
-    LogInfo("图标缓存未命中，获取新图标: process=" . process . " hwnd=" . hwnd . " idx=" . iconIdx, , WindowJumpDebug.mode)
+    LogInfo("窗口图标缓存未命中: process=" . process . " idx=" . iconIdx, , WindowJumpDebug.mode)
     return iconIdx
 }
 
@@ -753,7 +768,7 @@ FuzzyScore(query, target) {
         return 0
     }
 
-    LogInfo("FuzzyScore: 匹配成功，分数=" . totalScore, , WindowJumpDebug.mode)
+    ; LogInfo("FuzzyScore: 匹配成功，分数=" . totalScore, , WindowJumpDebug.mode)
     return totalScore
 }
 
