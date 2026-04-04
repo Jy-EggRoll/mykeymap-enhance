@@ -6,6 +6,12 @@
 ; 作者：EggRoll
 ; ==============================================================================
 
+#Include ./LoggerLib/Logger.ahk
+
+class WindowJumpDebug {
+    static mode := true
+}
+
 ; #Requires AutoHotkey v2.0
 ; 强制脚本只能运行一个实例，如果已存在则替换
 ; #SingleInstance Force
@@ -33,6 +39,8 @@ InitShortcuts() {
 
     global shortcutsDir
     shortcutsDir := A_Temp "\WindowJump_Shortcuts"
+
+    LogInfo("初始化快捷方式目录：" . shortcutsDir, , WindowJumpDebug.mode)
 
     if DirExist(shortcutsDir) {
         loop files, shortcutsDir "\*", "FD" {
@@ -62,6 +70,8 @@ InitShortcuts() {
             }
         }
     }
+
+    LogInfo("快捷方式初始化完成", , WindowJumpDebug.mode)
 }
 
 ; 运行脚本时立即执行一次，减少视觉闪烁
@@ -73,6 +83,7 @@ GetShortcuts(&shortcuts) {
     shortcuts := []
 
     if !DirExist(shortcutsDir) {
+        LogInfo("快捷方式目录不存在，初始化", , WindowJumpDebug.mode)
         InitShortcuts()
     }
 
@@ -82,6 +93,8 @@ GetShortcuts(&shortcuts) {
             shortcuts.Push({ name: name, path: A_LoopFileFullPath })
         }
     }
+
+    LogInfo("获取到 " . shortcuts.Length . " 个快捷方式", , WindowJumpDebug.mode)
 }
 
 ; ==============================================================================
@@ -108,8 +121,11 @@ WindowJump() {
     static MyGui := 0
     static hIL := 0
 
+    LogInfo("WindowJump 被调用", , WindowJumpDebug.mode)
+
     ; 3. 如果 GUI 已存在（复现窗口）
     if (MyGui) {
+        LogInfo("GUI 已存在，复现窗口", , WindowJumpDebug.mode)
         ; 清空搜索框内容
         MyGui["SearchInput"].Value := ""
         ; 将焦点设置到搜索框，方便直接输入
@@ -325,11 +341,13 @@ CheckWinFocus(guiObj) {
     ;   "ahk_id " . guiObj.Hwnd: 通过窗口句柄查找
     ;   返回 HWND，如果窗口不存在返回 0
     if !WinExist("ahk_id " . guiObj.Hwnd) {
+        ; LogInfo("GUI 窗口不存在，停止检测", , WindowJumpDebug.mode)
         return
     }
     ; WinActive(WinTitle): 检查窗口是否处于活动状态
     ;   如果不活动，隐藏窗口
     if !WinActive("ahk_id " . guiObj.Hwnd) {
+        LogInfo("GUI 失去焦点，隐藏窗口", , WindowJumpDebug.mode)
         guiObj.Hide()
     }
 }
@@ -342,6 +360,8 @@ CheckWinFocus(guiObj) {
 ; ==============================================================================
 
 RefreshList(LV, &hIL) {
+    LogInfo("开始刷新窗口列表", , WindowJumpDebug.mode)
+
     ; 1. 清空 ListView 所有行
     ; LV.Delete(): 删除所有行，无参数表示删除全部
     LV.Delete()
@@ -359,6 +379,8 @@ RefreshList(LV, &hIL) {
 
     ; 4. 重新绑定图像列表到 ListView
     LV.SetImageList(hIL)
+
+    windowCount := 0
 
     ; ==============================================================================
     ; 获取所有窗口
@@ -404,10 +426,13 @@ RefreshList(LV, &hIL) {
                 ;   -FieldN: 各列的内容
                 ; 添加行，格式为 " [进程名] 窗口标题"
                 LV.Add("Icon" . iconIdx, " [" . process . "] " . title, hwnd, "0")
+                windowCount++
             }
         }
         ; try-catch: 忽略无法访问的窗口（如系统窗口）
     }
+
+    LogInfo("刷新完成，共添加 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
 
     ; ==============================================================================
     ; 选中和聚焦第一行
@@ -432,11 +457,14 @@ RefreshList(LV, &hIL) {
 ; ==============================================================================
 
 UpdateSearch(EditObj, LV, hIL) {
+    LogInfo("搜索内容改变: [" . EditObj.Value . "]", , WindowJumpDebug.mode)
+
     ; 1. 获取当前搜索文本
     currentInput := Trim(EditObj.Value)
 
     ; 2. 如果搜索框为空，显示全部窗口
     if (currentInput == "") {
+        LogInfo("搜索框为空，刷新全部列表", , WindowJumpDebug.mode)
         RefreshList(LV, &hIL)
         return
     }
@@ -479,6 +507,7 @@ UpdateSearch(EditObj, LV, hIL) {
 
     ; 快捷方式匹配
     GetShortcuts(&shortcuts)
+    LogInfo("开始匹配快捷方式，数量: " . shortcuts.Length, , WindowJumpDebug.mode)
     for shortcut in shortcuts {
         fullText := StrLower(shortcut.name)
         score := FuzzyScore(searchLower, fullText)
@@ -486,6 +515,8 @@ UpdateSearch(EditObj, LV, hIL) {
             results.Push({ score: score // 2, text: ">>> " . shortcut.name, hwnd: shortcut.path, isShortcut: true })
         }
     }
+
+    LogInfo("窗口匹配 " . results.Length . " 个结果", , WindowJumpDebug.mode)
 
     ; 5. 排序结果（按分数从高到低）
     if (results.Length > 0) {
@@ -679,6 +710,8 @@ FuzzyScore(query, target) {
     ; 词元分割（空格分割）
     tokens := StrSplit(query, " ")
 
+    ; LogInfo("FuzzyScore: query=[" . query . "] target=[" . target . "] tokens=" . tokens.Length, , WindowJumpDebug.mode)
+
     ; 逐词元匹配
     for _, token in tokens {
         if (token == "") {
@@ -708,9 +741,11 @@ FuzzyScore(query, target) {
 
     ; 所有词元都匹配才返回分数（AND 逻辑）
     if (matchedTokens < tokens.Length) {
+        ; LogInfo("FuzzyScore: 未全部匹配，返回 0 (matched=" . matchedTokens . "/" . tokens.Length . ")", , WindowJumpDebug.mode)
         return 0
     }
 
+    LogInfo("FuzzyScore: 匹配成功，分数=" . totalScore, , WindowJumpDebug.mode)
     return totalScore
 }
 
@@ -723,6 +758,8 @@ FuzzyScore(query, target) {
 UpdateTheme() {
     ; 声明全局变量（在函数内修改全局变量需要先声明）
     global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
+
+    LogInfo("开始更新主题", , WindowJumpDebug.mode)
 
     ; ==============================================================================
     ; 读取系统深色模式状态
@@ -741,6 +778,8 @@ UpdateTheme() {
     } catch {
         IsDarkMode := false
     }
+
+    LogInfo("系统主题: " . (IsDarkMode ? "深色模式" : "浅色模式"), , WindowJumpDebug.mode)
 
     ; ==============================================================================
     ; 读取系统强调色
@@ -947,15 +986,19 @@ ActivateWin(LV, RowNumber) {
         hwnd := LV.GetText(RowNumber, 2)
         isShortcut := LV.GetText(RowNumber, 3) = "1"
 
+        LogInfo("激活窗口: hwnd=" . hwnd . " isShortcut=" . isShortcut, , WindowJumpDebug.mode)
+
         if (hwnd) {
             if (isShortcut) {
+                LogInfo("运行快捷方式: " . hwnd, , WindowJumpDebug.mode)
                 Run(hwnd)
             } else {
+                LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
                 WinActivate("ahk_id " . hwnd)
             }
             LV.Gui.Hide()
         }
-    } catch {
-        ; 异常时不报错（可能窗口已关闭）
+    } catch Error as e {
+        LogError(e, , WindowJumpDebug.mode)
     }
 }

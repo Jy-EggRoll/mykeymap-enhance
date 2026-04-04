@@ -5,7 +5,7 @@
 #WinActivateForce  ; 防止在窗口快速被激活时导致闪烁，这是 ahk 的已知问题
 
 class AutoActivateWindowDebug {
-    static mode := false
+    static mode := true
 }
 
 AutoActivateWindowDebug.mode := false  ; 是否启用开发模式，设为 true 会打开控制台并显示调试信息
@@ -210,7 +210,7 @@ IsValidWindow(hwnd) {
  * @param timeoutInput 激活的输入等待时间，默认为 50 ms
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 10 像素
  */
-ActivateWindowUnderMouse(timeoutInput := 50, mouseMovementAmplitude := 10) {
+ActivateWindowUnderMouse(timeoutInput := 200, mouseMovementAmplitude := 10) {
     global mousePos, windowStates, pendingActivation, lastActiveWindowClass
 
     MouseGetPos(&mouseX, &mouseY, &targetID)

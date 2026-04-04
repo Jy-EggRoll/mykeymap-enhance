@@ -7,7 +7,7 @@
 #Include AutoActivateWindow.ahk
 
 class AutoWindowColorBorderDebug {
-    static mode := false
+    static mode := true
 }
 
 ; Windows DWM API
@@ -174,12 +174,15 @@ UpdateWindowBorder() {
     try {
         currentActiveWindow := WinExist("A")
 
-        if (currentActiveWindow != lastActiveWindow && currentActiveWindow != 0) {  ; currentActiveWindow 不能为零，否则易产生无效的清除死循环
+        if (currentActiveWindow != lastActiveWindow && currentActiveWindow != 0) {
             ; 立即清除失去焦点的窗口边框
             if (lastActiveWindow != 0) {
-                ; 检查窗口是否是置顶状态，置顶窗口不消除边框
+                if !WinExist(lastActiveWindow) {
+                    lastActiveWindow := 0
+                    return
+                }
                 exStyle := WinGetExStyle(lastActiveWindow)
-                isTopmost := (exStyle & 0x8)  ; 0x8 表示置顶
+                isTopmost := (exStyle & 0x8)
                 if (!isTopmost && ClearWindowBorder(lastActiveWindow)) {
                     LogInfo("成功清除 [" WinGetTitle(lastActiveWindow) "] [" WinGetClass(lastActiveWindow) "] [" lastActiveWindow "] 的边框颜色", ,
                     AutoWindowColorBorderDebug.mode)
