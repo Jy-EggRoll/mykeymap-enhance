@@ -117,6 +117,12 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">WindowJump()</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">窗口跳转，通过模糊搜索快速切换窗口</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>Space</kbd></td>
+    </tr>
+    <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoWindowColorBorder()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数。为活动窗口添加彩色边框，置顶窗口显示特殊的 mauve 色边框。默认随 MyKeymap 启动</td>
@@ -144,6 +150,10 @@ weight:
 </table>
 
 ## 功能详解
+
+### 窗口跳转 WindowJump
+
+通过模糊搜索快速切换窗口，现支持字母模糊匹配。输入关键词后，窗口会实时显示匹配的窗口列表，使用上下键选择后按回车即可切换到目标窗口。
 
 ### 拖动与调节 DragWindow & ResizeWindow
 
