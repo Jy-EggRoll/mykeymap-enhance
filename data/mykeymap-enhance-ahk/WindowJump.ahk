@@ -8,6 +8,7 @@
 
 #Include ./LoggerLib/Logger.ahk
 #Include ./AutoActivateWindow.ahk
+#Include ./VD.ahk
 
 class WindowJumpDebug {
     static mode := false
@@ -396,24 +397,21 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
     global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
     LogInfo("开始刷新窗口列表（重建模式）", , WindowJumpDebug.mode)
 
-    ; 1. 清空 ListView 所有行
     LV.Delete()
 
-    ; 2. 销毁旧的图像列表（图标随 ImageList 销毁，索引失效）
     if (hIL) {
         IL_Destroy(hIL)
     }
     iconCache := Map()
     shortcutCache := Map()
 
-    ; 3. 创建新的图像列表
     hIL := IL_Create(20, 10, 0)
 
-    ; 4. 重新绑定图像列表到 ListView
     LV.SetImageList(hIL)
 
     windowCount := 0
-
+    bak_DetectHiddenWindows := A_DetectHiddenWindows
+    A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
             title := WinGetTitle(hwnd)
@@ -421,12 +419,23 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
             style := WinGetStyle(hwnd)
 
             if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
+                desktopNum := VD.getDesktopNumOfHWND(hwnd)
+                if (desktopNum > 0) {
+                    desktopInfo := " [桌面" . desktopNum . "]"
+                } else if (desktopNum == -1) {
+                    desktopInfo := " [所有桌面]"
+                } else if (desktopNum == -2) {
+                    desktopInfo := " [应用所有桌面]"
+                } else {
+                    desktopInfo := ""
+                }
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
-                LV.Add("Icon" . iconIdx, " [" . process . "] " . title, hwnd, "0")
+                LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0")
                 windowCount++
             }
         }
     }
+    A_DetectHiddenWindows := bak_DetectHiddenWindows
 
     LogInfo("刷新完成，共添加 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
 }
@@ -435,18 +444,31 @@ RefreshAllWindows(LV, hIL, iconCache) {
     LogInfo("RefreshAllWindows: 使用现有缓存刷新列表", , WindowJumpDebug.mode)
     LV.Delete()
     windowCount := 0
+    bak_DetectHiddenWindows := A_DetectHiddenWindows
+    A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
             title := WinGetTitle(hwnd)
             process := WinGetProcessName(hwnd)
             style := WinGetStyle(hwnd)
             if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
+                desktopNum := VD.getDesktopNumOfHWND(hwnd)
+                if (desktopNum > 0) {
+                    desktopInfo := " [桌面" . desktopNum . "]"
+                } else if (desktopNum == -1) {
+                    desktopInfo := " [所有桌面]"
+                } else if (desktopNum == -2) {
+                    desktopInfo := " [应用所有桌面]"
+                } else {
+                    desktopInfo := ""
+                }
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
-                LV.Add("Icon" . iconIdx, " [" . process . "] " . title, hwnd, "0")
+                LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0")
                 windowCount++
             }
         }
     }
+    A_DetectHiddenWindows := bak_DetectHiddenWindows
     LogInfo("RefreshAllWindows 完成，共 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
     if (LV.GetCount() > 0) {
         LV.Modify(1, "Select Focus")
@@ -487,6 +509,8 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     ; ==============================================================================
     ; 遍历所有窗口进行匹配
     ; ==============================================================================
+    bak_DetectHiddenWindows := A_DetectHiddenWindows
+    A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
             title := WinGetTitle(hwnd)
@@ -498,6 +522,17 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
                 continue
             }
 
+            desktopNum := VD.getDesktopNumOfHWND(hwnd)
+            if (desktopNum > 0) {
+                desktopInfo := " [桌面" . desktopNum . "]"
+            } else if (desktopNum == -1) {
+                desktopInfo := " [所有桌面]"
+            } else if (desktopNum == -2) {
+                desktopInfo := " [应用所有桌面]"
+            } else {
+                desktopInfo := ""
+            }
+
             ; 构造搜索目标文本
             fullText := StrLower("[" . process . "] " . title)
 
@@ -506,10 +541,11 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
 
             ; 保留匹配结果
             if (score > 0) {
-                results.Push({ score: score, text: " [" . process . "] " . title, hwnd: hwnd, isShortcut: false })
+                results.Push({ score: score, text: desktopInfo . " [" . process . "] " . title, hwnd: hwnd, isShortcut: false })
             }
         }
     }
+    A_DetectHiddenWindows := bak_DetectHiddenWindows
 
     ; 快捷方式匹配
     GetShortcuts(&shortcuts)
@@ -998,21 +1034,12 @@ HandleEnter(GuiObj) {
 
 ActivateWin(LV, RowNumber) {
     try {
-        ; ==============================================================================
-        ; 获取窗口句柄
-        ; ==============================================================================
-        ; LV.GetText(RowNumber, ColumnNumber)
-        ;   -RowNumber: 行号
-        ;   -ColumnNumber: 列号（1-based）
-        ;   -返回: 对应单元格的文本
-        ; 第二列存储了窗口 HWND（作为字符串）
         hwnd := LV.GetText(RowNumber, 2)
         isShortcut := LV.GetText(RowNumber, 3) = "1"
 
         LogInfo("激活窗口: hwnd=" . hwnd . " isShortcut=" . isShortcut, , WindowJumpDebug.mode)
 
         if (hwnd) {
-            global windowStates
             if (isShortcut) {
                 LogInfo("运行快捷方式: " . hwnd, , WindowJumpDebug.mode)
                 Run(hwnd)
@@ -1020,7 +1047,13 @@ ActivateWin(LV, RowNumber) {
                 LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
                 global lastActiveWindowClass
                 lastActiveWindowClass := "AutoHotkeyGUI"
-                WinActivate("ahk_id " . hwnd)
+                targetDesktopNum := VD.getDesktopNumOfHWND(hwnd)
+                currentDesktopNum := VD.getCurrentDesktopNum()
+                if (targetDesktopNum > 0 && targetDesktopNum != currentDesktopNum) {
+                    VD.goToDesktopOfWindow("ahk_id " . hwnd)
+                } else {
+                    WinActivate("ahk_id " . hwnd)
+                }
             }
             LV.Gui.Hide()
         }

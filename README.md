@@ -166,6 +166,7 @@ weight:
 > [!TIP]
 >
 > 拼音匹配功能由 [IbPinyinLib](https://github.com/Chaoses-Ib/ib-matcher) 高性能拼音库提供支持，特此致谢。
+> 虚拟桌面窗口识别功能由 [VD.ahk](https://github.com/FuPeiJiang/VD.ahk) 库提供支持，特此致谢。
 
 ### 拖动与调节 DragWindow & ResizeWindow
 
