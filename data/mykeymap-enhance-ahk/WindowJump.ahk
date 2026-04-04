@@ -10,6 +10,9 @@
 #Include ./AutoActivateWindow.ahk
 #Include ./VDLib/VD.ahk
 
+#WinActivateForce
+VD.animation_on := true
+
 class WindowJumpDebug {
     static mode := false
 }
