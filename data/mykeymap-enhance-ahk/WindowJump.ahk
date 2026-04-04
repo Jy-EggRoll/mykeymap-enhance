@@ -218,50 +218,45 @@ UpdateSearch(EditObj, LV) {
 }
 
 FuzzyScore(query, target) {
-    qLen := StrLen(query)
-    tLen := StrLen(target)
-    score := 0
-    tIdx := 1
-    lastMatchIdx := 0
-    consecutiveMatches := 0
+    if !(qLen := StrLen(query))
+        return 0
 
-    ; 预先找到进程名结束的分界点位置
-    processEndPos := InStr(target, "]")
+    ; 移除噪声后缀 .exe
+    target := StrReplace(target, ".exe", "")
 
-    loop (qLen) {
+    score := 0, tIdx := 1, lastIdx := 0, consecutive := 0
+    pEnd := InStr(target, "]")
+
+    loop qLen {
         char := SubStr(query, A_Index, 1)
-        foundPos := InStr(target, char, false, tIdx)
-
-        if (foundPos == 0) {
+        found := InStr(target, char, false, tIdx)
+        if (!found) {
             return 0
         }
+        ; 基础分：进程名内 20，标题内 10
+        score += (found <= pEnd) ? 20 : 10
 
-        score += 10 ; 命中基础分
-
-        if (lastMatchIdx != 0 && foundPos == lastMatchIdx + 1) {
-            consecutiveMatches++
-            score += (25 * consecutiveMatches) ; 连续匹配奖励
+        ; 连续性奖励大于首字母加分
+        if (lastIdx && found == lastIdx + 1) {
+            consecutive++
+            ; 连续匹配累计强化加分
+            score += (20 * consecutive)
         } else {
-            consecutiveMatches := 0
-            if (lastMatchIdx != 0) {
-                score -= (foundPos - lastMatchIdx) ; 距离惩罚
+            consecutive := 0
+            ; 距离惩罚：断开匹配时扣分
+            if (lastIdx) {
+                score -= (found - lastIdx) * 10
             }
         }
 
-        prevChar := (foundPos > 1) ? SubStr(target, foundPos - 1, 1) : ""
-
-        ; 检查是否命中边界（字符串开头、空格后）
-        if (foundPos == 1 || prevChar == " " || prevChar == "[") {
-            ; 如果该边界点位于进程名内（即在第一个 "]" 之前），给超高分
-            if (processEndPos > 0 && foundPos <= processEndPos) {
-                score += 100 ; 进程名首字母/边界加分 (大幅提升)
-            } else {
-                score += 40  ; 普通标题单词首字母加分
-            }
+        ; 边界奖励：仅给少量固定加分，不作为主导
+        prev := (found > 1) ? SubStr(target, found - 1, 1) : ""
+        if (prev == "[" || prev == " ") {
+            score += 30
         }
 
-        lastMatchIdx := foundPos
-        tIdx := foundPos + 1
+        lastIdx := found
+        tIdx := found + 1
     }
     return score
 }
