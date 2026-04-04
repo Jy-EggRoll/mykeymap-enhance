@@ -7,7 +7,7 @@
 #Include AutoActivateWindow.ahk
 
 class AutoWindowColorBorderDebug {
-    static mode := false
+    static mode := true
 }
 
 ; Windows DWM API

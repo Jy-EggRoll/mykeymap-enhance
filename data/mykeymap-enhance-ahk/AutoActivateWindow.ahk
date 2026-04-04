@@ -4,8 +4,10 @@
 
 #WinActivateForce  ; 防止在窗口快速被激活时导致闪烁，这是 ahk 的已知问题
 
+global lastActiveID := ""
+
 class AutoActivateWindowDebug {
-    static mode := false
+    static mode := true
 }
 
 ; 全局变量用于跟踪自动激活功能的状态
@@ -27,9 +29,9 @@ class WindowState {
 
 /**
  * 切换自动激活窗口的开启状态，是一个开关函数
- * @param pollingTime 轮询时间，默认为 50 ms
+ * @param pollingTime 轮询时间，默认为 20 ms
  */
-AutoActivateWindow(pollingTime := 50) {
+AutoActivateWindow(pollingTime := 20) {
     global autoActivateEnabled
 
     if (!autoActivateEnabled) {
@@ -205,101 +207,48 @@ IsValidWindow(hwnd) {
 
 /**
  * 实际执行激活操作的函数
- * @param timeoutInput 激活的输入等待时间，默认为 200 ms
+ * @param timeoutInput 激活的输入等待时间，默认为 500 ms
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 10 像素
  */
-ActivateWindowUnderMouse(timeoutInput := 200, mouseMovementAmplitude := 10) {
-    global mousePos, windowStates, pendingActivation, lastActiveWindowClass
+ActivateWindowUnderMouse(timeoutInput := 500, mouseMovementAmplitude := 10) {
+    global mousePos, windowStates, pendingActivation, lastActiveWindowClass, lastActiveID
+
+    pendingActivation := false
 
     MouseGetPos(&mouseX, &mouseY, &targetID)
+
     try {
-        ; 检测用户手动切换窗口
-        ; 核心逻辑：焦点从任务栏或任务列表 -> 窗口 = 用户手动激活
+        ; 检测焦点切换
         currentActiveID := WinExist("A")
-        if (currentActiveID) {
-            try {
-                currentActiveClass := WinGetClass("A")
-
-                ; 检测焦点切换：从任务栏切换到普通窗口
-                if (lastActiveWindowClass == "Shell_TrayWnd" && currentActiveClass != "Shell_TrayWnd") {
-                    ; 用户通过任务栏激活了一个窗口
-                    ; 将这个新激活的窗口标记为"未访问"，阻止自动激活干扰
-                    if (IsValidWindow(currentActiveID)) {
-                        if (windowStates.Has(currentActiveID)) {
-                            windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("【从任务栏手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), , AutoActivateWindowDebug.mode)
-                        }
-                    }
-                }
-
-                ; 检测用户通过任务列表激活了一个窗口
-                if (lastActiveWindowClass == "XamlExplorerHostIslandWindow" && currentActiveClass !=
-                    "XamlExplorerHostIslandWindow") {
-                    ; 用户通过任务列表激活了一个窗口
-                    ; 将这个新激活的窗口标记为"未访问"，阻止自动激活干扰
-                    if (IsValidWindow(currentActiveID)) {
-                        if (windowStates.Has(currentActiveID)) {
-                            windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("【从任务列表手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), ,
-                            AutoActivateWindowDebug.mode)
-                        }
-                    }
-                }
-
-                ; 检测从 WindowJump 激活的窗口
-                if (lastActiveWindowClass == "AutoHotkeyGUI" && currentActiveClass != "AutoHotkeyGUI") {
-                    if (IsValidWindow(currentActiveID)) {
-                        if (windowStates.Has(currentActiveID)) {
-                            windowStates[currentActiveID].mouseVisited := false
-                            LogInfo("【从 WindowJump 手动打开】标记为未访问窗口：" WinGetTitle(currentActiveID), ,
-                            AutoActivateWindowDebug.mode)
-                        }
-                    }
-                }
-
-                ; 更新上一次激活窗口的类名
-                lastActiveWindowClass := currentActiveClass
+        if (currentActiveID && currentActiveID != lastActiveID) {
+            ; 只要 ID 变了，说明焦点发生了转移
+            if (windowStates.Has(currentActiveID) && IsValidWindow(currentActiveID)) {
+                windowStates[currentActiveID].mouseVisited := false
+                LogInfo("检测到焦点切换，标记为未访问：" WinGetTitle(currentActiveID), , AutoActivateWindowDebug.mode)
             }
-            catch Error as e {
-                LogError(e, , AutoActivateWindowDebug.mode)
-            }
+            lastActiveID := currentActiveID ; 更新记录
         }
 
-        ; 更新鼠标悬停窗口的访问状态
-        if (targetID && WinExist(targetID) && IsValidWindow(targetID)) {
-            if (windowStates.Has(targetID)) {
-                ; 如果窗口在跟踪列表中，标记为已访问
-                windowStates[targetID].mouseVisited := true
-            }
+        ; 1. 更新鼠标下的窗口状态
+        if (targetID && windowStates.Has(targetID) && IsValidWindow(targetID)) {
+            windowStates[targetID].mouseVisited := true
         }
 
-        ; 检查是否有未访问的窗口，如果有则完全禁用自动激活
-        activationAllowed := CheckForUnvisitedWindows()
-        if (!activationAllowed) {
-            ; 有未访问的窗口，完全禁用自动激活
+        ; 2. 拦截检查：是否有未访问窗口或按键按下
+        if (!CheckForUnvisitedWindows() || GetKeyState("LButton", "P") || GetKeyState("RButton", "P")) {
             pendingActivation := false
             return
         }
 
-        if (GetKeyState("LButton", "P") || GetKeyState("RButton", "P") || GetKeyState("MButton", "P") || GetKeyState(
-            "XButton1", "P") || GetKeyState("XButton2", "P")) {  ; 如果鼠标任何键被按下，则完全禁用自动激活，这可以确保当用户在复制文字时，鼠标可以自由地移开窗口，同时也考虑到了其他特殊长按情况
-            pendingActivation := false
-            return
-        }
-
-        if ((Abs(mouseX - mousePos[1]) > mouseMovementAmplitude || Abs(mouseY - mousePos[2]) > mouseMovementAmplitude) &&
-        A_TimeIdle >= timeoutInput) {
-            ; 鼠标位置在 pollingTime ms 内发生了明显移动，且有 timeoutInput ms 的时间没有移动了，则启用“待激活”模式
+        ; 3. 激活逻辑：判断鼠标移动和静止状态
+        if (A_TimeIdle >= timeoutInput && (Abs(mouseX - mousePos[1]) > mouseMovementAmplitude || Abs(mouseY - mousePos[
+            2]) > mouseMovementAmplitude)) {
             pendingActivation := true
-            mousePos := [mouseX, mouseY]  ; 立即更新位置
+            mousePos := [mouseX, mouseY]
         }
 
-        ; 如果处于待激活模式
-        if (pendingActivation) {
-            if (JudgeActivate(targetID)) {
-                WinActivate(targetID)
-            }
-            ; 不论激活是否成功，都重置待激活状态
+        if (pendingActivation && JudgeActivate(targetID)) {
+            WinActivate(targetID)
             pendingActivation := false
         }
     }

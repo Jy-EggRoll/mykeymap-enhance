@@ -3,7 +3,7 @@
 #Include ./LoggerLib/Logger.ahk
 
 class SmoothScrollSimulateDebug {
-    static mode := false
+    static mode := true
 }
 
 LastMouseX := 0

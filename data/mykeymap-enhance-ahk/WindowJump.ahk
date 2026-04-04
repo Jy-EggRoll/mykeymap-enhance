@@ -5,7 +5,7 @@
 #Include ./VDLib/VD.ahk
 
 class WindowJumpDebug {
-    static mode := false
+    static mode := true
 }
 
 ; #Requires AutoHotkey v2.0
