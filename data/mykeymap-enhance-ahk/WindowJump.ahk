@@ -218,20 +218,19 @@ UpdateSearch(EditObj, LV) {
 }
 
 FuzzyScore(query, target) {
-    if !(query := Trim(query))
+    if !(query := Trim(query)) {
         return 0
+    }
 
     target := StrReplace(target, ".exe", "")
     totalScore := 0
-
-    ; 按空格拆分词元，支持乱序
     tokens := StrSplit(query, " ")
 
     for _, token in tokens {
         if (token == "") {
             continue
         }
-        ; 针对每个词元进行单向匹配
+
         tScore := 0, tIdx := 1, lastIdx := 0, consecutive := 0
         pEnd := InStr(target, "]")
 
@@ -240,20 +239,27 @@ FuzzyScore(query, target) {
             found := InStr(target, char, false, tIdx)
 
             if (!found) {
-                return 0
+                return 0  ; 词元不完整匹配则该 target 无效
             }
+
+            ; 只要命中了字符，就给一个较大的基础分，确保“查得到”
+            tScore += 30
+
+            ; 区分位置权重
             tScore += (found <= pEnd) ? 20 : 10
+
             if (lastIdx && found == lastIdx + 1) {
-                consecutive++, tScore += (20 * consecutive)
-            } else {
-                consecutive := 0
-                if (lastIdx) {
-                    tScore -= (found - lastIdx) * 10
-                }
+                consecutive++
+                ; 连续匹配奖励
+                tScore += (50 * consecutive)
             }
+
             prev := (found > 1) ? SubStr(target, found - 1, 1) : ""
-            if (prev == "[" || prev == " ") tScore += 30
-                lastIdx := found
+            if (prev == "[" || prev == " ") {
+                tScore += 40  ; 边界加分
+            }
+
+            lastIdx := found
             tIdx := found + 1
         }
         totalScore += tScore
