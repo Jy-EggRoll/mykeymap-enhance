@@ -8,7 +8,7 @@
 
 #Include ./LoggerLib/Logger.ahk
 #Include ./AutoActivateWindow.ahk
-#Include ./VD.ahk
+#Include ./VDLib/VD.ahk
 
 class WindowJumpDebug {
     static mode := false
@@ -410,13 +410,16 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
     LV.SetImageList(hIL)
 
     windowCount := 0
+    bak_DetectHiddenWindows := A_DetectHiddenWindows
+    A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
             title := WinGetTitle(hwnd)
             process := WinGetProcessName(hwnd)
             style := WinGetStyle(hwnd)
+            exStyle := WinGetExStyle(hwnd)
 
-            if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
+            if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd && (style & 0x10000000)) {
                 desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
                 if (desktopNum > 0) {
                     desktopInfo := " [桌面" . desktopNum . "]"
@@ -433,6 +436,7 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
             }
         }
     }
+    A_DetectHiddenWindows := bak_DetectHiddenWindows
 
     LogInfo("刷新完成，共添加 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
 }
@@ -441,12 +445,15 @@ RefreshAllWindows(LV, hIL, iconCache) {
     LogInfo("RefreshAllWindows: 使用现有缓存刷新列表", , WindowJumpDebug.mode)
     LV.Delete()
     windowCount := 0
+    bak_DetectHiddenWindows := A_DetectHiddenWindows
+    A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
             title := WinGetTitle(hwnd)
             process := WinGetProcessName(hwnd)
             style := WinGetStyle(hwnd)
-            if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd) {
+            exStyle := WinGetExStyle(hwnd)
+            if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd && (style & 0x10000000)) {
                 desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
                 if (desktopNum > 0) {
                     desktopInfo := " [桌面" . desktopNum . "]"
@@ -463,6 +470,7 @@ RefreshAllWindows(LV, hIL, iconCache) {
             }
         }
     }
+    A_DetectHiddenWindows := bak_DetectHiddenWindows
     LogInfo("RefreshAllWindows 完成，共 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
     if (LV.GetCount() > 0) {
         LV.Modify(1, "Select Focus")
@@ -503,14 +511,17 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     ; ==============================================================================
     ; 遍历所有窗口进行匹配
     ; ==============================================================================
+    bak_DetectHiddenWindows := A_DetectHiddenWindows
+    A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
             title := WinGetTitle(hwnd)
             process := WinGetProcessName(hwnd)
             style := WinGetStyle(hwnd)
+            exStyle := WinGetExStyle(hwnd)
 
             ; 过滤条件
-            if (title == "" || !(style & 0x40000) || hwnd == EditObj.Gui.Hwnd) {
+            if (title == "" || !(style & 0x40000) || hwnd == EditObj.Gui.Hwnd || !(style & 0x10000000)) {
                 continue
             }
 
@@ -537,6 +548,7 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
             }
         }
     }
+    A_DetectHiddenWindows := bak_DetectHiddenWindows
 
     ; 快捷方式匹配
     GetShortcuts(&shortcuts)
