@@ -36,13 +36,13 @@ UpdateTheme() {
     ; MixColor(原始强调色, 目标色, 偏移权重)
     ; 权重越大，颜色越接近目标色（越淡或越深）
     if IsDarkMode {
-        BgColor := MixColor(accentNum, 0x000000, 0.85) ; 向黑色偏移 85%
+        BgColor := MixColor(accentNum, 0x000000, 0.90) ; 向黑色偏移 90%
         FontColor := "FFFFFF"
         ListViewBg := MixColor(accentNum, 0x000000, 0.80) ; 列表背景稍亮一点点
     } else {
-        BgColor := MixColor(accentNum, 0xFFFFFF, 0.85) ; 向白色偏移 85%
+        BgColor := MixColor(accentNum, 0xFFFFFF, 0.90) ; 向白色偏移 90%
         FontColor := "333333"
-        ListViewBg := MixColor(accentNum, 0xFFFFFF, 0.90) ; 列表背景更接近纯白
+        ListViewBg := MixColor(accentNum, 0xFFFFFF, 0.80) ; 列表背景颜色更贴近主题色
     }
 
     FontSize := 12
@@ -51,10 +51,11 @@ UpdateTheme() {
 WindowJump() {
     UpdateTheme()
 
-    MyGui := 0
+    static MyGui := 0
 
     if MyGui {
         MyGui["SearchInput"].Value := ""
+        MyGui["SearchInput"].Focus()
         RefreshList(MyGui["ResultList"])
         MyGui.Show("Center")
         return
