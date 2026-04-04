@@ -2,8 +2,8 @@
 
 ; 注意：该脚本极其严格地遵守“获得焦点”即着色边框，“失去焦点”则恢复边框，为了该功能的稳定，不做任何特殊情况处理。若有时您看到边框颜色意外消失，请注意这不是 bug，一定是该窗口丢失了焦点。例 1：收藏页面时，跳出了一个小窗口，浏览器的边框着色消失了；例 2：使用鼠标手势时，浏览器的边框着色消失了。以上两种情况都是正确且合理的。若您实在不适，请自行取消注释我的部分代码。
 
-#Include Logger.ahk
-#Include QueryTheme.ahk
+#Include ./LoggerLib/Logger.ahk
+#Include ./ThemeAndColorLib/ThemeAndColor.ahk
 #Include AutoActivateWindow.ahk
 
 class AutoWindowColorBorderDebug {
@@ -136,7 +136,7 @@ ClearWindowBorder(hwnd) {
  */
 GetCurrentBorderColor(hwnd) {
     global lightTheme, windowStates
-    
+
     ; 检查窗口是否是置顶状态
     try {
         exStyle := WinGetExStyle(hwnd)
@@ -145,7 +145,7 @@ GetCurrentBorderColor(hwnd) {
             return mauveColor
         }
     }
-    
+
     if (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited == true) {
         if (lightTheme) {
             return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])

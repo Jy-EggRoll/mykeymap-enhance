@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2.0
 
-#Include Logger.ahk
+#Include ./LoggerLib/Logger.ahk
 
 class BlockSendDebug {
     static mode := false

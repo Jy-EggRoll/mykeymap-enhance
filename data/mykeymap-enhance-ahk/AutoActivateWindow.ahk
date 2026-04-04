@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2.0
 
-#Include Logger.ahk
+#Include ./LoggerLib/Logger.ahk
 
 #WinActivateForce  ; 防止在窗口快速被激活时导致闪烁，这是 ahk 的已知问题
 
@@ -272,7 +272,8 @@ ActivateWindowUnderMouse(timeoutInput := 50, mouseMovementAmplitude := 10) {
             return
         }
 
-        if (GetKeyState("LButton", "P") || GetKeyState("RButton", "P") || GetKeyState("MButton", "P") || GetKeyState("XButton1", "P") || GetKeyState("XButton2", "P")) {  ; 如果鼠标任何键被按下，则完全禁用自动激活，这可以确保当用户在复制文字时，鼠标可以自由地移开窗口，同时也考虑到了其他特殊长按情况
+        if (GetKeyState("LButton", "P") || GetKeyState("RButton", "P") || GetKeyState("MButton", "P") || GetKeyState(
+            "XButton1", "P") || GetKeyState("XButton2", "P")) {  ; 如果鼠标任何键被按下，则完全禁用自动激活，这可以确保当用户在复制文字时，鼠标可以自由地移开窗口，同时也考虑到了其他特殊长按情况
             pendingActivation := false
             return
         }
