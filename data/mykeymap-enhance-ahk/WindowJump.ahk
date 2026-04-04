@@ -11,6 +11,11 @@
 ; #SingleInstance Force
 
 ; ==============================================================================
+; 引入拼音库
+; ==============================================================================
+#Include ../mykeymap-enhance-ahk/PinYinLib/IbPinyin.ahk
+
+; ==============================================================================
 ; 全局配置
 ; ==============================================================================
 
@@ -396,6 +401,16 @@ UpdateSearch(EditObj, LV, hIL) {
             ; FuzzyScore: 自定义模糊匹配评分函数
             ;   返回 0 表示不匹配，正数表示匹配程度（越高越相关）
             score := FuzzyScore(currentInput, fullText)
+
+            ; 使用拼音库进行匹配（支持简拼和全拼）
+            ; 简拼：如 "wj" 匹配 "文件"
+            ; 全拼：如 "wenjian" 匹配 "文件"
+            ; IbPinyin_Match 返回是否匹配
+            ; notations = 简拼 | 全拼
+            if (IbPinyin_Match(currentInput, title, IbPinyin_AsciiFirstLetter | IbPinyin_Ascii)) {
+                ; 拼音匹配成功，赋予一个较高的基础分
+                score := Max(score, 100)
+            }
 
             ; 6. 只保留匹配的结果（score > 0）
             if (score > 0) {
