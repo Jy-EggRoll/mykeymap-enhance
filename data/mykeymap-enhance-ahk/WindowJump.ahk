@@ -6,9 +6,6 @@
 ; 作者：EggRoll
 ; ==============================================================================
 
-#WinActivateForce
-
-
 #Include ./LoggerLib/Logger.ahk
 #Include ./AutoActivateWindow.ahk
 #Include ./VDLib/VD.ahk
@@ -1058,11 +1055,11 @@ ActivateWin(LV, RowNumber) {
                 currentDesktopNum := VD.getCurrentDesktopNum()
                 if (targetDesktopNum > 0 && targetDesktopNum != currentDesktopNum) {
                     LV.Gui.Hide()
-                    Sleep 50
                     VD.goToDesktopOfWindow("ahk_id " . hwnd)
                 } else {
                     DllCall("user32\SendInput", "UInt", 1, "Ptr", Buffer(24), "Int", 0)
-                    WinActivate("ahk_id " . hwnd)
+                    DllCall("user32\SetForegroundWindow", "Ptr", hwnd + 0)
+                    DllCall("user32\SetActiveWindow", "Ptr", hwnd + 0)
                     LV.Gui.Hide()
                 }
             }
