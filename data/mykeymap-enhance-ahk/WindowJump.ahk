@@ -409,7 +409,7 @@ UpdateSearch(EditObj, LV, hIL) {
             ; notations = 简拼 | 全拼
             if (IbPinyin_Match(currentInput, title, IbPinyin_AsciiFirstLetter | IbPinyin_Ascii)) {
                 ; 拼音匹配成功，赋予一个较高的基础分
-                score := Max(score, 100)
+                score := Max(score, 50)
             }
 
             ; 6. 只保留匹配的结果（score > 0）
