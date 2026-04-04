@@ -577,16 +577,43 @@ GetIconIndex(hwnd, hIL) {
 ; ==============================================================================
 
 GetFileIconIndex(filePath, hIL) {
-    targetPath := ""
-
     try {
         if (StrEndsWith(filePath, ".lnk")) {
-            FileGetShortcut filePath, &targetPath
+            FileGetShortcut filePath, &targetPath, &workDir, &args, &desc, &iconFile, &iconNum
+            if (iconFile) {
+                iconPath := iconFile
+                if (iconNum > 0) {
+                    return IL_Add(hIL, iconPath, iconNum)
+                } else {
+                    return IL_Add(hIL, iconPath)
+                }
+            }
+            if (targetPath) {
+                filePath := targetPath
+            }
         }
     }
 
-    iconPath := targetPath ? targetPath : filePath
-    return IL_Add(hIL, iconPath)
+    return GetExeIconIndex(filePath, hIL)
+}
+
+; ==============================================================================
+; GetExeIconIndex - 通过 SHGetFileInfoW 获取可执行文件图标
+; ==============================================================================
+
+GetExeIconIndex(filePath, hIL) {
+    try {
+        fisize := A_PtrSize + 688
+        fileinfo := Buffer(fisize)
+        if DllCall("shell32\SHGetFileInfoW", "WStr", filePath, "UInt", 0, "Ptr", fileinfo, "UInt", fisize, "UInt",
+            0x100) {
+            hIcon := NumGet(fileinfo, 0, "Ptr")
+            if hIcon {
+                return IL_Add(hIL, "HICON:" . hIcon)
+            }
+        }
+    }
+    return IL_Add(hIL, filePath)
 }
 
 ; ==============================================================================
@@ -596,9 +623,30 @@ GetFileIconIndex(filePath, hIL) {
 GetUwpIconIndex(hwnd, hIL) {
     try {
         exePath := WinGetProcessPath(hwnd)
+
         if exePath {
-            return IL_Add(hIL, exePath)
+            if (StrEndsWith(exePath, "ApplicationFrameHost.exe")) {
+                return GetUwpIconFromWindow(hwnd, hIL)
+            }
+            return GetExeIconIndex(exePath, hIL)
         }
+    }
+    return 1
+}
+
+; ==============================================================================
+; GetUwpIconFromWindow - 通过窗口获取 UWP 应用图标
+; ==============================================================================
+GetUwpIconFromWindow(hwnd, hIL) {
+    hIcon := SendMessage(0x7F, 0, 0, hwnd, "ahk_id " . hwnd)
+    if !hIcon {
+        hIcon := SendMessage(0x7F, 1, 0, hwnd, "ahk_id " . hwnd)
+    }
+    if !hIcon {
+        hIcon := DllCall(A_PtrSize == 8 ? "GetClassLongPtr" : "GetClassLong", "Ptr", hwnd, "Int", -34, "UPtr")
+    }
+    if hIcon {
+        return IL_Add(hIL, "HICON:" . hIcon)
     }
     return 1
 }
