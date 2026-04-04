@@ -51,7 +51,7 @@ UpdateTheme() {
 WindowJump() {
     UpdateTheme()
 
-    static MyGui := 0
+    MyGui := 0
 
     if MyGui {
         MyGui["SearchInput"].Value := ""
@@ -166,27 +166,104 @@ RefreshList(LV) {
 }
 
 UpdateSearch(EditObj, LV) {
-    currentInput := EditObj.Value
+    currentInput := StrLower(EditObj.Value)
     LV.Delete()
-    pattern := "i)" . StrReplace(RegExReplace(currentInput, "(.)", "$1.*"), " ", "")
 
+    if (currentInput == "") {
+        RefreshList(LV)
+        return
+    }
+
+    results := []
     for hwnd in WinGetList() {
         try {
             title := WinGetTitle(hwnd)
             process := WinGetProcessName(hwnd)
             style := WinGetStyle(hwnd)
-            if (title != "" && (style & 0x40000) && hwnd != EditObj.Gui.Hwnd) {
-                if (RegExMatch(process . " " . title, pattern)) {
-                    LV.Add(, " [" . process . "] " . title, hwnd)
-                }
+
+            if (title == "" || !(style & 0x40000) || hwnd == EditObj.Gui.Hwnd) {
+                continue
+            }
+
+            fullText := StrLower("[" . process . "] " . title)
+            score := FuzzyScore(currentInput, fullText)
+
+            if (score > 0) {
+                results.Push({ score: score, text: " [" . process . "] " . title, hwnd: hwnd })
             }
         }
     }
 
-    ; 搜索完后自动高亮第一项，确保回车有效
+    if (results.Length > 0) {
+        ; 排序：分值高的在前
+        loop (results.Length) {
+            i := A_Index
+            while (i > 1 && results[i - 1].score < results[i].score) {
+                temp := results[i]
+                results[i] := results[i - 1]
+                results[i - 1] := temp
+                i--
+            }
+        }
+
+        ; 渲染
+        loop (Min(results.Length, 30)) {
+            LV.Add(, results[A_Index].text, results[A_Index].hwnd)
+        }
+    }
+
     if (LV.GetCount() > 0) {
         LV.Modify(1, "Select Focus")
     }
+}
+
+FuzzyScore(query, target) {
+    qLen := StrLen(query)
+    tLen := StrLen(target)
+    score := 0
+    tIdx := 1
+    lastMatchIdx := 0
+    consecutiveMatches := 0
+
+    ; 预先找到进程名结束的分界点位置
+    processEndPos := InStr(target, "]")
+
+    loop (qLen) {
+        char := SubStr(query, A_Index, 1)
+        foundPos := InStr(target, char, false, tIdx)
+
+        if (foundPos == 0) {
+            return 0
+        }
+
+        score += 10 ; 命中基础分
+
+        if (lastMatchIdx != 0 && foundPos == lastMatchIdx + 1) {
+            consecutiveMatches++
+            score += (25 * consecutiveMatches) ; 连续匹配奖励
+        } else {
+            consecutiveMatches := 0
+            if (lastMatchIdx != 0) {
+                score -= (foundPos - lastMatchIdx) ; 距离惩罚
+            }
+        }
+
+        prevChar := (foundPos > 1) ? SubStr(target, foundPos - 1, 1) : ""
+
+        ; 检查是否命中边界（字符串开头、空格后）
+        if (foundPos == 1 || prevChar == " " || prevChar == "[") {
+            ; 如果该边界点位于进程名内（即在第一个 "]" 之前），给超高分
+            if (processEndPos > 0 && foundPos <= processEndPos) {
+                score += 100 ; 进程名首字母/边界加分 (大幅提升)
+            } else {
+                score += 40  ; 普通标题单词首字母加分
+            }
+        }
+
+        lastMatchIdx := foundPos
+        tIdx := foundPos + 1
+    }
+    return score
 }
 
 ActivateWin(LV, RowNumber) {
