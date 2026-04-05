@@ -6,7 +6,7 @@
 #Include ./WindowStyleLib/WindowStyle.ahk
 
 class WindowJumpDebug {
-    static mode := false
+    static mode := true
 }
 
 ; #Requires AutoHotkey v2.0
@@ -988,7 +988,7 @@ ActivateWin(LV, RowNumber) {
                 LogInfo("运行快捷方式: " . hwnd, , WindowJumpDebug.mode)
                 LV.Gui.Hide()
                 Sleep 50
-                Run(hwnd)
+                RunViaLauncher(hwnd)
             } else {
                 LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
                 global lastActiveWindowClass
@@ -1008,5 +1008,41 @@ ActivateWin(LV, RowNumber) {
         }
     } catch Error as e {
         LogError(e, , WindowJumpDebug.mode)
+    }
+}
+
+; RunViaLauncher - 通过 Launcher 以普通用户身份启动程序
+RunViaLauncher(targetPath) {
+    static PIPE_NAME := "\\.\pipe\MyKeymapLauncher"
+
+    LogInfo("通过 Launcher 启动: " targetPath, , WindowJumpDebug.mode)
+
+    try {
+        pipe := DllCall("CreateFile",
+            "Str", PIPE_NAME,
+            "UInt", 0x40000000,
+            "UInt", 0,
+            "Ptr", 0,
+            "UInt", 3,
+            "UInt", 0,
+            "Ptr", 0,
+            "Ptr")
+
+        if (pipe = -1 || pipe = 0) {
+            LogInfo("连接 Launcher 失败，回退到普通 Run", , WindowJumpDebug.mode)
+            Run(targetPath)
+            return
+        }
+
+        data := Buffer(StrLen(targetPath) * 2 + 2)
+        StrPut(targetPath, data, "UTF-8")
+
+        bytesWritten := 0
+        DllCall("WriteFile", "Ptr", pipe, "Ptr", data, "UInt", data.Size, "UIntP", &bytesWritten, "Ptr", 0)
+        DllCall("CloseHandle", "Ptr", pipe)
+
+        LogInfo("已发送启动请求", , WindowJumpDebug.mode)
+    } catch as e {
+        LogInfo("发送失败: " e.Message, , WindowJumpDebug.mode)
     }
 }

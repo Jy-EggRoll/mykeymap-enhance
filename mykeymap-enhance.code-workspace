@@ -8,7 +8,8 @@
         "AHK++.v2.file": {
             "compileBaseFile": "",
             "helpPath": "C:/Program Files/AutoHotkey/v2/AutoHotkey.chm",
-            "interpreterPath": "./AutoHotkey64.exe",
+            "interpreterPath": "D:\\GitRepo\\mykeymap-enhance\\AutoHotkey64.exe",
+            "maxScanDepth": 2,
             "templateSnippetName": "AhkTemplateV2"
         }
     }

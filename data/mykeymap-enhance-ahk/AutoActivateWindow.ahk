@@ -178,10 +178,10 @@ CheckForUnvisitedWindows() {
 
 /**
  * 实际执行激活操作的函数
- * @param timeoutInput 激活的输入等待时间，默认为 500 ms
+ * @param timeoutInput 激活的输入等待时间，默认为 100 ms
  * @param mouseMovementAmplitude 鼠标静止容错幅度，默认为正负 10 像素
  */
-ActivateWindowUnderMouse(timeoutInput := 500, mouseMovementAmplitude := 10) {
+ActivateWindowUnderMouse(timeoutInput := 100, mouseMovementAmplitude := 10) {
     global mousePos, windowStates, pendingActivation, lastActiveWindowClass, lastActiveID
 
     pendingActivation := false
