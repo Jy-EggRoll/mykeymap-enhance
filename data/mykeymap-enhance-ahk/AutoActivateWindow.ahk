@@ -8,7 +8,7 @@
 global lastActiveID := ""
 
 class AutoActivateWindowDebug {
-    static mode := true
+    static mode := false
 }
 
 ; 全局变量用于跟踪自动激活功能的状态

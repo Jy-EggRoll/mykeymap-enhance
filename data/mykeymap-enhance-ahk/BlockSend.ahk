@@ -3,7 +3,7 @@
 #Include ./LoggerLib/Logger.ahk
 
 class BlockSendDebug {
-    static mode := true
+    static mode := false
 }
 
 BSend(text) {

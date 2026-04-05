@@ -11,7 +11,7 @@
 ; 全局常量与状态管理
 ; ==============================================================================
 class AutoWindowColorBorderDebug {
-    static mode := true
+    static mode := false
 }
 
 ; Windows DWM API & 消息常量

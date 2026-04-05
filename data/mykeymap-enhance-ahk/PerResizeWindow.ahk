@@ -3,7 +3,7 @@
 #Include ./LoggerLib/Logger.ahk
 
 class PerResizeWindowDebug {
-    static mode := true
+    static mode := false
 }
 ; F 开头的函数是内置于 MyKeymap 的函数，为了保持本脚本独立性且避免函数冲突，故采用这样的方式，没有额外的意义
 
