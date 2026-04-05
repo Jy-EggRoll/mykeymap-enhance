@@ -334,7 +334,7 @@ WindowJump() {
 ; 逻辑处理函数
 
 ; CheckWinFocus - 检查窗口是否失去焦点
-; 定时器回调函数，每 200ms 执行一次
+; 定时器回调函数，每 100ms 执行一次
 ; 当 GUI 不再活动时自动隐藏
 
 CheckWinFocus(guiObj) {
@@ -449,15 +449,14 @@ RefreshAllWindows(LV, hIL, iconCache) {
 ; LV: ListView 控件对象
 ; hIL: 图像列表句柄
 
-; ScheduleSearch - 延迟搜索调度
-; 防止每次按键都触发搜索，减少性能占用
+; ScheduleSearch - 延迟搜索调度，防止过于密集的代码执行
 
 ScheduleSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     static timer := 0
     if (timer) {
         SetTimer(timer, 0)
     }
-    timer := SetTimer(() => UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache), -200)
+    timer := SetTimer(() => UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache), -20)
 }
 
 UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
