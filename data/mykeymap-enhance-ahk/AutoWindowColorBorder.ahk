@@ -1,7 +1,5 @@
 #Requires AutoHotkey v2.0
 
-; 注意：该脚本极其严格地遵守“获得焦点”即着色边框，“失去焦点”则恢复边框，为了该功能的稳定，不做任何特殊情况处理。若有时您看到边框颜色意外消失，请注意这不是 bug，一定是该窗口丢失了焦点。例 1：收藏页面时，跳出了一个小窗口，浏览器的边框着色消失了；例 2：使用鼠标手势时，浏览器的边框着色消失了。以上两种情况都是正确且合理的。若您实在不适，请自行取消注释我的部分代码。
-
 #Include ./LoggerLib/Logger.ahk
 #Include ./ThemeAndColorLib/ThemeAndColor.ahk
 #Include AutoActivateWindow.ahk
@@ -10,189 +8,91 @@ class AutoWindowColorBorderDebug {
     static mode := true
 }
 
-; Windows DWM API
-DWMWA_BORDER_COLOR := 34  ; DWM 边框颜色属性
-DWMWA_COLOR_DEFAULT := 0xFFFFFFFF  ; DWM 边框默认值，外观看起来是一般是淡灰色的，可能与不同软件亦有关
+; Windows DWM API 常量
+DWMWA_BORDER_COLOR := 34
+DWMWA_COLOR_DEFAULT := 0xFFFFFFFF
 
-; 颜色配置（标准 RGB 值），目前的颜色选自 Catppuccin 的 Latte 风味，其中 Peach 色彩鲜艳且适合多种主题，如需添加自己的颜色，请按照相同格式添加 Map，逗号分隔
-; mauve 色用于标记置顶窗口
-COLORS := [
-    Map("name", "Peach", "rgb", "254,100,11"),
-    Map("name", "sky", "rgb", "4,165,229"),
-    Map("name", "mauve", "rgb", "136,57,239")
-]
-
-COLORS_MODE2 := [
-    Map("name", "Peach", "rgb", "254,100,11"),
-    Map("name", "sky", "rgb", "4,165,229"),
-    Map("name", "mauve", "rgb", "136,57,239")
-]
-
+; 全局状态管理
 borderEnabled := false
-currentColorIndex := 1  ; 用来设定默认选择列表中的哪个颜色
-currentColorIndexMode2 := 1
 lastActiveWindow := 0
-lightTheme := IsLightTheme()
+windowStates := Map() ; 用于记录窗口鼠标访问状态
 
 /**
- * RGB 转 BGR 颜色格式函数
- * @param {String} rgbString - RGB 颜色字符串，格式为 "r,g,b" 例如 "255,0,0"
- * @return {Integer} BGR 格式的颜色值，这是 Windows DWM API 所需的格式
+ * 核心逻辑：获取当前应应用的 BGR 颜色值
+ * 规则：
+ * 1. 置顶窗口 OR 未访问窗口 -> 使用高对比补色 (Contrast)
+ * 2. 已访问激活窗口 -> 使用系统主题荧光色 (Vibrant)
  */
-RGBtoBGR(rgbString) {
-    parts := StrSplit(rgbString, ",")
-    if (parts.Length != 3) {
-        return 0x0000FF  ; 默认返回红色
-    }
-
-    r := Integer(parts[1])
-    g := Integer(parts[2])
-    b := Integer(parts[3])
-
-    return (b << 16) | (g << 8) | r
-}
-
-/**
- * 切换窗口边框功能的开关函数
- */
-AutoWindowColorBorder(pollingTime := 20) {
-    global borderEnabled
-
-    if (!borderEnabled) {
-        ; 启动边框功能
-        SetTimer(UpdateWindowBorder, pollingTime)
-        borderEnabled := true
-        LogInfo("窗口边框着色已启动", , AutoWindowColorBorderDebug.mode)
-    } else {
-        ; 停止边框功能
-        SetTimer(UpdateWindowBorder, 0)
-        CleanupBorder()
-        borderEnabled := false
-        LogInfo("窗口边框着色已停止", , AutoWindowColorBorderDebug.mode)
-    }
-}
-
-/**
- * 切换到下一个颜色
- */
-SwitchToNextColor() {
-    global currentColorIndex, COLORS, currentColorIndexMode2, COLORS_MODE2, lightTheme
-
-    test := IsLightTheme()
-
-    if (test != lightTheme) {
-        lightTheme := test
-        LogInfo("系统主题变化 已刷新列表", , AutoWindowColorBorderDebug.mode)
-    }
-
-    if (lightTheme) {
-        currentColorIndexMode2 := currentColorIndexMode2 >= COLORS_MODE2.Length ? 1 : currentColorIndexMode2 + 1
-        colorName := COLORS_MODE2[currentColorIndexMode2]["name"]
-    } else {
-        currentColorIndex := currentColorIndex >= COLORS.Length ? 1 : currentColorIndex + 1
-        colorName := COLORS[currentColorIndex]["name"]
-    }
-    LogInfo("已切换到下一个颜色：" colorName, , AutoWindowColorBorderDebug.mode)
-}
-
-/**
- * 设置窗口边框颜色
- * @param {Integer} hwnd - 窗口句柄
- * @param {Integer} color - 边框颜色值 (BGR 格式)
- * @return {Boolean} 操作是否成功
- */
-SetWindowBorder(hwnd, color) {
+GetDynamicBorderColor(hwnd) {
+    global windowStates
     try {
-        if (!hwnd) {
-            return false
-        }
-
-        result := DllCall("dwmapi\DwmSetWindowAttribute",
-            "ptr", hwnd,
-            "uint", DWMWA_BORDER_COLOR,
-            "uint*", color,
-            "uint", 4,
-            "int")
-        return (result = 0)
-    }
-    catch Error as e {
-        LogError(e, , AutoWindowColorBorderDebug.mode)
-        return false
-    }
-}
-
-/**
- * 清除窗口边框
- * @param {Integer} hwnd - 窗口句柄
- * @return {Boolean} 操作是否成功
- */
-ClearWindowBorder(hwnd) {
-    return SetWindowBorder(hwnd, DWMWA_COLOR_DEFAULT)
-}
-
-/**
- * 获取当前边框颜色
- * @return {Integer} 当前边框颜色值
- */
-GetCurrentBorderColor(hwnd) {
-    global lightTheme, windowStates
-
-    ; 检查窗口是否是置顶状态
-    try {
-        exStyle := WinGetExStyle(hwnd)
-        if (exStyle & 0x8) {  ; 0x8 标识窗口是否置顶
-            mauveColor := RGBtoBGR(COLORS[COLORS.Length]["rgb"])  ; 最后一个颜色作为置顶窗口的专用颜色
-            return mauveColor
-        }
+        ; 读取系统 DWM 强调色 (ABGR 格式)
+        rawColor := RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "AccentColor")
+        r := rawColor & 0xFF
+        g := (rawColor >> 8) & 0xFF
+        b := (rawColor >> 16) & 0xFF
+    } catch {
+        r := 0, g := 120, b := 215
     }
 
-    if (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited == true) {
-        if (lightTheme) {
-            return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2]["rgb"])
-        } else {
-            return RGBtoBGR(COLORS[currentColorIndex]["rgb"])
-        }
-    } else {  ; 鼠标未访问过的窗口，总是会选取下一个颜色，视情况决定要不要新开一个颜色列表
-        if (lightTheme) {
-            return RGBtoBGR(COLORS_MODE2[currentColorIndexMode2 + 1]["rgb"])
-        } else {
-            return RGBtoBGR(COLORS[currentColorIndex + 1]["rgb"])
-        }
+    ; 转换为 HSL 空间
+    hsl := RGBtoHSL(r, g, b)
+
+    ; --- 逻辑判断 ---
+    isTopmost := (WinGetExStyle(hwnd) & 0x8)
+    isVisited := (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited)
+
+    ; 如果是置顶窗口，或者鼠标还没碰过这个窗口，统一采用补色
+    if (isTopmost || !isVisited) {
+        targetH := Mod(hsl.h + 180, 360) ; 高对比补色
+    } else {
+        targetH := hsl.h ; 系统主题荧光色
     }
+
+    ; 转回 RGB (饱和度 100%, 亮度 50%)
+    rgb := HSLtoRGB(targetH, 1.0, 0.5)
+
+    return (rgb.b << 16) | (rgb.g << 8) | rgb.r
 }
 
 /**
  * 更新活动窗口边框
  */
 UpdateWindowBorder() {
-    global lastActiveWindow, borderEnabled, lightTheme
+    global lastActiveWindow, borderEnabled, windowStates
 
-    if (!borderEnabled) {
+    if (!borderEnabled)
         return
-    }
 
     try {
         currentActiveWindow := WinExist("A")
 
-        if (currentActiveWindow != lastActiveWindow && currentActiveWindow != 0) {
-            ; 立即清除失去焦点的窗口边框
-            if (lastActiveWindow != 0) {
-                if !WinExist(lastActiveWindow) {
-                    lastActiveWindow := 0
-                    return
-                }
-                exStyle := WinGetExStyle(lastActiveWindow)
-                isTopmost := (exStyle & 0x8)
-                if (!isTopmost && ClearWindowBorder(lastActiveWindow)) {
-                    LogInfo("成功清除 [" WinGetTitle(lastActiveWindow) "] [" WinGetClass(lastActiveWindow) "] [" lastActiveWindow "] 的边框颜色", ,
-                    AutoWindowColorBorderDebug.mode)
+        ; 实时监测鼠标是否进入当前活动窗口
+        if (currentActiveWindow != 0) {
+            MouseGetPos(, , &mHwnd)
+            if (mHwnd == currentActiveWindow) {
+                if !windowStates.Has(currentActiveWindow)
+                    windowStates[currentActiveWindow] := { mouseVisited: true }
+                else
+                    windowStates[currentActiveWindow].mouseVisited := true
+            }
+        }
+
+        ; 焦点切换处理
+        if (currentActiveWindow != lastActiveWindow && lastActiveWindow != 0) {
+            if WinExist(lastActiveWindow) {
+                ; 失去焦点时，若非置顶窗口则清除边框
+                if !(WinGetExStyle(lastActiveWindow) & 0x8) {
+                    ClearWindowBorder(lastActiveWindow)
                 }
             }
         }
-        if (currentActiveWindow != 0) {  ; 尽可能保证激活的窗口一定可以被设置边框颜色，这相当于每 pollingTime 就尝试设置一次
-            borderColor := GetCurrentBorderColor(currentActiveWindow)
-            if (SetWindowBorder(currentActiveWindow, borderColor)) {  ; 此功能不区分是否是常规意义上的窗口，一些弹框窗口也会被设置边框颜色，只要其可以被设置成功
-                lastActiveWindow := currentActiveWindow  ; 只有设置成功后才更新 lastActiveWindow，这保证了颜色可以被正确清除
+
+        ; 应用颜色
+        if (currentActiveWindow != 0) {
+            borderColor := GetDynamicBorderColor(currentActiveWindow)
+            if (SetWindowBorder(currentActiveWindow, borderColor)) {
+                lastActiveWindow := currentActiveWindow
             }
         }
     }
@@ -201,30 +101,82 @@ UpdateWindowBorder() {
     }
 }
 
-/**
- * 清理边框
- */
+; --- DWM 操作 ---
+SetWindowBorder(hwnd, color) {
+    try {
+        if !hwnd || !WinExist(hwnd)
+            return false
+        result := DllCall("dwmapi\DwmSetWindowAttribute", "ptr", hwnd, "uint", DWMWA_BORDER_COLOR, "uint*", color,
+            "uint", 4, "int")
+        return (result = 0)
+    } catch {
+        return false
+    }
+}
+
+ClearWindowBorder(hwnd) => SetWindowBorder(hwnd, DWMWA_COLOR_DEFAULT)
+
+AutoWindowColorBorder(pollingTime := 20) {
+    global borderEnabled
+    if (!borderEnabled) {
+        SetTimer(UpdateWindowBorder, pollingTime)
+        borderEnabled := true
+    } else {
+        SetTimer(UpdateWindowBorder, 0)
+        CleanupBorder()
+        borderEnabled := false
+    }
+}
+
 CleanupBorder() {
     global lastActiveWindow
-    try {
-        if (lastActiveWindow != 0) {
-            ClearWindowBorder(lastActiveWindow)
-        }
-        lastActiveWindow := 0
-    }
-    catch Error as e {
-        LogError(e, , AutoWindowColorBorderDebug.mode)
-    }
+    if (lastActiveWindow != 0 && WinExist(lastActiveWindow))
+        ClearWindowBorder(lastActiveWindow)
+    lastActiveWindow := 0
 }
 
-/**
- * 程序退出时的清理函数
- */
-CleanupOnExit(*) {
-    CleanupBorder()
+CleanupOnExit(*) => CleanupBorder()
+
+; --- 色彩数学转换 ---
+RGBtoHSL(r, g, b) {
+    rf := r / 255, gf := g / 255, bf := b / 255
+    mx := Max(rf, gf, bf), mn := Min(rf, gf, bf)
+    h := s := l := (mx + mn) / 2
+    if (mx == mn) {
+        h := s := 0
+    } else {
+        d := mx - mn
+        s := l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn)
+        if (mx == rf)
+            h := (gf - bf) / d + (gf < bf ? 6 : 0)
+        else if (mx == gf)
+            h := (bf - rf) / d + 2
+        else
+            h := (rf - gf) / d + 4
+        h *= 60
+    }
+    return { h: h, s: s, l: l }
 }
 
-AutoWindowColorBorder()  ; MyKeymap 启动时自动运行
+HSLtoRGB(h, s, l) {
+    c := (1 - Abs(2 * l - 1)) * s
+    x := c * (1 - Abs(Mod(h / 60, 2) - 1))
+    m := l - c / 2
+    tr := 0, tg := 0, tb := 0
+    if (h < 60)
+        tr := c, tg := x, tb := 0
+    else if (h < 120)
+        tr := x, tg := c, tb := 0
+    else if (h < 180)
+        tr := 0, tg := c, tb := x
+    else if (h < 240)
+        tr := 0, tg := x, tb := c
+    else if (h < 300)
+        tr := x, tg := 0, tb := c
+    else
+        tr := c, tg := 0, tb := x
+    return { r: Round((tr + m) * 255), g: Round((tg + m) * 255), b: Round((tb + m) * 255) }
+}
 
-; 注册程序退出清理函数，确保退出时不残留带有颜色的边框
+AutoWindowColorBorder()
 OnExit(CleanupOnExit)
