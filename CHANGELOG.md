@@ -1,5 +1,9 @@
 # mykeymap-enhance 更新日志
 
+## 1.14.0
+
+- 💥 boom: 彻底移除 WindowJump 的启动器功能
+
 ## 1.13.0
 
 - ⚡️ perf: 大量性能优化
