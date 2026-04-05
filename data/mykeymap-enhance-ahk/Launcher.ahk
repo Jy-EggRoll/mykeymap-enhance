@@ -1,5 +1,7 @@
 #Requires AutoHotkey v2.0
 
+#NoTrayIcon
+
 #SingleInstance Force
 
 #Include ./LoggerLib/Logger.ahk
@@ -16,16 +18,16 @@ RunLauncher() {
 
     while true {
         try {
-            pipe := DllCall("CreateNamedPipe",
-                "Str", PIPE_NAME,
-                "UInt", 0x3,
-                "UInt", 0,
-                "UInt", 1,
-                "UInt", 4096,
-                "UInt", 4096,
-                "UInt", 0,
-                "Ptr", 0,
-                "Ptr")
+            pipe := DllCall("CreateNamedPipe"
+                , "Str", PIPE_NAME
+                , "UInt", 0x3
+                , "UInt", 0
+                , "UInt", 1
+                , "UInt", 4096
+                , "UInt", 4096
+                , "UInt", 0
+                , "Ptr", 0
+                , "Ptr")
 
             if (pipe = -1 || pipe = 0) {
                 LogInfo("创建管道失败", , LauncherDebug.mode)
