@@ -50,12 +50,24 @@ RunLauncher() {
             DllCall("CloseHandle", "Ptr", pipe)
 
             if (bytesRead > 0) {
-                targetPath := StrGet(buf, bytesRead, "UTF-8")
-                targetPath := Trim(targetPath, "`"")
-                LogInfo("收到启动请求: " targetPath, , LauncherDebug.mode)
+                rawPath := StrGet(buf, bytesRead, "UTF-8")
+                rawPath := Trim(rawPath, "`"")
+                isAdmin := false
+                targetPath := rawPath
+                if InStr(rawPath, "ADMIN|") = 1 {
+                    isAdmin := true
+                    targetPath := SubStr(rawPath, 7)
+                }
+                LogInfo("收到启动请求: " targetPath " (管理员: " isAdmin ")", , LauncherDebug.mode)
 
                 try {
-                    Run(targetPath)
+                    if (isAdmin) {
+                        RunAsAdmin(targetPath)
+                    } else {
+                        Run(targetPath,,, &pid)
+                        WinWait("ahk_pid " pid)
+                        WinActivate("ahk_pid " pid)
+                    }
                     LogInfo("启动成功", , LauncherDebug.mode)
                 } catch as e {
                     LogError(e, , LauncherDebug.mode)
@@ -70,3 +82,11 @@ RunLauncher() {
 
 LogInfo("Launcher 启动", , LauncherDebug.mode)
 RunLauncher()
+
+RunAsAdmin(targetPath) {
+    try {
+        DllCall("Shell32\ShellExecuteW", "Ptr", 0, "Str", "runas", "Str", targetPath, "Ptr", 0, "Ptr", 0, "Int", 1)
+    } catch as e {
+        LogError("RunAsAdmin 失败: " e.Message, , LauncherDebug.mode)
+    }
+}

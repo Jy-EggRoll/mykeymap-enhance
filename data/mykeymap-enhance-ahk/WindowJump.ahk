@@ -251,7 +251,7 @@ WindowJump() {
     ;   Background/ c: 背景色和文字颜色
     ;   参数数组: 列标题（这里实际只用一列存储窗口信息，第二列隐藏存储 HWND）
     ResultList := MyGui.Add("ListView", "x20 y95 w560 r14 -Multi -Hdr -E0x200 vResultList +LV0x140 Background" .
-        ListViewBg . " c" . FontColor, ["Display", "HWND", "IsShortcut"])
+        ListViewBg . " c" . FontColor, ["Display", "HWND", "IsShortcut", "IsAdmin"])
 
     ; 绑定图像列表到 ListView
 
@@ -270,6 +270,7 @@ WindowJump() {
     ResultList.ModifyCol(1, 540)
     ResultList.ModifyCol(2, 0)
     ResultList.ModifyCol(3, 0)
+    ResultList.ModifyCol(4, 0)
 
     ; 初始化窗口列表
 
@@ -396,7 +397,7 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
                 process := WinGetProcessName(hwnd)
                 title := WinGetTitle(hwnd)
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
-                LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0")
+                LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0", "0")
                 windowCount++
             }
         }
@@ -431,7 +432,7 @@ RefreshAllWindows(LV, hIL, iconCache) {
                 title := WinGetTitle(hwnd)
                 process := WinGetProcessName(hwnd)
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
-                LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0")
+                LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0", "0")
                 windowCount++
             }
         }
@@ -531,7 +532,8 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
         fullText := StrLower(shortcut.name)
         score := FuzzyScore(searchLower, fullText)
         if (score > 0) {
-            results.Push({ score: score // 2, text: ">>> " . shortcut.name, hwnd: shortcut.path, isShortcut: true })
+            results.Push({ score: score // 2, text: shortcut.name, hwnd: shortcut.path, isShortcut: true, isAdmin: false })
+            results.Push({ score: score // 2 - 1, text: ">>> [管理员] " . shortcut.name, hwnd: shortcut.path, isShortcut: true, isAdmin: true })
         }
     }
 
@@ -564,7 +566,7 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
                 process := WinGetProcessName(res.hwnd)
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
             }
-            LV.Add("Icon" . iconIdx, res.text, res.hwnd, res.isShortcut ? "1" : "0")
+            LV.Add("Icon" . iconIdx, res.text, res.hwnd, res.isShortcut ? "1" : "0", res.isAdmin ? "1" : "0")
         }
     }
 
@@ -980,15 +982,16 @@ ActivateWin(LV, RowNumber) {
     try {
         hwnd := LV.GetText(RowNumber, 2)
         isShortcut := LV.GetText(RowNumber, 3) = "1"
+        isAdmin := LV.GetText(RowNumber, 4) = "1"
 
-        LogInfo("激活窗口: hwnd=" . hwnd . " isShortcut=" . isShortcut, , WindowJumpDebug.mode)
+        LogInfo("激活窗口: hwnd=" . hwnd . " isShortcut=" . isShortcut . " isAdmin=" . isAdmin, , WindowJumpDebug.mode)
 
         if (hwnd) {
             if (isShortcut) {
-                LogInfo("运行快捷方式: " . hwnd, , WindowJumpDebug.mode)
+                LogInfo("运行快捷方式: " . hwnd . " (管理员: " . isAdmin . ")", , WindowJumpDebug.mode)
                 LV.Gui.Hide()
                 Sleep 50
-                RunViaLauncher(hwnd)
+                RunViaLauncher(hwnd, isAdmin)
             } else {
                 LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
                 global lastActiveWindowClass
@@ -1011,9 +1014,13 @@ ActivateWin(LV, RowNumber) {
     }
 }
 
-; RunViaLauncher - 通过 Launcher 以普通用户身份启动程序
-RunViaLauncher(targetPath) {
+; RunViaLauncher - 通过 Launcher 启动程序
+RunViaLauncher(targetPath, isAdmin := false) {
     static PIPE_NAME := "\\.\pipe\EggRollMyKeymapEnhanceLauncher"
+
+    if (isAdmin) {
+        targetPath := "ADMIN|" . targetPath
+    }
 
     LogInfo("通过 Launcher 启动: " targetPath, , WindowJumpDebug.mode)
 
