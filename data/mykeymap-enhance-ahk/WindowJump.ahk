@@ -6,7 +6,7 @@
 #Include ./WindowStyleLib/WindowStyle.ahk
 
 class WindowJumpDebug {
-    static mode := true
+    static mode := false
 }
 
 ; #Requires AutoHotkey v2.0
@@ -519,7 +519,8 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
 
             ; 保留匹配结果
             if (score > 0) {
-                results.Push({ score: score, text: desktopInfo . " [" . process . "] " . title, hwnd: hwnd, isShortcut: false })
+                results.Push({ score: score, text: desktopInfo . " [" . process . "] " . title, hwnd: hwnd, isShortcut: false,
+                    isAdmin: false })
             }
         }
     }
@@ -532,8 +533,10 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
         fullText := StrLower(shortcut.name)
         score := FuzzyScore(searchLower, fullText)
         if (score > 0) {
-            results.Push({ score: score // 2, text: shortcut.name, hwnd: shortcut.path, isShortcut: true, isAdmin: false })
-            results.Push({ score: score // 2 - 1, text: ">>> [管理员] " . shortcut.name, hwnd: shortcut.path, isShortcut: true, isAdmin: true })
+            results.Push({ score: score // 2, text: ">>>" . shortcut.name, hwnd: shortcut.path, isShortcut: true,
+                isAdmin: false })
+            results.Push({ score: score // 2 - 1, text: ">>>[管理员] " . shortcut.name, hwnd: shortcut.path, isShortcut: true,
+                isAdmin: true })
         }
     }
 

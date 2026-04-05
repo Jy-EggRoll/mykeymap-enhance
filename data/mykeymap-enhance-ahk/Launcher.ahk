@@ -9,7 +9,7 @@
 PIPE_NAME := "\\.\pipe\EggRollMyKeymapEnhanceLauncher"
 
 class LauncherDebug {
-    static mode := true
+    static mode := false
 }
 
 RunLauncher() {
@@ -31,7 +31,6 @@ RunLauncher() {
 
             if (pipe = -1 || pipe = 0) {
                 LogInfo("创建管道失败", , LauncherDebug.mode)
-                Sleep(1000)
                 continue
             }
 
@@ -64,9 +63,7 @@ RunLauncher() {
                     if (isAdmin) {
                         RunAsAdmin(targetPath)
                     } else {
-                        Run(targetPath,,, &pid)
-                        WinWait("ahk_pid " pid)
-                        WinActivate("ahk_pid " pid)
+                        RunAsUser(targetPath)
                     }
                     LogInfo("启动成功", , LauncherDebug.mode)
                 } catch as e {
@@ -75,7 +72,6 @@ RunLauncher() {
             }
         } catch as e {
             LogError(e, , LauncherDebug.mode)
-            Sleep(1000)
         }
     }
 }
@@ -88,5 +84,13 @@ RunAsAdmin(targetPath) {
         DllCall("Shell32\ShellExecuteW", "Ptr", 0, "Str", "runas", "Str", targetPath, "Ptr", 0, "Ptr", 0, "Int", 1)
     } catch as e {
         LogError("RunAsAdmin 失败: " e.Message, , LauncherDebug.mode)
+    }
+}
+
+RunAsUser(targetPath) {
+    try {
+        DllCall("Shell32\ShellExecuteW", "Ptr", 0, "Str", "open", "Str", targetPath, "Ptr", 0, "Ptr", 0, "Int", 1)
+    } catch as e {
+        LogError("RunAsUser 失败: " e.Message, , LauncherDebug.mode)
     }
 }
