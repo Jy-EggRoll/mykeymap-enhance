@@ -13,4 +13,3 @@
 #Include ../data/mykeymap-enhance-ahk/ReadFileToInput.ahk
 #Include ../data/mykeymap-enhance-ahk/SetTaskbarCombine.ahk
 #Include ../data/mykeymap-enhance-ahk/WindowJump.ahk
-#Include ../data/mykeymap-enhance-ahk/WindowJump.ahk
