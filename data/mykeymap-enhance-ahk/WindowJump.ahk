@@ -134,17 +134,10 @@ RefreshList(LV, &hIL, &iconCache) {
         try {
             if (IsValidWindow(hwnd)) {
                 desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
-                if (desktopNum == 0) {
+                if (desktopNum < 1) {
                     continue
-                }
-                if (desktopNum > 0) {
-                    desktopInfo := " [桌面" . desktopNum . "]"
-                } else if (desktopNum == -1) {
-                    desktopInfo := " [所有桌面]"
-                } else if (desktopNum == -2) {
-                    desktopInfo := " [应用所有桌面]"
                 } else {
-                    desktopInfo := ""
+                    desktopInfo := " [桌面" . desktopNum . "]"
                 }
                 process := WinGetProcessName(hwnd)
                 title := WinGetTitle(hwnd)
@@ -169,17 +162,10 @@ RefreshAllWindows(LV, hIL, iconCache) {
         try {
             if (IsValidWindow(hwnd)) {
                 desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
-                if (desktopNum == 0) {
+                if (desktopNum < 1) {
                     continue
-                }
-                if (desktopNum > 0) {
-                    desktopInfo := " [桌面" . desktopNum . "]"
-                } else if (desktopNum == -1) {
-                    desktopInfo := " [所有桌面]"
-                } else if (desktopNum == -2) {
-                    desktopInfo := " [应用所有桌面]"
                 } else {
-                    desktopInfo := ""
+                    desktopInfo := " [桌面" . desktopNum . "]"
                 }
                 title := WinGetTitle(hwnd)
                 process := WinGetProcessName(hwnd)
@@ -232,17 +218,10 @@ UpdateSearch(EditObj, LV, hIL, &iconCache) {
             }
 
             desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
-            if (desktopNum == 0) {
+            if (desktopNum < 1) {
                 continue
-            }
-            if (desktopNum > 0) {
-                desktopInfo := " [桌面" . desktopNum . "]"
-            } else if (desktopNum == -1) {
-                desktopInfo := " [所有桌面]"
-            } else if (desktopNum == -2) {
-                desktopInfo := " [应用所有桌面]"
             } else {
-                desktopInfo := ""
+                desktopInfo := " [桌面" . desktopNum . "]"
             }
 
             fullText := StrLower("[" . process . "] " . title)

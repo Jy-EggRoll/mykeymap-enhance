@@ -4,31 +4,53 @@
  * 判断窗口是否为有效的可激活窗口
  */
 IsValidWindow(hwnd) {
+    static WS_POPUP := 0x80000000
+    static WS_BORDER := 0x800000
+    static WS_CAPTION := 0xC00000
+    static WS_CLIPSIBLINGS := 0x4000000
+    static WS_DISABLED := 0x8000000
+    static WS_DLGFRAME := 0x400000
+    static WS_GROUP := 0x20000
+    static WS_HSCROLL := 0x100000
+    static WS_MAXIMIZE := 0x1000000
+    static WS_MAXIMIZEBOX := 0x10000
+    static WS_MINIMIZE := 0x20000000
+    static WS_MINIMIZEBOX := 0x20000
+    static WS_OVERLAPPED := 0x0
+    static WS_OVERLAPPEDWINDOW := 0xCF0000
+    static WS_POPUPWINDOW := 0x80880000
+    static WS_SIZEBOX := 0x40000
+    static WS_SYSMENU := 0x80000
+    static WS_TABSTOP := 0x10000
+    static WS_THICKFRAME := 0x40000
+    static WS_VSCROLL := 0x200000
+    static WS_VISIBLE := 0x10000000
+    static WS_CHILD := 0x40000000
     try {
         style := WinGetStyle(hwnd)
 
-        ; 1. 基础过滤：必须可见且非子窗口
-        if !(style & 0x10000000) || (style & 0x40000000)
+        ; 基础过滤：如果不可见，或者如果是子窗口，排除
+        if !(style & WS_VISIBLE) || (style & WS_CHILD)
             return false
 
-        ; 2. 标题过滤
+        ; 如果没有标题，排除
         if (WinGetTitle(hwnd) == "")
             return false
 
-        ; 3. 核心：精细化处理 Cloak 状态
+        ; 精细化处理 Cloak 状态
         cloakVal := GetCloakValue(hwnd)
 
         ; 如果 cloaked == 1 (DWM_CLOAKED_APP)，说明是程序启动后的预加载/后台隐藏（如命令面板）
-        ; 这种窗口通常无论你在哪个桌面，它都不会显示出来，应该排除。
+        ; 这种窗口通常无论你在哪个桌面，它都不会显示出来，应该排除
         if (cloakVal == 1)
             return false
 
-        ; 注意：如果你在当前桌面，cloakVal 是 0
-        ; 如果在其他桌面，cloakVal 是 2 (DWM_CLOAKED_SHELL)
-        ; 这两种情况我们都视为“有效窗口”
+        ; 注意：如果在当前桌面，cloakVal 是 0
+        ; 如果在其他桌面，cloakVal 是 2 DWM_CLOAKED_SHELL
+        ; 这两种情况都视为“有效窗口”
 
-        ; 4. 样式过滤
-        return (style & 0x00C00000) || (style & 0x00040000)
+        ; 样式过滤，必须可调大小，或者至少两个按钮（即使是隐藏的）
+        return (style & WS_SIZEBOX) || ((style & WS_MAXIMIZEBOX) && (style & WS_MINIMIZEBOX))
     } catch {
         return false
     }
