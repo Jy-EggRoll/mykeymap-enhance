@@ -1,1 +1,1 @@
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "MyKeymapLauncher" /f
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "EggRollMyKeymapEnhanceLauncher" /f

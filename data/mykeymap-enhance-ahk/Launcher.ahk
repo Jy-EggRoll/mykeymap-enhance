@@ -6,7 +6,7 @@
 
 #Include ./LoggerLib/Logger.ahk
 
-PIPE_NAME := "\\.\pipe\MyKeymapLauncher"
+PIPE_NAME := "\\.\pipe\EggRollMyKeymapEnhanceLauncher"
 
 class LauncherDebug {
     static mode := true

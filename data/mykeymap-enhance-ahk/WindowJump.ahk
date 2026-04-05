@@ -1013,7 +1013,7 @@ ActivateWin(LV, RowNumber) {
 
 ; RunViaLauncher - 通过 Launcher 以普通用户身份启动程序
 RunViaLauncher(targetPath) {
-    static PIPE_NAME := "\\.\pipe\MyKeymapLauncher"
+    static PIPE_NAME := "\\.\pipe\EggRollMyKeymapEnhanceLauncher"
 
     LogInfo("通过 Launcher 启动: " targetPath, , WindowJumpDebug.mode)
 
