@@ -1,15 +1,14 @@
 #Requires AutoHotkey v2.0
 
-; ==============================================================================
 ; 库包含 (请确保路径正确)
-; ==============================================================================
+
 #Include ./LoggerLib/Logger.ahk
 #Include ./ThemeAndColorLib/ThemeAndColor.ahk
 #Include ./AutoActivateWindow.ahk
+#Include ./WindowStyleLib/WindowStyle.ahk
 
-; ==============================================================================
 ; 全局常量与状态管理
-; ==============================================================================
+
 class AutoWindowColorBorderDebug {
     static mode := false
 }
@@ -25,9 +24,7 @@ lastActiveWindow := 0       ; 上一个获得焦点的窗口句柄
 windowStates := Map()       ; 存储窗口访问状态 {mouseVisited: bool}
 cachedHsl := { h: 0, s: 0, l: 0 } ; 内存颜色缓存，避免高频 I/O
 
-; ==============================================================================
 ; 初始化与系统事件监听
-; ==============================================================================
 
 ; 1. 启动时初始化缓存
 RefreshColorCache()
@@ -59,9 +56,7 @@ RefreshColorCache() {
     cachedHsl := RGBtoHSL(r, g, b)
 }
 
-; ==============================================================================
 ; 核心逻辑函数
-; ==============================================================================
 
 /**
  * 获取动态边框颜色 (BGR 格式)
@@ -71,11 +66,10 @@ GetDynamicBorderColor(hwnd) {
     global cachedHsl, windowStates
 
     ; 状态检测
-    isTopmost := (WinGetExStyle(hwnd) & 0x8)
     isVisited := (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited)
 
-    ; 颜色分支计算 (在内存中完成，不产生 I/O)
-    if (isTopmost || !isVisited) {
+    ; 颜色分支计算
+    if (isTopmost(hwnd) || IsPopUp(hwnd) || !isVisited) {
         targetH := Mod(cachedHsl.h + 180, 360) ; 高对比补色
     } else {
         targetH := cachedHsl.h ; 系统主题荧光色
@@ -132,9 +126,7 @@ UpdateWindowBorder() {
     }
 }
 
-; ==============================================================================
 ; 工具函数 (DWM & 颜色数学)
-; ==============================================================================
 
 SetWindowBorder(hwnd, color) {
     try {
@@ -216,8 +208,7 @@ HSLtoRGB(h, s, l) {
     return { r: Round((tr + m) * 255), g: Round((tg + m) * 255), b: Round((tb + m) * 255) }
 }
 
-; ==============================================================================
 ; 自动执行段
-; ==============================================================================
+
 AutoWindowColorBorder() ; 启动脚本即运行
 OnExit(CleanupOnExit)   ; 确保退出时清理边框

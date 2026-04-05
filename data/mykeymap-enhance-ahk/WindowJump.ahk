@@ -3,7 +3,7 @@
 #Include ./LoggerLib/Logger.ahk
 #Include ./AutoActivateWindow.ahk
 #Include ./VDLib/VD.ahk
-#Include ./ValidWindowLib/IsValidWindow.ahk
+#Include ./WindowStyleLib/WindowStyle.ahk
 
 class WindowJumpDebug {
     static mode := false

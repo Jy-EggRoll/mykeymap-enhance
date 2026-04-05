@@ -160,11 +160,10 @@ TryUpdate() {
     UpdateText("Ctrl_AllText", ovAllText)
 }
 
-; ===========================================================================================
 ; WinGetText ALWAYS uses the "slow" mode - TitleMatchMode only affects
 ; WinText/ExcludeText parameters. In "fast" mode, GetWindowText() is used
 ; to retrieve the text of each control.
-; ===========================================================================================
+
 WinGetTextFast(detect_hidden) {
     controls := WinGetControlsHwnd()
 
@@ -186,11 +185,10 @@ WinGetTextFast(detect_hidden) {
     return text
 }
 
-; ===========================================================================================
 ; Unlike using a pure GuiControl, this function causes the text of the
 ; controls to be updated only when the text has changed, preventing periodic
 ; flickering (especially on older systems).
-; ===========================================================================================
+
 UpdateText(vCtl, NewText) {
     global oGui
     static OldText := {}

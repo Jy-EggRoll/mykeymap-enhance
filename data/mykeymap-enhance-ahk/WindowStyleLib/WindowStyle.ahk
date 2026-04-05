@@ -40,3 +40,30 @@ GetCloakValue(hwnd) {
     DllCall("dwmapi\DwmGetWindowAttribute", "ptr", hwnd, "uint", 14, "uint*", &cloaked, "uint", 4)
     return cloaked
 }
+
+/**
+ * 如果活动窗口【具有 WS_POPUP 样式同时不能调节窗口大小】或者【具有 WS_POPUPWINDOW 样式且不能调整大小】，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单，又或是一些具有奇怪逻辑的组件（比如微信、微信的的表情面板）。当它们出现并抢夺了焦点时，自动激活功能应该停止，以确保这些窗口出现在前台，让用户处理
+ */
+ActiveWindowIsPopUp() {
+    activeStyle := WinGetStyle("A")
+    if (activeStyle & 0x80000000 && !(activeStyle & 0x40000) || activeStyle & 0x80880000 && !(activeStyle & 0x40000)) {
+        return true
+    }
+}
+
+/**
+ * 判断 hwnd 是否是弹出窗口
+ */
+IsPopUp(hwnd) {
+    style := WinGetStyle(hwnd)
+    if (style & 0x80000000 && !(style & 0x40000) || style & 0x80880000 && !(style & 0x40000)) {
+        return true
+    }
+}
+
+IsTopmost(hwnd) {
+    style := WinGetStyle(hwnd)
+    if (style & 0x8) {
+        return true
+    }
+}
