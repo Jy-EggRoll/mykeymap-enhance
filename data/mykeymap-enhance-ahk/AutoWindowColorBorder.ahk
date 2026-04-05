@@ -55,7 +55,7 @@ RGBtoBGR(rgbString) {
 /**
  * 切换窗口边框功能的开关函数
  */
-AutoWindowColorBorder(pollingTime := 50) {
+AutoWindowColorBorder(pollingTime := 20) {
     global borderEnabled
 
     if (!borderEnabled) {

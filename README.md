@@ -87,8 +87,8 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">使用 MyKeymap 的命令实现分屏，如 41、92</td>
     </tr>
     <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoActivateWindow(pollingTime := 50)</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">pollingTime：轮询时间，默认为 50 ms</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoActivateWindow(pollingTime := 20)</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">pollingTime：轮询时间，默认为 20 ms</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数。鼠标悬停处自动激活窗口，无需点击。默认随 MyKeymap 启动</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或指令，方便随时启停</td>
     </tr>
@@ -220,7 +220,7 @@ weight:
 
 解决“激活窗口的心智负担”：鼠标悬停处自动激活窗口，无需纠结“点链接会误触、点资源管理器怕选到文件、点代码编辑器会改变输入焦点”。
 
-- **用户行为识别**：仅当鼠标 **移动后再静置 50 ms 以上且移动范围超过 10 \* 10 px 时** 激活窗口，鼠标移动过程中绝不触发，鼠标一直静止时绝不触发。另外，当识别到存在用户从未访问过的窗口时（即从未将鼠标移动到该窗口上），自动激活窗口功能会自动停止，一旦用户访问过该窗口，自动激活就会恢复。
+- **用户行为识别**：仅当鼠标 **移动后再静置 500ms 以上且移动范围超过 10 \* 10px 时** 激活窗口，鼠标移动过程中绝不触发，鼠标一直静止时绝不触发。另外，当识别到存在用户从未访问过的窗口时（即从未将鼠标移动到该窗口上），自动激活窗口功能会自动停止，一旦用户访问过该窗口，自动激活就会恢复。
   - 纯鼠标操作：非常灵敏灵敏，又不至于移动时误触发，有一定的移动容错时间
   - 纯键盘操作：完全不触发自动激活
   - 在软件内点击某超链接，跳出了某窗口，但是鼠标没有大范围移动时，不会导致误触发
