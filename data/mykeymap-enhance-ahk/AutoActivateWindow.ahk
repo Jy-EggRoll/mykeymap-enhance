@@ -1,6 +1,7 @@
 #Requires AutoHotkey v2.0
 
 #Include ./LoggerLib/Logger.ahk
+#Include ./ValidWindowLib/IsValidWindow.ahk
 
 #WinActivateForce  ; 防止在窗口快速被激活时导致闪烁，这是 ahk 的已知问题
 
@@ -172,36 +173,6 @@ CheckForUnvisitedWindows() {
     } catch Error as e {
         LogError(e, , AutoActivateWindowDebug.mode)
         return true
-    }
-}
-
-/**
- * 判断窗口是否为有效的可激活窗口
- */
-IsValidWindow(hwnd) {
-    try {
-        if (!WinExist(hwnd)) {
-            return false
-        }
-
-        ; 检查窗口样式
-        style := WinGetStyle(hwnd)
-
-        title := WinGetTitle(hwnd)
-        if (title == "") {  ; 通常，无 title 窗口不应该触发激活
-            return false
-        }
-
-        if (style & 0x40000) {  ; 如果可以调整大小，通常才是正常的窗口，这是目前判断常规窗口最有效的方式，其列表和 Windows 任务栏上显示出来的窗口高度一致
-            ; LogInfo("识别到有效窗口：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
-            return true
-        }
-
-        ; LogInfo("识别到无效窗口：[" WinGetTitle(hwnd) "] [" WinGetClass(hwnd) "] [" hwnd "]", , AutoActivateWindowDebug.mode)
-        return false
-    } catch Error as e {
-        LogError(e, , AutoActivateWindowDebug.mode)
-        return false
     }
 }
 

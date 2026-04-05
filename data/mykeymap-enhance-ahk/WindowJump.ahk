@@ -3,6 +3,7 @@
 #Include ./LoggerLib/Logger.ahk
 #Include ./AutoActivateWindow.ahk
 #Include ./VDLib/VD.ahk
+#Include ./ValidWindowLib/IsValidWindow.ahk
 
 class WindowJumpDebug {
     static mode := true
@@ -408,12 +409,7 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
     A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
-            title := WinGetTitle(hwnd)
-            process := WinGetProcessName(hwnd)
-            style := WinGetStyle(hwnd)
-            exStyle := WinGetExStyle(hwnd)
-
-            if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd && (style & 0x10000000)) {
+            if (IsValidWindow(hwnd)) {
                 desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
                 if (desktopNum > 0) {
                     desktopInfo := " [桌面" . desktopNum . "]"
@@ -424,6 +420,8 @@ RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
                 } else {
                     desktopInfo := ""
                 }
+                process := WinGetProcessName(hwnd)
+                title := WinGetTitle(hwnd)
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
                 LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0")
                 windowCount++
@@ -443,11 +441,7 @@ RefreshAllWindows(LV, hIL, iconCache) {
     A_DetectHiddenWindows := true
     for hwnd in WinGetList() {
         try {
-            title := WinGetTitle(hwnd)
-            process := WinGetProcessName(hwnd)
-            style := WinGetStyle(hwnd)
-            exStyle := WinGetExStyle(hwnd)
-            if (title != "" && (style & 0x40000) && hwnd != LV.Gui.Hwnd && (style & 0x10000000)) {
+            if (IsValidWindow(hwnd)) {
                 desktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
                 if (desktopNum > 0) {
                     desktopInfo := " [桌面" . desktopNum . "]"
@@ -458,6 +452,8 @@ RefreshAllWindows(LV, hIL, iconCache) {
                 } else {
                     desktopInfo := ""
                 }
+                title := WinGetTitle(hwnd)
+                process := WinGetProcessName(hwnd)
                 iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
                 LV.Add("Icon" . iconIdx, desktopInfo . " [" . process . "] " . title, hwnd, "0")
                 windowCount++
@@ -511,11 +507,9 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
         try {
             title := WinGetTitle(hwnd)
             process := WinGetProcessName(hwnd)
-            style := WinGetStyle(hwnd)
-            exStyle := WinGetExStyle(hwnd)
 
             ; 过滤条件
-            if (title == "" || !(style & 0x40000) || hwnd == EditObj.Gui.Hwnd || !(style & 0x10000000)) {
+            if (!IsValidWindow(hwnd)) {
                 continue
             }
 
@@ -1039,8 +1033,9 @@ ActivateWin(LV, RowNumber) {
         if (hwnd) {
             if (isShortcut) {
                 LogInfo("运行快捷方式: " . hwnd, , WindowJumpDebug.mode)
-                Run(hwnd)
                 LV.Gui.Hide()
+                Sleep 50
+                Run(hwnd)
             } else {
                 LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
                 global lastActiveWindowClass

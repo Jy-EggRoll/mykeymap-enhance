@@ -1,62 +1,93 @@
 #Requires AutoHotkey v2.0
 
+; ==============================================================================
+; 库包含 (请确保路径正确)
+; ==============================================================================
 #Include ./LoggerLib/Logger.ahk
 #Include ./ThemeAndColorLib/ThemeAndColor.ahk
-#Include AutoActivateWindow.ahk
+#Include ./AutoActivateWindow.ahk
 
+; ==============================================================================
+; 全局常量与状态管理
+; ==============================================================================
 class AutoWindowColorBorderDebug {
     static mode := true
 }
 
-; Windows DWM API 常量
+; Windows DWM API & 消息常量
 DWMWA_BORDER_COLOR := 34
 DWMWA_COLOR_DEFAULT := 0xFFFFFFFF
+WM_SETTINGCHANGE := 0x001A
 
-; 全局状态管理
-borderEnabled := false
-lastActiveWindow := 0
-windowStates := Map() ; 用于记录窗口鼠标访问状态
+; 全局变量
+borderEnabled := false      ; 功能开关状态
+lastActiveWindow := 0       ; 上一个获得焦点的窗口句柄
+windowStates := Map()       ; 存储窗口访问状态 {mouseVisited: bool}
+cachedHsl := { h: 0, s: 0, l: 0 } ; 内存颜色缓存，避免高频 I/O
+
+; ==============================================================================
+; 初始化与系统事件监听
+; ==============================================================================
+
+; 1. 启动时初始化缓存
+RefreshColorCache()
+
+; 2. 监听系统设置变更（如更改主题色、深浅色模式）
+OnMessage(WM_SETTINGCHANGE, SystemSettingChanged)
+
+SystemSettingChanged(wParam, lParam, msg, hwnd) {
+    global lastActiveWindow
+    RefreshColorCache()
+    lastActiveWindow := 0 ; 强制触发下一次轮询的重绘逻辑
+    LogInfo("检测到系统设置变更，已重新加载主题色并刷新缓存", , AutoWindowColorBorderDebug.mode)
+}
 
 /**
- * 核心逻辑：获取当前应应用的 BGR 颜色值
- * 规则：
- * 1. 置顶窗口 OR 未访问窗口 -> 使用高对比补色 (Contrast)
- * 2. 已访问激活窗口 -> 使用系统主题荧光色 (Vibrant)
+ * 刷新颜色缓存：从注册表读取一次最新的强调色并转为 HSL
  */
-GetDynamicBorderColor(hwnd) {
-    global windowStates
+RefreshColorCache() {
+    global cachedHsl
     try {
-        ; 读取系统 DWM 强调色 (ABGR 格式)
+        ; 读取 Windows 强调色 (ABGR 格式)
         rawColor := RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "AccentColor")
         r := rawColor & 0xFF
         g := (rawColor >> 8) & 0xFF
         b := (rawColor >> 16) & 0xFF
     } catch {
-        r := 0, g := 120, b := 215
+        r := 0, g := 120, b := 215 ; 默认蓝
     }
+    cachedHsl := RGBtoHSL(r, g, b)
+}
 
-    ; 转换为 HSL 空间
-    hsl := RGBtoHSL(r, g, b)
+; ==============================================================================
+; 核心逻辑函数
+; ==============================================================================
 
-    ; --- 逻辑判断 ---
+/**
+ * 获取动态边框颜色 (BGR 格式)
+ * 逻辑：(置顶 || 未访问) ? 补色 : 主题色
+ */
+GetDynamicBorderColor(hwnd) {
+    global cachedHsl, windowStates
+
+    ; 状态检测
     isTopmost := (WinGetExStyle(hwnd) & 0x8)
     isVisited := (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited)
 
-    ; 如果是置顶窗口，或者鼠标还没碰过这个窗口，统一采用补色
+    ; 颜色分支计算 (在内存中完成，不产生 I/O)
     if (isTopmost || !isVisited) {
-        targetH := Mod(hsl.h + 180, 360) ; 高对比补色
+        targetH := Mod(cachedHsl.h + 180, 360) ; 高对比补色
     } else {
-        targetH := hsl.h ; 系统主题荧光色
+        targetH := cachedHsl.h ; 系统主题荧光色
     }
 
-    ; 转回 RGB (饱和度 100%, 亮度 50%)
+    ; 转回 RGB 并输出 BGR
     rgb := HSLtoRGB(targetH, 1.0, 0.5)
-
     return (rgb.b << 16) | (rgb.g << 8) | rgb.r
 }
 
 /**
- * 更新活动窗口边框
+ * 定时轮询函数
  */
 UpdateWindowBorder() {
     global lastActiveWindow, borderEnabled, windowStates
@@ -67,7 +98,7 @@ UpdateWindowBorder() {
     try {
         currentActiveWindow := WinExist("A")
 
-        ; 实时监测鼠标是否进入当前活动窗口
+        ; 1. 实时更新鼠标访问状态
         if (currentActiveWindow != 0) {
             MouseGetPos(, , &mHwnd)
             if (mHwnd == currentActiveWindow) {
@@ -78,17 +109,17 @@ UpdateWindowBorder() {
             }
         }
 
-        ; 焦点切换处理
+        ; 2. 处理焦点切换时的边框清除
         if (currentActiveWindow != lastActiveWindow && lastActiveWindow != 0) {
             if WinExist(lastActiveWindow) {
-                ; 失去焦点时，若非置顶窗口则清除边框
+                ; 失去焦点时，若非置顶窗口则还原边框
                 if !(WinGetExStyle(lastActiveWindow) & 0x8) {
                     ClearWindowBorder(lastActiveWindow)
                 }
             }
         }
 
-        ; 应用颜色
+        ; 3. 应用或刷新当前窗口边框
         if (currentActiveWindow != 0) {
             borderColor := GetDynamicBorderColor(currentActiveWindow)
             if (SetWindowBorder(currentActiveWindow, borderColor)) {
@@ -101,17 +132,19 @@ UpdateWindowBorder() {
     }
 }
 
-; --- DWM 操作 ---
+; ==============================================================================
+; 工具函数 (DWM & 颜色数学)
+; ==============================================================================
+
 SetWindowBorder(hwnd, color) {
     try {
         if !hwnd || !WinExist(hwnd)
             return false
-        result := DllCall("dwmapi\DwmSetWindowAttribute", "ptr", hwnd, "uint", DWMWA_BORDER_COLOR, "uint*", color,
-            "uint", 4, "int")
-        return (result = 0)
-    } catch {
+        ; DwmSetWindowAttribute 返回 0 表示成功
+        return !DllCall("dwmapi\DwmSetWindowAttribute", "ptr", hwnd, "uint", DWMWA_BORDER_COLOR, "uint*", color, "uint",
+            4, "int")
+    } catch
         return false
-    }
 }
 
 ClearWindowBorder(hwnd) => SetWindowBorder(hwnd, DWMWA_COLOR_DEFAULT)
@@ -121,10 +154,12 @@ AutoWindowColorBorder(pollingTime := 20) {
     if (!borderEnabled) {
         SetTimer(UpdateWindowBorder, pollingTime)
         borderEnabled := true
+        LogInfo("窗口边框着色已启动", , AutoWindowColorBorderDebug.mode)
     } else {
         SetTimer(UpdateWindowBorder, 0)
         CleanupBorder()
         borderEnabled := false
+        LogInfo("窗口边框着色已停止", , AutoWindowColorBorderDebug.mode)
     }
 }
 
@@ -137,7 +172,10 @@ CleanupBorder() {
 
 CleanupOnExit(*) => CleanupBorder()
 
-; --- 色彩数学转换 ---
+; ------------------------------------------------------------------------------
+; 色彩转换算法
+; ------------------------------------------------------------------------------
+
 RGBtoHSL(r, g, b) {
     rf := r / 255, gf := g / 255, bf := b / 255
     mx := Max(rf, gf, bf), mn := Min(rf, gf, bf)
@@ -178,5 +216,8 @@ HSLtoRGB(h, s, l) {
     return { r: Round((tr + m) * 255), g: Round((tg + m) * 255), b: Round((tb + m) * 255) }
 }
 
-AutoWindowColorBorder()
-OnExit(CleanupOnExit)
+; ==============================================================================
+; 自动执行段
+; ==============================================================================
+AutoWindowColorBorder() ; 启动脚本即运行
+OnExit(CleanupOnExit)   ; 确保退出时清理边框
