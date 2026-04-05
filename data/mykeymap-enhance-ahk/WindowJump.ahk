@@ -1029,8 +1029,7 @@ RunViaLauncher(targetPath) {
             "Ptr")
 
         if (pipe = -1 || pipe = 0) {
-            LogInfo("连接 Launcher 失败，回退到普通 Run", , WindowJumpDebug.mode)
-            Run(targetPath)
+            LogInfo("连接 Launcher 失败，不执行任何任务", , WindowJumpDebug.mode)
             return
         }
 
