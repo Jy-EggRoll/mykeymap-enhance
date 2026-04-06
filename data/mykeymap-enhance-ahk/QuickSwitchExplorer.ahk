@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := true
+    static mode := false
 }
 
 #Include ./LoggerLib/Logger.ahk
