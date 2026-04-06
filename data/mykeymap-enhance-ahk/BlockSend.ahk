@@ -6,7 +6,7 @@ class BlockSendDebug {
     static mode := false
 }
 
-BSend(text) {
+BlockSend(text) {
     ; 备份当前剪贴板内容，以免丢失用户之前复制的东西
     ClipSaved := ClipboardAll()
 
