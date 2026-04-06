@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := true
+    static mode := false
 }
 
 #Include ./LoggerLib/Logger.ahk
@@ -141,3 +141,13 @@ QuickSwitchNavigate(folderPath) {
         LogInfo("跳转指令完成 " . folderPath, , QuickSwitchExplorerDebug.mode)
     }
 }
+
+#HotIf WinActive("ahk_class #32770") ; 仅在打开/保存对话框激活时有效
+
+; 拦截右键点击
+$Tab::
+{
+    QuickSwitchExplorer()
+}
+
+#HotIf ; 关闭条件判断
