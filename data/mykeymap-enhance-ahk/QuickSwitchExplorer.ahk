@@ -37,23 +37,35 @@ QuickSwitchExplorer() {
     quickSwitchItemMap := Map()
     QuickSwitchMenu := Menu()
 
+    ; 临时数组用于存放抓取到的路径，以便后续反转顺序
+    folderList := []
+
     try {
         ; 通过 COM 获取所有资源管理器窗口路径
         shellWindows := ComObject("Shell.Application").Windows
         for window in shellWindows {
             try {
                 folder := window.Document.Folder.Self.Path
-                ; 仅允许以驱动器盘符（如 C:\）或网络共享路径（如 \\）开头的路径
+                ; 仅允许以驱动器盘符或网络共享路径开头的路径
                 if (folder && (RegExMatch(folder, "S)^.:\\") || RegExMatch(folder, "S)^\\\\"))) {
-                    if (!quickSwitchItemMap.Has(folder)) {
-                        QuickSwitchAddItem(folder, "shell32.dll", 5)
+                    ; 数组去重检查
+                    isDup := false
+                    for addedPath in folderList {
+                        if (addedPath = folder) {
+                            isDup := true
+                            break
+                        }
                     }
+                    if (!isDup)
+                        folderList.Push(folder)
                 }
             }
         }
 
-        if (quickSwitchItemMap.Count > 0) {
-            QuickSwitchMenu.Add() ; 添加分割线
+        idx := folderList.Length
+        while (idx > 0) {
+            QuickSwitchAddItem(folderList[idx], "shell32.dll", 5)
+            idx--
         }
     } catch as e {
         ToolTip("无法获取资源管理器路径")
