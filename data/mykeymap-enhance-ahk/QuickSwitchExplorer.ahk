@@ -1,10 +1,11 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := true
+    static mode := false
 }
 
 #Include ./LoggerLib/Logger.ahk
+#Include ./BlockSend.ahk
 
 global QuickSwitchMenu
 global quickSwitchItemMap := Map()
@@ -83,12 +84,18 @@ QuickSwitchNavigate(folderPath) {
 
     ; 激活
     WinActivate hwnd
+    Sleep 100
     if (RegExMatch(folderPath, "S)^.:\\") || RegExMatch(folderPath, "S)^\\\\file")) {
-        LogInfo("设置路径为 " folderPath, , QuickSwitchExplorerDebug.mode)
-        ControlSetText folderPath, "Edit1", hwnd
-        Sleep 500
-        LogInfo("发送回车...", , QuickSwitchExplorerDebug.mode)
-        ControlSend "{Enter}", "Edit1", hwnd
+        SendInput("!d")
+        Sleep 100
+        SendInput("^a")
+        Sleep 100
+        SendInput("{Backspace}")
+        Sleep 100
+        BSend(folderPath)
+        LogInfo("发送了" . folderPath, , QuickSwitchExplorerDebug.mode)
+        Sleep 100
+        SendInput("{Enter}")
         LogInfo("完成", , QuickSwitchExplorerDebug.mode)
     }
 }
@@ -109,5 +116,3 @@ QuickSwitchGetProcessPath(exeName) {
     }
     return ""
 }
-
-F16:: QuickSwitchExplorer()
