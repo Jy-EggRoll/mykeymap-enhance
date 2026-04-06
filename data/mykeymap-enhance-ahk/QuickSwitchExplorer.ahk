@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := false
+    static mode := true
 }
 
 #Include ./LoggerLib/Logger.ahk
@@ -101,7 +101,7 @@ QuickSwitchNavigate(folderPath) {
         targetDialogHwnd := WinExist("A")
     }
 
-    hwnd := "ahk_id " . targetDialogHwnd
+    hwnd := targetDialogHwnd
 
     ; 重新激活目标对话框
     WinActivate hwnd
@@ -112,33 +112,52 @@ QuickSwitchNavigate(folderPath) {
 
     ; 仅处理本地路径或标准网络共享路径
     if (RegExMatch(folderPath, "S)^.:\\") || RegExMatch(folderPath, "S)^\\\\")) {
-        SendInput("^l")          ; 聚焦地址栏
-        Sleep 50                 ; 等待 UI 响应
-        loop 10 {
-            count := 0
-            edit2Control := 0
-            try {
-                controls := WinGetControls(hwnd)
-                controlsList := ""
-                for ctrl in controls {
-                    controlsList .= ctrl . "`n"
-                    if (ctrl == "Edit2") {
-                        edit2Control := ControlGetHwnd(ctrl)
+        edit1Control := 0  ; 文件输入控件，老控件
+        edit2Control := 0  ; 地址输入控件，必须先激活
+        try {
+            controls := WinGetControls(hwnd)
+            controlsList := ""
+            for ctrl in controls {
+                controlsList .= ctrl . "`n"
+                ; LogInfo(controlsList, , QuickSwitchExplorerDebug.mode)
+                if (ctrl == "Edit2") {
+                    edit2Control := ControlGetHwnd(ctrl)
+                }
+                if (ctrl == "Edit1") {
+                    edit1Control := ControlGetHwnd(ctrl)
+                }
+            }
+            if (edit2Control != 0) {
+                if (ControlGetVisible(edit2Control)) {
+                    LogInfo("Edit2 当前可见", , QuickSwitchExplorerDebug.mode)
+                } else {
+                    LogInfo("Edit2 当前不可见，尝试将其设为可见", , QuickSwitchExplorerDebug.mode)
+                    loop 10 {
+                        SendInput("^l")          ; 聚焦地址栏
+                        Sleep 50                 ; 等待 UI 响应
+                        if (ControlGetVisible(edit2Control)) {
+                            LogInfo("Edit2 成功设为可见", , QuickSwitchExplorerDebug.mode)
+                            break
+                        } else {
+                            LogInfo("尝试设为可见失败", , QuickSwitchExplorerDebug.mode)
+                        }
                     }
                 }
-                count++
-                if (edit2Control != 0) {
-                    LogInfo("经过" . count . "次，成功获取到了可输入的 Edit2 " . edit2Control, , QuickSwitchExplorerDebug.mode)
-                    ; LogInfo(controlsList, , QuickSwitchExplorerDebug.mode)
-                    break
-                }
+                LogInfo("成功获取到 Edit2", , QuickSwitchExplorerDebug.mode)
                 Sleep 50
+                ControlSetText(folderPath, edit2Control, hwnd)
+                Sleep 50
+                ControlSend("{Enter}", edit2Control, hwnd)
+                LogInfo("跳转指令完成 " . folderPath, , QuickSwitchExplorerDebug.mode)
+            } else if (edit1Control != 0) {
+                LogInfo("此窗口似乎只有 Edit1", , QuickSwitchExplorerDebug.mode)
+                Sleep 50
+                ControlSetText(folderPath, edit1Control, hwnd)
+                LogInfo("普通路径设置完成 " . folderPath, , QuickSwitchExplorerDebug.mode)
             }
+        } catch Error as e {
+            LogError(e, , QuickSwitchExplorerDebug.mode)
         }
-        ControlSetText(folderPath, edit2Control, hwnd)
-        Sleep 50
-        ControlSend("{Enter}", edit2Control, hwnd)
-        LogInfo("跳转指令完成 " . folderPath, , QuickSwitchExplorerDebug.mode)
     }
 }
 
