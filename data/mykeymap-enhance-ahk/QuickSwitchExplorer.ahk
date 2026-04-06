@@ -1,11 +1,10 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := false  ; 调试模式开关
+    static mode := true
 }
 
 #Include ./LoggerLib/Logger.ahk
-#Include ./BlockSend.ahk
 
 global QuickSwitchMenu := Menu()
 global quickSwitchItemMap := Map()
@@ -76,7 +75,7 @@ QuickSwitchExplorer() {
 QuickSwitchAddItem(folder, menuIcon, menuIconNum := 1) {
     global
     quickSwitchItemNum += 1
-    itemLabel := "&" . quickSwitchItemNum . " " . folder
+    itemLabel := "&" . quickSwitchItemNum . "  " . folder
     QuickSwitchMenu.Add(itemLabel, QuickSwitchNavigateWrapper)
     QuickSwitchMenu.SetIcon(itemLabel, menuIcon, menuIconNum)
     quickSwitchItemMap[folder] := itemLabel
@@ -87,7 +86,7 @@ QuickSwitchAddItem(folder, menuIcon, menuIconNum := 1) {
  */
 QuickSwitchNavigateWrapper(ItemName, ItemPos, MyMenu) {
     ; 正则去除前缀的 "&1 " 等快捷键标识
-    folderPath := RegExReplace(ItemName, "S)^&\d+ ")
+    folderPath := RegExReplace(ItemName, "S)^&\d+  ")
     QuickSwitchNavigate(folderPath)
     QuickSwitchMenu.Delete()
 }
@@ -107,25 +106,38 @@ QuickSwitchNavigate(folderPath) {
     ; 重新激活目标对话框
     WinActivate hwnd
     if !WinWaitActive(hwnd, , 1) {
+        LogError("激活失败", , QuickSwitchExplorerDebug.mode)
         return
     }
 
     ; 仅处理本地路径或标准网络共享路径
     if (RegExMatch(folderPath, "S)^.:\\") || RegExMatch(folderPath, "S)^\\\\")) {
-        ; 模拟标准 Windows 跳转快捷操作
-        SendInput("!d")          ; 聚焦地址栏 (Alt + D)
-        Sleep 150                ; 等待 UI 响应
-        SendInput("^a")          ; 全选
+        SendInput("^l")          ; 聚焦地址栏
+        Sleep 50                 ; 等待 UI 响应
+        loop 10 {
+            count := 0
+            edit2Control := 0
+            try {
+                controls := WinGetControls(hwnd)
+                controlsList := ""
+                for ctrl in controls {
+                    controlsList .= ctrl . "`n"
+                    if (ctrl == "Edit2") {
+                        edit2Control := ControlGetHwnd(ctrl)
+                    }
+                }
+                count++
+                if (edit2Control != 0) {
+                    LogInfo("经过" . count . "次，成功获取到了可输入的 Edit2 " . edit2Control, , QuickSwitchExplorerDebug.mode)
+                    ; LogInfo(controlsList, , QuickSwitchExplorerDebug.mode)
+                    break
+                }
+                Sleep 50
+            }
+        }
+        ControlSetText(folderPath, edit2Control, hwnd)
         Sleep 50
-        SendInput("{Backspace}") ; 清除
-        Sleep 50
-
-        ; 以块级注入文本，防止输入法干扰或输入延迟
-        BlockSend(folderPath)
-
-        LogInfo("发送路径: " . folderPath, , QuickSwitchExplorerDebug.mode)
-        Sleep 150
-        SendInput("{Enter}")  ; 回车确认跳转
-        LogInfo("跳转指令完成", , QuickSwitchExplorerDebug.mode)
+        ControlSend("{Enter}", edit2Control, hwnd)
+        LogInfo("跳转指令完成 " . folderPath, , QuickSwitchExplorerDebug.mode)
     }
 }
