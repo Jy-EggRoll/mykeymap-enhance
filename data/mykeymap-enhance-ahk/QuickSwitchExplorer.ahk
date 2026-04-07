@@ -1,8 +1,10 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := false
+    static mode := true
 }
+
+LogInfo("QuickSwitchExplorer 脚本已加载", , QuickSwitchExplorerDebug.mode)
 
 #Include ./LoggerLib/Logger.ahk
 
@@ -114,58 +116,64 @@ QuickSwitchNavigate(folderPath) {
     }
 
     hwnd := targetDialogHwnd
+    edit1Control := 0  ; 文件输入控件，老控件
+    edit2Control := 0  ; 地址输入控件，必须先激活
+    toolBarWindow323Control := 0  ; Edit2 的外层封装
 
     ; 重新激活目标对话框
     WinActivate hwnd
     if !WinWaitActive(hwnd, , 1) {
-        LogError("激活失败", , QuickSwitchExplorerDebug.mode)
+        LogWarn("激活失败，请重新点击一次窗口", , QuickSwitchExplorerDebug.mode)
         return
     }
 
     ; 仅处理本地路径或标准网络共享路径
     if (RegExMatch(folderPath, "S)^.:\\") || RegExMatch(folderPath, "S)^\\\\")) {
-        edit1Control := 0  ; 文件输入控件，老控件
-        edit2Control := 0  ; 地址输入控件，必须先激活
         try {
-            controls := WinGetControls(hwnd)
-            controlsList := ""
-            for ctrl in controls {
-                controlsList .= ctrl . "`n"
-                ; LogInfo(controlsList, , QuickSwitchExplorerDebug.mode)
-                if (ctrl == "Edit2") {
-                    edit2Control := ControlGetHwnd(ctrl)
-                }
-                if (ctrl == "Edit1") {
-                    edit1Control := ControlGetHwnd(ctrl)
+            try {
+                edit1Control := ControlGetHwnd("Edit1", hwnd)
+            } catch Error as e {
+                LogWarn("Edit1 控件获取失败，可能是因为对话框类型不同", , QuickSwitchExplorerDebug.mode)
+                LogError(e, , QuickSwitchExplorerDebug.mode)
+            }
+            try {
+                toolBarWindow323Control := ControlGetHwnd("ToolbarWindow323", hwnd)
+            } catch {
+                LogInfo("ToolbarWindow323 获取失败，这可能不是一个现代化的资源管理器窗口", , QuickSwitchExplorerDebug.mode)
+            }
+            if (toolBarWindow323Control != 0) {
+                try {
+                    LogInfo("尝试激活地址栏以获取 Edit2 控件", , QuickSwitchExplorerDebug.mode)
+                    x := 0, y := 0, w := 0, h := 0
+                    ControlGetPos(&x, &y, &w, &h, "ToolbarWindow323", hwnd)
+                    ControlClick("ToolbarWindow323", hwnd, , "Left", 1, "x" . w . " y" . h)
+                    Sleep 50
+                    LogInfo("尝试获取 Edit2 控件", , QuickSwitchExplorerDebug.mode)
+                    edit2Control := ControlGetHwnd("Edit2", hwnd)
+                } catch {
+                    LogWarn("Edit2 控件获取失败，可能是因为对话框类型不同或地址栏未正确激活", , QuickSwitchExplorerDebug.mode)
                 }
             }
             if (edit2Control != 0) {
-                if (ControlGetVisible(edit2Control)) {
-                    LogInfo("Edit2 当前可见", , QuickSwitchExplorerDebug.mode)
-                } else {
-                    LogInfo("Edit2 当前不可见，尝试将其设为可见", , QuickSwitchExplorerDebug.mode)
-                    loop 10 {
-                        SendInput("^l")          ; 聚焦地址栏
-                        Sleep 50                 ; 等待 UI 响应
-                        if (ControlGetVisible(edit2Control)) {
-                            LogInfo("Edit2 成功设为可见", , QuickSwitchExplorerDebug.mode)
-                            break
-                        } else {
-                            LogInfo("尝试设为可见失败", , QuickSwitchExplorerDebug.mode)
-                        }
-                    }
-                }
-                LogInfo("成功获取到 Edit2", , QuickSwitchExplorerDebug.mode)
-                Sleep 50
+                LogInfo("成功获取 Edit2 控件，准备注入路径 " . folderPath, , QuickSwitchExplorerDebug.mode)
                 ControlSetText(folderPath, edit2Control, hwnd)
                 Sleep 50
+                LogInfo("路径设置完成，准备注入回车指令", , QuickSwitchExplorerDebug.mode)
                 ControlSend("{Enter}", edit2Control, hwnd)
                 LogInfo("跳转指令完成 " . folderPath, , QuickSwitchExplorerDebug.mode)
+                ToolTip("跳转成功")
+                SetTimer(ToolTip, -2000)
             } else if (edit1Control != 0) {
                 LogInfo("此窗口似乎只有 Edit1", , QuickSwitchExplorerDebug.mode)
                 Sleep 50
                 ControlSetText(folderPath, edit1Control, hwnd)
                 LogInfo("普通路径设置完成 " . folderPath, , QuickSwitchExplorerDebug.mode)
+                ToolTip("路径设置完成，可以直接点确定或回车")
+                SetTimer(ToolTip, -2000)
+            } else {
+                LogWarn("未找到可用的路径输入控件", , QuickSwitchExplorerDebug.mode)
+                ToolTip("无法跳转：未找到 Edit2 或 Edit1")
+                SetTimer(ToolTip, -2000)
             }
         } catch Error as e {
             LogError(e, , QuickSwitchExplorerDebug.mode)
@@ -175,7 +183,7 @@ QuickSwitchNavigate(folderPath) {
 
 #HotIf WinActive("ahk_class #32770") ; 仅在打开/保存对话框激活时有效
 
-; 拦截右键点击
+; 拦截 Tab 点击
 $Tab::
 {
     QuickSwitchExplorer()
