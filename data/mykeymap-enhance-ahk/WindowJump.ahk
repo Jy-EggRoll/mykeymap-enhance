@@ -11,6 +11,9 @@ class WindowJumpDebug {
 
 #Include ../mykeymap-enhance-ahk/PinYinLib/IbPinyin.ahk
 
+; 启用拼音部分匹配：模式可以匹配拼音的开头部分，比如 su 匹配 算（suan）。
+WindowJumpPinyinPartialMatch := true
+
 UpdateTheme()
 
 WindowJump() {
@@ -357,12 +360,17 @@ FuzzyScore(query, target) {
 
         tokenScore := 0
 
+        pinyinFlags := IbPinyin_AsciiFirstLetter | IbPinyin_Ascii
+        if (WindowJumpPinyinPartialMatch) {
+            pinyinFlags |= IbPinyin_PatternPartial
+        }
+
         if InStr(target, token) {
             tokenScore := 1000
             if InStr(target, token, true, 1, 1) {
                 tokenScore += 200
             }
-        } else if IbPinyin_Match(token, target, IbPinyin_AsciiFirstLetter | IbPinyin_Ascii) {
+        } else if IbPinyin_Match(token, target, pinyinFlags) {
             tokenScore := 800
         }
 
