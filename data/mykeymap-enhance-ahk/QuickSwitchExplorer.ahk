@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := true
+    static mode := false
 }
 
 LogInfo("QuickSwitchExplorer 脚本已加载", , QuickSwitchExplorerDebug.mode)
@@ -144,9 +144,9 @@ QuickSwitchNavigate(folderPath) {
             if (toolBarWindow323Control != 0) {
                 try {
                     LogInfo("尝试激活地址栏以获取 Edit2 控件", , QuickSwitchExplorerDebug.mode)
-                    x := 0, y := 0, w := 0, h := 0
-                    ControlGetPos(&x, &y, &w, &h, "ToolbarWindow323", hwnd)
-                    ControlClick("ToolbarWindow323", hwnd, , "Left", 1, "x" . w . " y" . h)
+                    w := 0, h := 0
+                    ControlGetPos(, , &w, &h, "ToolbarWindow323", hwnd)
+                    ControlClick("ToolbarWindow323", hwnd, , "Left", 1, "x" . w . " y" . h)  ; 实际点击了控件的最右下角，激活率几乎 100% 且不会误触其他按钮
                     Sleep 50
                     LogInfo("尝试获取 Edit2 控件", , QuickSwitchExplorerDebug.mode)
                     edit2Control := ControlGetHwnd("Edit2", hwnd)
@@ -181,12 +181,30 @@ QuickSwitchNavigate(folderPath) {
     }
 }
 
-#HotIf WinActive("ahk_class #32770") ; 仅在打开/保存对话框激活时有效
+IsSpecificControlUnderMouse(Name) {
+    MouseGetPos(, , , &ctrl)
+    return ctrl = Name
+}
 
-; 拦截 Tab 点击
+/**
+ * 在 DirectUIHWND1 或 Static2 上右键点击时触发菜单
+ * 这些控件通常存在于 Windows 10/11 的资源管理器和文件对话框中
+ */
+#HotIf WinActive("ahk_class #32770") && (IsSpecificControlUnderMouse("DirectUIHWND1") || IsSpecificControlUnderMouse(
+    "Static2"))
+RButton::
+{
+    QuickSwitchExplorer()
+}
+; HotIf 在读到另一个 HotIf 时，状态会被重置
+#HotIf
+
+/**
+ * 在打开/保存对话框激活时，按下 Tab 键也能触发菜单，直接拦截 Tab 的默认行为
+ */
+#HotIf WinActive("ahk_class #32770")  ; 仅在打开/保存对话框激活时有效
 $Tab::
 {
     QuickSwitchExplorer()
 }
-
-#HotIf ; 关闭条件判断
+#HotIf
