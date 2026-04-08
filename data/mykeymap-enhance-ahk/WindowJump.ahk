@@ -614,8 +614,12 @@ ActivateWin(LV, RowNumber) {
         if (hwnd) {
             if (isShortcut) {
                 if (isAdmin) {
+                    LV.Gui.Hide()
+                    Sleep 50
                     AdminRun(hwnd)
                 } else {
+                    LV.Gui.Hide()
+                    Sleep 50
                     UserRun(hwnd)
                 }
             } else {
