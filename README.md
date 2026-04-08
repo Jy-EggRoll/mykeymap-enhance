@@ -119,7 +119,7 @@ weight:
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">WindowJump()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">窗口跳转，通过模糊搜索快速切换窗口</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">窗口跳转，通过模糊搜索快速切换窗口，还可以作为快捷启动器</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>Space</kbd></td>
     </tr>
     <tr>
@@ -159,7 +159,11 @@ weight:
 
 ### 窗口跳转 WindowJump
 
+![窗口跳转](README/快速跳转窗口.png)
+
 通过模糊搜索快速切换窗口，支持字母模糊匹配和中文拼音匹配（简拼/全拼）。输入关键词后，窗口会实时显示匹配的窗口列表，使用上下键选择后按回车即可切换到目标窗口。
+
+集成系统快捷方式收纳功能，可以作为快捷方式启动器使用。当输入的关键词匹配到一个快捷方式时，按回车会直接运行该快捷方式，支持普通用户身份启动和管理员身份启动。
 
 匹配方式：
 
