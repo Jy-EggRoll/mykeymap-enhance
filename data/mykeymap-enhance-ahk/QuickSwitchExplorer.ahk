@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 class QuickSwitchExplorerDebug {
-    static mode := false
+    static mode := true
 }
 
 LogInfo("QuickSwitchExplorer 脚本已加载", , QuickSwitchExplorerDebug.mode)
