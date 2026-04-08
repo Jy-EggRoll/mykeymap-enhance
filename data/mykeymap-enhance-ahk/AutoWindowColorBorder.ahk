@@ -107,7 +107,7 @@ UpdateWindowBorder() {
         if (currentActiveWindow != lastActiveWindow && lastActiveWindow != 0) {
             if WinExist(lastActiveWindow) {
                 ; 失去焦点时，若非置顶窗口则还原边框
-                if !(IsTopmost(lastActiveID)) {
+                if !IsTopmost(lastActiveWindow) {
                     ClearWindowBorder(lastActiveWindow)
                 }
             }
