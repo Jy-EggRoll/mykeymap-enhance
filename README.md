@@ -123,6 +123,12 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>Space</kbd></td>
     </tr>
     <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">QuickSwitchExplorer()</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">快速切换/跳转到资源管理器窗口，在打开/保存对话框中调用会弹出已打开的 Explorer 列表供选择</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>E</kbd></td>
+    </tr>
+    <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoWindowColorBorder()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数。为活动窗口添加彩色边框，置顶窗口显示特殊的 mauve 色边框。默认随 MyKeymap 启动</td>
@@ -165,6 +171,8 @@ weight:
 >
 > 拼音匹配功能由 [IbPinyinLib](https://github.com/Chaoses-Ib/ib-matcher) 高性能拼音库提供支持，特此致谢。
 > 虚拟桌面窗口识别功能由 [VD.ahk](https://github.com/FuPeiJiang/VD.ahk) 库提供支持，特此致谢。
+>
+> **新增**：拼音匹配现已支持**部分匹配**模式，可以匹配拼音的开头部分，例如输入 `su` 可以匹配「算」（suan）。
 
 ### 拖动与调节 DragWindow & ResizeWindow
 
@@ -233,7 +241,7 @@ weight:
 
 ### 亮度调节 IncBrightness & DecBrightness
 
-不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。由于不显示 GUI，显示器配置变化时（如插入外接显示器）需要重启 MyKeymap。
+不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。显示器配置变化时（如插入外接显示器）会自动重载脚本，无需手动重启。
 
 配合 `NextMonitor()` 和 `PreviousMonitor()` 可切换调节的显示器。
 
@@ -247,9 +255,8 @@ weight:
 
 **颜色规则**：
 
-- 置顶窗口：显示特殊的 mauve（紫色）边框
-- 未访问窗口：根据主题显示一种边框色
-- 已访问窗口：显示另一种边框色
+- 未访问窗口：采用根据 Windows 主题色计算的对比度最强、最显眼的颜色
+- 已访问窗口：采用根据 Windows 主题色计算的同色调、最显眼的颜色
 - 失去焦点时：非置顶窗口会消除边框，置顶窗口保留边框颜色
 
 ![着色动态效果](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/着色动态效果.gif)
@@ -264,7 +271,7 @@ weight:
 - **Never**：从不合并图标
 - 空参数：自动翻转当前状态
 
-### 平滑滚动模拟 SmoothScrollSimulate
+### 平滑滚动模拟 SmoothScrollSimulate（已有弃用趋势）
 
 按住鼠标右键并移动，模拟现代化软件中的平滑滚动效果。支持：
 
@@ -285,9 +292,9 @@ weight:
 
 ## 额外工具
 
-### GetWindowFeature (窗口特征提取器)
+### GetWindowFeature
 
-独立的窗口信息查看工具，可以查看窗口的标题、位置、类名等详细信息，用于开发和调试。
+独立的窗口信息查看工具，可以查看窗口的标题、位置、类名、控件名等详细信息，用于开发和调试。
 
 ## 关于作者
 
