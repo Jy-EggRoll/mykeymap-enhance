@@ -69,7 +69,7 @@ GetDynamicBorderColor(hwnd) {
     isVisited := (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited)
 
     ; 颜色分支计算
-    if (isTopmost(hwnd) || IsPopUp(hwnd) || !isVisited) {
+    if (IsTopmost(hwnd) || IsPopUp(hwnd) || !isVisited) {
         targetH := Mod(cachedHsl.h + 180, 360) ; 高对比补色
     } else {
         targetH := cachedHsl.h ; 系统主题荧光色
@@ -109,14 +109,16 @@ UpdateWindowBorder() {
                 ; 失去焦点时，若非置顶窗口则还原边框
                 if !IsTopmost(lastActiveWindow) {
                     ClearWindowBorder(lastActiveWindow)
+                } else {
+                    ; 置顶窗口保持边框
+                    SetWindowBorder(lastActiveWindow, GetDynamicBorderColor(lastActiveWindow))
                 }
             }
         }
 
         ; 应用或刷新当前窗口边框
         if (currentActiveWindow != 0) {
-            borderColor := GetDynamicBorderColor(currentActiveWindow)
-            if (SetWindowBorder(currentActiveWindow, borderColor)) {
+            if (SetWindowBorder(currentActiveWindow, GetDynamicBorderColor(currentActiveWindow))) {
                 lastActiveWindow := currentActiveWindow
             }
         }
