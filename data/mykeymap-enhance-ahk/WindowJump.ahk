@@ -14,7 +14,74 @@ class WindowJumpDebug {
 ; 启用拼音部分匹配：模式可以匹配拼音的开头部分，比如 su 匹配 算（suan）。
 WindowJumpPinyinPartialMatch := true
 
+global shortcutsDir := ""
+InitShortcuts()
+
 UpdateTheme()
+
+InitShortcuts() {
+    static initialized := false
+
+    if initialized {
+        return
+    }
+    initialized := true
+
+    global shortcutsDir
+    shortcutsDir := A_Temp "\WindowJump_Shortcuts"
+
+    LogInfo("初始化快捷方式目录：" . shortcutsDir, , WindowJumpDebug.mode)
+
+    if DirExist(shortcutsDir) {
+        loop files, shortcutsDir "\*", "FD" {
+            try FileDelete(A_LoopFileFullPath)
+        }
+    } else {
+        DirCreate(shortcutsDir)
+    }
+
+    try {
+        if DirExist(A_ProgramsCommon) {
+            FileCopy(A_ProgramsCommon "\*.lnk", shortcutsDir "\", true)
+        }
+        if DirExist(A_Programs) {
+            FileCopy(A_Programs "\*.lnk", shortcutsDir "\", true)
+        }
+    }
+
+    try {
+        oFolder := ComObject("Shell.Application").NameSpace("shell:AppsFolder")
+        if (Type(oFolder) != "String") {
+            for item in oFolder.Items {
+                shortcutPath := shortcutsDir "\" item.Name ".lnk"
+                if !FileExist(shortcutPath) {
+                    try FileCreateShortcut("shell:appsfolder\" item.Path, shortcutPath)
+                }
+            }
+        }
+    }
+
+    LogInfo("快捷方式初始化完成", , WindowJumpDebug.mode)
+}
+
+GetShortcuts(&shortcuts) {
+    global shortcutsDir
+    shortcuts := []
+
+    if !DirExist(shortcutsDir) {
+        LogInfo("快捷方式目录不存在，初始化", , WindowJumpDebug.mode)
+        InitShortcuts()
+    }
+
+    loop files, shortcutsDir "\*.lnk", "F" {
+        try {
+            name := StrReplace(A_LoopFileName, ".lnk", "")
+            shortcuts.Push({ name: name, path: A_LoopFileFullPath })
+        }
+    }
+
+    LogInfo("获取到 " . shortcuts.Length . " 个快捷方式", , WindowJumpDebug.mode)
+}
 
 WindowJump() {
     UpdateTheme()
@@ -22,6 +89,7 @@ WindowJump() {
     static MyGui := 0
     static hIL := 0
     static iconCache := Map()
+    static shortcutCache := Map()
     static lastTheme := ""
     static lastAccent := ""
 
@@ -44,6 +112,7 @@ WindowJump() {
             MyGui := 0
             hIL := 0
             iconCache := Map()
+            shortcutCache := Map()
         }
         lastTheme := currentTheme
         lastAccent := currentAccent
@@ -79,15 +148,17 @@ WindowJump() {
     hIL := IL_Create(10, 5, 0)
 
     ResultList := MyGui.Add("ListView", "x20 y95 w560 r14 -Multi -Hdr -E0x200 vResultList +LV0x140 Background" .
-        ListViewBg . " c" . FontColor, ["Display", "HWND"])
+        ListViewBg . " c" . FontColor, ["Display", "HWND", "IsShortcut", "IsAdmin"])
 
     ResultList.SetImageList(hIL)
     ResultList.ModifyCol(1, 540)
     ResultList.ModifyCol(2, 0)
+    ResultList.ModifyCol(3, 0)
+    ResultList.ModifyCol(4, 0)
 
-    RefreshList(ResultList, &hIL, &iconCache)
+    RefreshList(ResultList, &hIL, &iconCache, &shortcutCache)
 
-    EditBox.OnEvent("Change", (obj, *) => ScheduleSearch(obj, MyGui["ResultList"], hIL, &iconCache))
+    EditBox.OnEvent("Change", (obj, *) => ScheduleSearch(obj, MyGui["ResultList"], hIL, &iconCache, &shortcutCache))
     ResultList.OnEvent("DoubleClick", (obj, row) => ActivateWin(obj, row))
 
     HotIfWinActive("ahk_id " . MyGui.Hwnd)
@@ -117,7 +188,7 @@ CheckWinFocus(guiObj) {
     }
 }
 
-RefreshList(LV, &hIL, &iconCache) {
+RefreshList(LV, &hIL, &iconCache, &shortcutCache) {
     global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
     LogInfo("开始刷新窗口列表（重建模式）", , WindowJumpDebug.mode)
 
@@ -127,6 +198,7 @@ RefreshList(LV, &hIL, &iconCache) {
         IL_Destroy(hIL)
     }
     iconCache := Map()
+    shortcutCache := Map()
     hIL := IL_Create(20, 10, 0)
     LV.SetImageList(hIL)
 
@@ -185,15 +257,15 @@ RefreshAllWindows(LV, hIL, iconCache) {
     }
 }
 
-ScheduleSearch(EditObj, LV, hIL, &iconCache) {
+ScheduleSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     static timer := 0
     if (timer) {
         SetTimer(timer, 0)
     }
-    timer := SetTimer(() => UpdateSearch(EditObj, LV, hIL, &iconCache), -20)
+    timer := SetTimer(() => UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache), -20)
 }
 
-UpdateSearch(EditObj, LV, hIL, &iconCache) {
+UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     global BgColor, FontColor, AccentColor, ListViewBg, IsDarkMode, FontSize
     LogInfo("搜索内容改变: [" . EditObj.Value . "]", , WindowJumpDebug.mode)
 
@@ -231,11 +303,25 @@ UpdateSearch(EditObj, LV, hIL, &iconCache) {
             score := FuzzyScore(searchLower, fullText)
 
             if (score > 0) {
-                results.Push({ score: score, text: desktopInfo . " [" . process . "] " . title, hwnd: hwnd })
+                results.Push({ score: score, text: desktopInfo . " [" . process . "] " . title, hwnd: hwnd,
+                    isShortcut: false, isAdmin: false })
             }
         }
     }
     A_DetectHiddenWindows := bak_DetectHiddenWindows
+
+    GetShortcuts(&shortcuts)
+    LogInfo("开始匹配快捷方式，数量: " . shortcuts.Length, , WindowJumpDebug.mode)
+    for shortcut in shortcuts {
+        fullText := StrLower(shortcut.name)
+        score := FuzzyScore(searchLower, fullText)
+        if (score > 0) {
+            results.Push({ score: score // 2, text: ">>> " . shortcut.name, hwnd: shortcut.path, isShortcut: true,
+                isAdmin: false })
+            results.Push({ score: score // 2 - 1, text: ">>>[管理员] " . shortcut.name, hwnd: shortcut.path,
+                isShortcut: true, isAdmin: true })
+        }
+    }
 
     LogInfo("窗口匹配 " . results.Length . " 个结果", , WindowJumpDebug.mode)
 
@@ -252,9 +338,20 @@ UpdateSearch(EditObj, LV, hIL, &iconCache) {
 
         loop (Min(results.Length, 30)) {
             res := results[A_Index]
-            process := WinGetProcessName(res.hwnd)
-            iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
-            LV.Add("Icon" . iconIdx, res.text, res.hwnd)
+            if (res.isShortcut) {
+                if (shortcutCache.Has(res.hwnd)) {
+                    iconIdx := shortcutCache[res.hwnd]
+                } else {
+                    iconIdx := GetFileIconIndex(res.hwnd, hIL)
+                    shortcutCache[res.hwnd] := iconIdx
+                    LogInfo("快捷方式缓存未命中: path=" . res.hwnd, , WindowJumpDebug.mode)
+                }
+            } else {
+                process := WinGetProcessName(res.hwnd)
+                iconIdx := GetIconIndexByProcess(process, hIL, iconCache)
+            }
+            LV.Add("Icon" . iconIdx, res.text, res.hwnd, res.isShortcut ? "1" : "0",
+                res.isAdmin ? "1" : "0")
         }
     }
 
@@ -295,6 +392,40 @@ GetIconIndex(hwnd, hIL) {
     return 1
 }
 
+GetUwpIconIndex(hwnd, hIL) {
+    try {
+        exePath := WinGetProcessPath(hwnd)
+        if exePath {
+            if (StrEndsWith(exePath, "ApplicationFrameHost.exe")) {
+                return GetUwpIconFromWindow(hwnd, hIL)
+            }
+            return GetExeIconIndex(exePath, hIL)
+        }
+    }
+    return 1
+}
+
+GetFileIconIndex(filePath, hIL) {
+    try {
+        if (StrEndsWith(filePath, ".lnk")) {
+            FileGetShortcut filePath, &targetPath, &workDir, &args, &desc, &iconFile, &iconNum
+            if (iconFile) {
+                iconPath := iconFile
+                if (iconNum > 0) {
+                    return IL_Add(hIL, iconPath, iconNum)
+                } else {
+                    return IL_Add(hIL, iconPath)
+                }
+            }
+            if (targetPath) {
+                filePath := targetPath
+            }
+        }
+    }
+
+    return GetExeIconIndex(filePath, hIL)
+}
+
 GetExeIconIndex(filePath, hIL) {
     try {
         fisize := A_PtrSize + 688
@@ -308,19 +439,6 @@ GetExeIconIndex(filePath, hIL) {
         }
     }
     return IL_Add(hIL, filePath)
-}
-
-GetUwpIconIndex(hwnd, hIL) {
-    try {
-        exePath := WinGetProcessPath(hwnd)
-        if exePath {
-            if (StrEndsWith(exePath, "ApplicationFrameHost.exe")) {
-                return GetUwpIconFromWindow(hwnd, hIL)
-            }
-            return GetExeIconIndex(exePath, hIL)
-        }
-    }
-    return 1
 }
 
 GetUwpIconFromWindow(hwnd, hIL) {
@@ -487,23 +605,57 @@ HandleEnter(GuiObj) {
 ActivateWin(LV, RowNumber) {
     try {
         hwnd := LV.GetText(RowNumber, 2)
+        isShortcut := LV.GetText(RowNumber, 3) = "1"
+        isAdmin := LV.GetText(RowNumber, 4) = "1"
 
-        LogInfo("激活窗口: ahk_id " . hwnd, , WindowJumpDebug.mode)
+        LogInfo("激活目标: hwnd=" . hwnd . " isShortcut=" . isShortcut . " isAdmin=" . isAdmin,
+            , WindowJumpDebug.mode)
 
         if (hwnd) {
-            global lastActiveWindowClass
-            lastActiveWindowClass := "AutoHotkeyGUI"
-            targetDesktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
-            currentDesktopNum := VD.getCurrentDesktopNum()
-            if (targetDesktopNum > 0 && targetDesktopNum != currentDesktopNum) {
-                LV.Gui.Hide()
-                Sleep 50
-                VD.goToDesktopOfWindow("ahk_id " . hwnd)
+            if (isShortcut) {
+                if (isAdmin) {
+                    AdminRun(hwnd)
+                } else {
+                    UserRun(hwnd)
+                }
             } else {
-                LV.Gui.Hide()
-                Sleep 50
-                WinActivate("ahk_id " . hwnd)
+                global lastActiveWindowClass
+                lastActiveWindowClass := "AutoHotkeyGUI"
+                targetDesktopNum := VD.getDesktopNumOfWindow("ahk_id " . hwnd)
+                currentDesktopNum := VD.getCurrentDesktopNum()
+                if (targetDesktopNum > 0 && targetDesktopNum != currentDesktopNum) {
+                    LV.Gui.Hide()
+                    Sleep 50
+                    VD.goToDesktopOfWindow("ahk_id " . hwnd)
+                } else {
+                    LV.Gui.Hide()
+                    Sleep 50
+                    WinActivate("ahk_id " . hwnd)
+                }
             }
+        }
+    } catch Error as e {
+        LogError(e, , WindowJumpDebug.mode)
+    }
+}
+
+AdminRun(Target) {
+    try {
+        DllCall("Shell32\ShellExecuteW", "Ptr", 0, "Str", "runas", "Str", Target, "Ptr", 0, "Ptr", 0, "Int", 1)
+    } catch as e {
+        LogError("RunAsAdmin 失败: " e.Message, , WindowJumpDebug.mode)
+    }
+}
+
+UserRun(Target, Args := "", WorkingDir := "") {
+    try {
+        shellApp := ComObject("Shell.Application")
+        shellWindows := shellApp.Windows
+        desktop := shellWindows.FindWindowSW(0, 0, 8, 0, 1)
+
+        if (desktop) {
+            DllCall("AllowSetForegroundWindow", "int", -1)
+            desktop.Document.Application.ShellExecute(Target, Args, WorkingDir, "open", 1)
         }
     } catch Error as e {
         LogError(e, , WindowJumpDebug.mode)
