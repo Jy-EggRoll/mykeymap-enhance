@@ -92,7 +92,7 @@ UpdateWindowBorder() {
     try {
         currentActiveWindow := WinExist("A")
 
-        ; 1. 实时更新鼠标访问状态
+        ; 实时更新鼠标访问状态
         if (currentActiveWindow != 0) {
             MouseGetPos(, , &mHwnd)
             if (mHwnd == currentActiveWindow) {
@@ -103,17 +103,17 @@ UpdateWindowBorder() {
             }
         }
 
-        ; 2. 处理焦点切换时的边框清除
+        ; 处理焦点切换时的边框清除
         if (currentActiveWindow != lastActiveWindow && lastActiveWindow != 0) {
             if WinExist(lastActiveWindow) {
                 ; 失去焦点时，若非置顶窗口则还原边框
-                if !(WinGetExStyle(lastActiveWindow) & 0x8) {
+                if !(IsTopmost(lastActiveID)) {
                     ClearWindowBorder(lastActiveWindow)
                 }
             }
         }
 
-        ; 3. 应用或刷新当前窗口边框
+        ; 应用或刷新当前窗口边框
         if (currentActiveWindow != 0) {
             borderColor := GetDynamicBorderColor(currentActiveWindow)
             if (SetWindowBorder(currentActiveWindow, borderColor)) {

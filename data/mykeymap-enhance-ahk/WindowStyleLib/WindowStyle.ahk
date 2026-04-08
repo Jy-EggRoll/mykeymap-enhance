@@ -84,8 +84,11 @@ IsPopUp(hwnd) {
 }
 
 IsTopmost(hwnd) {
-    style := WinGetStyle(hwnd)
-    if (style & 0x8) {
-        return true
+    try {
+        exStyle := WinGetExStyle(hwnd)
+        if (exStyle & 0x8)
+            return true
+    } catch {
     }
+    return false
 }
