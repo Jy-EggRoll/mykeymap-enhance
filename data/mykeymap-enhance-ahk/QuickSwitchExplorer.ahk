@@ -139,7 +139,7 @@ QuickSwitchNavigate(folderPath) {
             try {
                 toolBarWindow323Control := ControlGetHwnd("ToolbarWindow323", hwnd)
             } catch {
-                LogInfo("ToolbarWindow323 获取失败，这可能不是一个现代化的资源管理器窗口", , QuickSwitchExplorerDebug.mode)
+                LogWarn("ToolbarWindow323 获取失败，这可能不是一个现代化的资源管理器窗口", , QuickSwitchExplorerDebug.mode)
             }
             if (toolBarWindow323Control != 0) {
                 try {
@@ -147,7 +147,8 @@ QuickSwitchNavigate(folderPath) {
                     w := 0, h := 0
                     ControlGetPos(, , &w, &h, "ToolbarWindow323", hwnd)
                     ControlClick("ToolbarWindow323", hwnd, , "Left", 1, "x" . w . " y" . h)  ; 实际点击了控件的最右下角，激活率几乎 100% 且不会误触其他按钮
-                    Sleep 50
+                    LogInfo("已发送点击指令以激活地址栏", , QuickSwitchExplorerDebug.mode)
+                    Sleep 100  ; 尝试延长等待时间，加强 Edit2 出现的稳定性
                     LogInfo("尝试获取 Edit2 控件", , QuickSwitchExplorerDebug.mode)
                     edit2Control := ControlGetHwnd("Edit2", hwnd)
                 } catch {
