@@ -14,15 +14,18 @@ class WindowJumpDebug {
 ; 启用拼音部分匹配：模式可以匹配拼音的开头部分，比如 su 匹配 算（suan）。
 ; WindowJump 参数: 控制是否启用拼音部分匹配、是否显示快捷方式 / 最近使用项，以及前缀/后缀标签模式
 global WindowJumpPinyinPartialMatch := true
-global WindowJumpShowShortcuts := true
-global WindowJumpShowRecent := true
+global WindowJumpShowShortcuts := false
+global WindowJumpShowRecent := false
 global WindowJumpLabelMode := "prefix" ; 支持 prefix 或 suffix
 global WindowJumpShortcutLabel := ">>> "
 global WindowJumpRecentLabel := "--- [最近] "
 
 global shortcutsDir := ""
 global recentShortcutsDir := ""
-InitShortcuts()
+
+if (WindowJumpShowShortcuts || WindowJumpShowRecent) {
+    InitShortcuts()
+}
 
 UpdateTheme()
 
@@ -144,7 +147,7 @@ FormatResultLabel(name, label) {
     return label . name
 }
 
-WindowJump(pinyinPartialMatch := "", showShortcuts := false, showRecent := false, labelMode := "", shortcutLabel := "",
+WindowJump(pinyinPartialMatch := "", showShortcuts := "", showRecent := "", labelMode := "", shortcutLabel := "",
     recentLabel := "") {
     global WindowJumpPinyinPartialMatch, WindowJumpShowShortcuts, WindowJumpShowRecent, WindowJumpLabelMode,
         WindowJumpShortcutLabel, WindowJumpRecentLabel
