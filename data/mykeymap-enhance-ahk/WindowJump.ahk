@@ -12,9 +12,16 @@ class WindowJumpDebug {
 #Include ../mykeymap-enhance-ahk/PinYinLib/IbPinyin.ahk
 
 ; 启用拼音部分匹配：模式可以匹配拼音的开头部分，比如 su 匹配 算（suan）。
-WindowJumpPinyinPartialMatch := true
+; WindowJump 参数: 控制是否启用拼音部分匹配、是否显示快捷方式 / 最近使用项，以及前缀/后缀标签模式
+global WindowJumpPinyinPartialMatch := true
+global WindowJumpShowShortcuts := true
+global WindowJumpShowRecent := true
+global WindowJumpLabelMode := "prefix" ; 支持 prefix 或 suffix
+global WindowJumpShortcutLabel := ">>> "
+global WindowJumpRecentLabel := "--- [最近] "
 
 global shortcutsDir := ""
+global recentShortcutsDir := ""
 InitShortcuts()
 
 UpdateTheme()
@@ -27,10 +34,12 @@ InitShortcuts() {
     }
     initialized := true
 
-    global shortcutsDir
+    global shortcutsDir, recentShortcutsDir
     shortcutsDir := A_Temp "\WindowJump_Shortcuts"
+    recentShortcutsDir := A_Temp "\WindowJump_RecentShortcuts"
 
     LogInfo("初始化快捷方式目录：" . shortcutsDir, , WindowJumpDebug.mode)
+    LogInfo("初始化最近使用目录：" . recentShortcutsDir, , WindowJumpDebug.mode)
 
     if DirExist(shortcutsDir) {
         loop files, shortcutsDir "\*", "FD" {
@@ -40,12 +49,38 @@ InitShortcuts() {
         DirCreate(shortcutsDir)
     }
 
+    if DirExist(recentShortcutsDir) {
+        loop files, recentShortcutsDir "\*", "FD" {
+            try FileDelete(A_LoopFileFullPath)
+        }
+    } else {
+        DirCreate(recentShortcutsDir)
+    }
+
     try {
         if DirExist(A_ProgramsCommon) {
             FileCopy(A_ProgramsCommon "\*.lnk", shortcutsDir "\", true)
         }
         if DirExist(A_Programs) {
             FileCopy(A_Programs "\*.lnk", shortcutsDir "\", true)
+        }
+    }
+
+    try {
+        loop files, A_AppData . "\MicroSoft\Windows\Recent\*.lnk" {
+            FileGetShortcut(A_LoopFileFullPath, &target)
+            ; 过滤逻辑：如果目标路径以 "ms-" 开头，或者是空的，则跳过
+            if (target = "" || InStr(target, "ms-") = 1) {
+                continue
+            }
+            FileCopy(A_LoopFileFullPath, recentShortcutsDir "\", true)
+        }
+        loop files, A_AppData . "MicroSoft\Office\Recent\*.lnk" {
+            FileGetShortcut(A_LoopFileFullPath, &target)
+            if (target = "" || InStr(target, "ms-") = 1) {
+                continue
+            }
+            FileCopy(A_LoopFileFullPath, recentShortcutsDir "\", true)
         }
     }
 
@@ -83,7 +118,55 @@ GetShortcuts(&shortcuts) {
     LogInfo("获取到 " . shortcuts.Length . " 个快捷方式", , WindowJumpDebug.mode)
 }
 
-WindowJump() {
+GetRecentShortcuts(&shortcuts) {
+    global recentShortcutsDir
+    shortcuts := []
+
+    if !DirExist(recentShortcutsDir) {
+        LogInfo("最近使用目录不存在，初始化", , WindowJumpDebug.mode)
+        InitShortcuts()
+    }
+
+    loop files, recentShortcutsDir "\*.lnk", "F" {
+        try {
+            name := StrReplace(A_LoopFileName, ".lnk", "")
+            shortcuts.Push({ name: name, path: A_LoopFileFullPath })
+        }
+    }
+
+    LogInfo("获取到 " . shortcuts.Length . " 个最近使用项", , WindowJumpDebug.mode)
+}
+
+FormatResultLabel(name, label) {
+    if (WindowJumpLabelMode = "suffix") {
+        return name . " " . label
+    }
+    return label . name
+}
+
+WindowJump(pinyinPartialMatch := "", showShortcuts := false, showRecent := false, labelMode := "", shortcutLabel := "",
+    recentLabel := "") {
+    global WindowJumpPinyinPartialMatch, WindowJumpShowShortcuts, WindowJumpShowRecent, WindowJumpLabelMode,
+        WindowJumpShortcutLabel, WindowJumpRecentLabel
+    if (pinyinPartialMatch !== "") {
+        WindowJumpPinyinPartialMatch := pinyinPartialMatch
+    }
+    if (showShortcuts !== "") {
+        WindowJumpShowShortcuts := showShortcuts
+    }
+    if (showRecent !== "") {
+        WindowJumpShowRecent := showRecent
+    }
+    if (labelMode !== "") {
+        WindowJumpLabelMode := labelMode
+    }
+    if (shortcutLabel !== "") {
+        WindowJumpShortcutLabel := shortcutLabel
+    }
+    if (recentLabel !== "") {
+        WindowJumpRecentLabel := recentLabel
+    }
+
     UpdateTheme()
 
     static MyGui := 0
@@ -310,16 +393,34 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     }
     A_DetectHiddenWindows := bak_DetectHiddenWindows
 
-    GetShortcuts(&shortcuts)
-    LogInfo("开始匹配快捷方式，数量: " . shortcuts.Length, , WindowJumpDebug.mode)
-    for shortcut in shortcuts {
-        fullText := StrLower(shortcut.name)
-        score := FuzzyScore(searchLower, fullText)
-        if (score > 0) {
-            results.Push({ score: score // 2, text: ">>> " . shortcut.name, hwnd: shortcut.path, isShortcut: true,
-                isAdmin: false })
-            results.Push({ score: score // 2 - 1, text: ">>>[管理员] " . shortcut.name, hwnd: shortcut.path,
-                isShortcut: true, isAdmin: true })
+    if (WindowJumpShowShortcuts) {
+        GetShortcuts(&shortcuts)
+        LogInfo("开始匹配快捷方式，数量: " . shortcuts.Length, , WindowJumpDebug.mode)
+        for shortcut in shortcuts {
+            fullText := StrLower(shortcut.name)
+            score := FuzzyScore(searchLower, fullText)
+            if (score > 0) {
+                normalText := FormatResultLabel(shortcut.name, WindowJumpShortcutLabel)
+                adminText := FormatResultLabel("[管理员] " . shortcut.name, WindowJumpShortcutLabel)
+                results.Push({ score: score // 2, text: normalText, hwnd: shortcut.path, isShortcut: true,
+                    isAdmin: false })
+                results.Push({ score: score // 2 - 1, text: adminText, hwnd: shortcut.path,
+                    isShortcut: true, isAdmin: true })
+            }
+        }
+    }
+
+    if (WindowJumpShowRecent) {
+        GetRecentShortcuts(&recentShortcuts)
+        LogInfo("开始匹配最近使用项，数量: " . recentShortcuts.Length, , WindowJumpDebug.mode)
+        for recent in recentShortcuts {
+            fullText := StrLower(recent.name)
+            score := FuzzyScore(searchLower, fullText)
+            if (score > 0) {
+                results.Push({ score: score // 3, text: FormatResultLabel(recent.name, WindowJumpRecentLabel), hwnd: recent
+                    .path,
+                    isShortcut: true, isAdmin: false })
+            }
         }
     }
 
