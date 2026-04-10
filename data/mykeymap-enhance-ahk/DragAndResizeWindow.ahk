@@ -1,6 +1,7 @@
 #Requires AutoHotkey v2.0
 
 #Include ./LoggerLib/Logger.ahk
+#Include ./PerResizeWindow.ahk
 
 class DragAndResizeWindowDebug {
     static mode := false
@@ -15,9 +16,10 @@ CoordMode "Mouse"
  * 收集吸附边界
  * @param excludeHwnd 要排除的窗口句柄（当前正在操作的窗口）
  * @param snapThreshold 吸附阈值，0 表示禁用
+ * @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
  * @returns {vLines: [], hLines: [], threshold: 0, dpiThreshold: 0} 垂直线和水平线数组
  */
-CollectSnapBoundaries(excludeHwnd, snapThreshold := 0) {
+CollectSnapBoundaries(excludeHwnd, snapThreshold := 0, edgeOnly := false) {
     vLines := []  ; 垂直线（X 坐标）
     hLines := []  ; 水平线（Y 坐标）
 
@@ -42,53 +44,55 @@ CollectSnapBoundaries(excludeHwnd, snapThreshold := 0) {
             hLines.Push(b)  ; 下边界
         }
 
-        ; 收集其他前台窗口的边界（去除阴影）
-        windowList := WinGetList()
-        loop windowList.Length {
-            hwnd := windowList[A_Index]
+        if (!edgeOnly) {
+            ; 收集其他前台窗口的边界（去除阴影）
+            windowList := WinGetList()
+            loop windowList.Length {
+                hwnd := windowList[A_Index]
 
-            ; 跳过当前操作的窗口
-            if (hwnd == excludeHwnd) {
-                continue
+                ; 跳过当前操作的窗口
+                if (hwnd == excludeHwnd) {
+                    continue
+                }
+
+                ; 只处理可见的、非最小化的、可调整大小的窗口
+                if (!WinExist(hwnd)) {
+                    continue
+                }
+
+                ; 检查是否最小化
+                if (WinGetMinMax(hwnd) == -1) {
+                    continue
+                }
+
+                ; 检查窗口样式：可调整大小的窗口
+                style := WinGetStyle(hwnd)
+                if (!(style & 0x40000)) {
+                    continue
+                }
+
+                ; 获取窗口位置
+                WinGetPos(&winX, &winY, &winW, &winH, hwnd)
+
+                ; 获取阴影厚度
+                shadowThickness := GetShadowThickness(hwnd)
+
+                ; 计算去除阴影后的边界
+                ; 根据 PerResizeWindow.ahk 中的实现：
+                ; - 左边：winX + shadowThickness
+                ; - 上边：winY（上边不需要移除阴影）
+                ; - 右边：winX + winW - shadowThickness
+                ; - 下边：winY + winH - shadowThickness
+                left := winX + shadowThickness
+                top := winY
+                right := winX + winW - shadowThickness
+                bottom := winY + winH - shadowThickness
+
+                vLines.Push(left)
+                vLines.Push(right)
+                hLines.Push(top)
+                hLines.Push(bottom)
             }
-
-            ; 只处理可见的、非最小化的、可调整大小的窗口
-            if (!WinExist(hwnd)) {
-                continue
-            }
-
-            ; 检查是否最小化
-            if (WinGetMinMax(hwnd) == -1) {
-                continue
-            }
-
-            ; 检查窗口样式：可调整大小的窗口
-            style := WinGetStyle(hwnd)
-            if (!(style & 0x40000)) {
-                continue
-            }
-
-            ; 获取窗口位置
-            WinGetPos(&winX, &winY, &winW, &winH, hwnd)
-
-            ; 获取阴影厚度
-            shadowThickness := GetShadowThickness(hwnd)
-
-            ; 计算去除阴影后的边界
-            ; 根据 PerResizeWindow.ahk 中的实现：
-            ; - 左边：winX + shadowThickness
-            ; - 上边：winY（上边不需要移除阴影）
-            ; - 右边：winX + winW - shadowThickness
-            ; - 下边：winY + winH - shadowThickness
-            left := winX + shadowThickness
-            top := winY
-            right := winX + winW - shadowThickness
-            bottom := winY + winH - shadowThickness
-
-            vLines.Push(left)
-            vLines.Push(right)
-            hLines.Push(top)
-            hLines.Push(bottom)
         }
     } catch Error as e {
         LogError(e, , DragAndResizeWindowDebug.mode)
@@ -236,7 +240,8 @@ SetSystemCursor(Cursor := "") {
 
 ; 窗口拖动函数：按住指定按键时拖动窗口
 ; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
-DragWindow(snapThreshold := 0) {
+; @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
+DragWindow(snapThreshold := 20, edgeOnly := true) {
     ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
     MouseGetPos &X1, &Y1, &ID
 
@@ -260,7 +265,7 @@ DragWindow(snapThreshold := 0) {
         shadowThickness := GetShadowThickness(ID)
 
         ; 收集吸附边界（在循环前只收集一次）
-        snapData := CollectSnapBoundaries(ID, snapThreshold)
+        snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
     }
 
     try {
@@ -324,7 +329,8 @@ DragWindow(snapThreshold := 0) {
 
 ; 窗口调整大小函数：按住指定按键时调整窗口大小
 ; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
-ResizeWindow(snapThreshold := 0) {
+; @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
+ResizeWindow(snapThreshold := 20, edgeOnly := true) {
     MouseGetPos &X1, &Y1, &ID
 
     ; 如果窗口是最大化状态
@@ -368,7 +374,7 @@ ResizeWindow(snapThreshold := 0) {
         shadowThickness := GetShadowThickness(ID)
 
         ; 收集吸附边界（在循环前只收集一次）
-        snapData := CollectSnapBoundaries(ID, snapThreshold)
+        snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
     }
 
     ; 计算窗口的 1 / 3 宽度和高度，用于划分 9 个区域
