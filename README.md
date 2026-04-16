@@ -159,7 +159,7 @@ weight:
 
 ### 窗口跳转 WindowJump
 
-![窗口跳转](README/快速跳转窗口.png)
+![窗口跳转](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/快速跳转窗口.png)
 
 通过模糊搜索快速切换窗口，支持字母模糊匹配和中文拼音匹配（简拼/全拼）。输入关键词后，窗口会实时显示匹配的窗口列表，使用上下键选择后按回车即可切换到目标窗口。
 
@@ -188,9 +188,9 @@ weight:
 
 效果展示：
 
-![拖动](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/拖动.gif)
+![拖动](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/拖动.gif)
 
-![调节](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/调节.gif)
+![调节](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/调节.gif)
 
 ### 比例居中 PerCenterAndResizeWindow
 
@@ -198,7 +198,7 @@ weight:
 
 效果演示：
 
-![比例居中](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/比例居中.gif)
+![比例居中](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/比例居中.gif)
 
 ### 分屏拓展函数 SplitScreen
 
@@ -224,7 +224,7 @@ weight:
 
 效果演示：
 
-![命令分屏](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/命令分屏.gif)
+![命令分屏](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/命令分屏.gif)
 
 ### 自动激活窗口 AutoActivateWindow
 
@@ -241,7 +241,7 @@ weight:
 
 效果展示（中途没有完全没有点击过鼠标左键）：
 
-![自动激活](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/自动激活.gif)
+![自动激活](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/自动激活.gif)
 
 ### 亮度调节 IncBrightness & DecBrightness
 
@@ -263,7 +263,7 @@ weight:
 - 已访问窗口：采用根据 Windows 主题色计算的同色调、最显眼的颜色
 - 失去焦点时：非置顶窗口会消除边框，置顶窗口保留边框颜色
 
-![着色动态效果](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/着色动态效果.gif)
+![着色动态效果](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/着色动态效果.gif)
 
 使用 `SwitchToNextColor()` 切换颜色，颜色列表在代码中自定义。
 
