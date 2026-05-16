@@ -17,8 +17,8 @@ global WindowJumpPinyinPartialMatch := true
 global WindowJumpShowShortcuts := false
 global WindowJumpShowRecent := false
 global WindowJumpLabelMode := "prefix" ; 支持 prefix 或 suffix
-global WindowJumpShortcutLabel := ">>> "
-global WindowJumpRecentLabel := "--- [最近] "
+global WindowJumpShortcutLabel := " [启动] "
+global WindowJumpRecentLabel := " [最近] "
 
 global shortcutsDir := ""
 global recentShortcutsDir := ""
@@ -147,7 +147,7 @@ FormatResultLabel(name, label) {
     return label . name
 }
 
-WindowJump(pinyinPartialMatch := "", showShortcuts := "", showRecent := "", labelMode := "", shortcutLabel := "",
+WindowJump(pinyinPartialMatch := "", showShortcuts := true, showRecent := "", labelMode := "", shortcutLabel := "",
     recentLabel := "") {
     global WindowJumpPinyinPartialMatch, WindowJumpShowShortcuts, WindowJumpShowRecent, WindowJumpLabelMode,
         WindowJumpShortcutLabel, WindowJumpRecentLabel
