@@ -769,3 +769,10 @@ UserRun(Target, Args := "", WorkingDir := "") {
         LogError(e, , WindowJumpDebug.mode)
     }
 }
+
+~^Alt Up:: {
+    ; 判断上一次按键是否也是在 Ctrl 按下时释放的 Alt，且两次间隔小于 500 毫秒
+    if (A_PriorHotkey = "~^Alt Up" && A_TimeSincePriorHotkey < 500) {
+        WindowJump()
+    }
+}
