@@ -147,7 +147,7 @@ FormatResultLabel(name, label) {
     return label . name
 }
 
-WindowJump(pinyinPartialMatch := "", showShortcuts := true, showRecent := "", labelMode := "", shortcutLabel := "",
+WindowJump(pinyinPartialMatch := "", showShortcuts := "", showRecent := "", labelMode := "", shortcutLabel := "",
     recentLabel := "") {
     global WindowJumpPinyinPartialMatch, WindowJumpShowShortcuts, WindowJumpShowRecent, WindowJumpLabelMode,
         WindowJumpShortcutLabel, WindowJumpRecentLabel
