@@ -575,7 +575,7 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
  * 鼠标滚轮缩放窗口函数
  * @param percent 缩放比例增量
  */
-ScaleWindowWheel(percent) {
+ScaleWindow(percent) {
     activeHwnd := WinExist("A")
     if !activeHwnd
         return
@@ -583,12 +583,6 @@ ScaleWindowWheel(percent) {
     ; 排除最大化窗口
     if (WinGetMinMax(activeHwnd) != 0)
         return
-
-    ; ; 使用静态变量锁定缩放的基准中心点
-    ; ; 这样即使多次缩放，计算也始终围绕同一个物理中心进行，不会产生舍入累积误差
-    ; static lastHwnd := 0
-    ; static centerX := 0
-    ; static centerY := 0
 
     ; 获取当前状态
     WinGetPos &x, &y, &w, &h, activeHwnd
