@@ -241,7 +241,7 @@ SetSystemCursor(Cursor := "") {
 ; 窗口拖动函数：按住指定按键时拖动窗口
 ; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
 ; @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
-DragWindow(snapThreshold := 20, edgeOnly := true) {
+DragWindow(snapThreshold := 0, edgeOnly := true) {
     ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
     MouseGetPos &X1, &Y1, &ID
 
@@ -330,7 +330,7 @@ DragWindow(snapThreshold := 20, edgeOnly := true) {
 ; 窗口调整大小函数：按住指定按键时调整窗口大小
 ; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
 ; @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
-ResizeWindow(snapThreshold := 20, edgeOnly := true) {
+ResizeWindow(snapThreshold := 0, edgeOnly := true) {
     MouseGetPos &X1, &Y1, &ID
 
     ; 如果窗口是最大化状态
@@ -569,4 +569,42 @@ ResizeWindow(snapThreshold := 20, edgeOnly := true) {
     } finally {
         SetSystemCursor("")  ; 保证光标可以恢复
     }
+}
+
+/**
+ * 鼠标滚轮缩放窗口函数
+ * @param percent 缩放比例增量
+ */
+ScaleWindowWheel(percent) {
+    activeHwnd := WinExist("A")
+    if !activeHwnd
+        return
+
+    ; 排除最大化窗口
+    if (WinGetMinMax(activeHwnd) != 0)
+        return
+
+    ; ; 使用静态变量锁定缩放的基准中心点
+    ; ; 这样即使多次缩放，计算也始终围绕同一个物理中心进行，不会产生舍入累积误差
+    ; static lastHwnd := 0
+    ; static centerX := 0
+    ; static centerY := 0
+
+    ; 获取当前状态
+    WinGetPos &x, &y, &w, &h, activeHwnd
+
+    centerX := x + (w / 2)
+    centerY := y + (h / 2)
+
+    ; 计算新尺寸 (使用 Round 确保整数)
+    newW := Round(Max(100, w * (1 + percent)))
+    newH := Round(Max(100, h * (1 + percent)))
+
+    ; 根据锁定的中心点计算坐标
+    ; 窗口左上角 = 中心点 - (新尺寸 / 2)
+    newX := Round(centerX - (newW / 2))
+    newY := Round(centerY - (newH / 2))
+
+    ; 执行移动和调整大小
+    WinMove newX, newY, newW, newH, activeHwnd
 }
