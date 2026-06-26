@@ -2,7 +2,7 @@
 title: 项目介绍-mykeymap-enhance
 description: 我的 MyKeymap 自定义功能仓库，不依赖于 MyKeymap 就可以运行，可以视为我的自定义 AutoHotkey 库
 date: 2025-08-14
-lastmod: 2026-04-03
+lastmod: 2026-06-26
 image: 
 categories:
     - 项目
@@ -231,7 +231,7 @@ weight:
 解决“激活窗口的心智负担”：鼠标悬停处自动激活窗口，无需纠结“点链接会误触、点资源管理器怕选到文件、点代码编辑器会改变输入焦点”。
 
 - **用户行为识别**：仅当鼠标 **移动后再静置 100ms 以上且移动范围超过 10 \* 10px 时** 激活窗口，鼠标移动过程中绝不触发，鼠标一直静止时绝不触发。另外，当识别到存在用户从未访问过的窗口时（即从未将鼠标移动到该窗口上），自动激活窗口功能会自动停止，一旦用户访问过该窗口，自动激活就会恢复。
-  - 纯鼠标操作：非常灵敏灵敏，又不至于移动时误触发，有一定的移动容错时间
+  - 纯鼠标操作：非常灵敏，又不至于移动时误触发，有一定的移动容错时间
   - 纯键盘操作：完全不触发自动激活
   - 在软件内点击某超链接，跳出了某窗口，但是鼠标没有大范围移动时，不会导致误触发
   - 在软件内操作，跳出了某窗口，但是出于习惯移动了鼠标，比如在微信中点开了图片，但是由于这是一个新窗口，鼠标没有移动到该窗口上，所以不会误触发
@@ -310,4 +310,4 @@ weight:
 
 ## 统计
 
-[![统计](https://starchart.cc/Jy-EggRoll/mykeymap-enhance.svg?variant=adaptive)](https://starchart.cc/Jy-EggRoll/mykeymap-enhance)
+[![Star History Chart](https://api.star-history.com/chart?repos=jy-eggroll/mykeymap-enhance&type=date&legend=top-left)](https://www.star-history.com/?repos=jy-eggroll%2Fmykeymap-enhance&type=date&legend=top-left)
