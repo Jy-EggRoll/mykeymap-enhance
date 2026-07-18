@@ -424,7 +424,9 @@ class VD {
   static _waitForCurrentDesktopArrived(desktopNum, firstWindowId) {
     loop 20 {
       if (this.getCurrentDesktopNum() == desktopNum) {
-        DllCall("SetForegroundWindow", "Ptr", firstWindowId)
+        if (firstWindowId) {
+          DllCall("SetForegroundWindow", "Ptr", firstWindowId)
+        }
         break
       }
       Sleep 25
@@ -516,11 +518,26 @@ class VD {
     theHwnd := found[1]
     thePView := found[2]
     desktopNum_ofWindow := this._desktopNum_from_pView(thePView)
+    if (activateYourWindow) {
+      this._preTopWindowNoActivate(theHwnd)
+      this._allowSetForegroundForShell()
+    }
     this.goToDesktopNum(desktopNum_ofWindow, !activateYourWindow)
     if (activateYourWindow) {
-      Sleep 50
+      this._waitForCurrentDesktopArrived(desktopNum_ofWindow, 0)
+      this.SetForegroundWindow(theHwnd)
       WinActivate "ahk_id " theHwnd
     }
+  }
+  static _preTopWindowNoActivate(hwnd) {
+    static HWND_TOP := 0
+    static SWP_NOSIZE := 0x1, SWP_NOMOVE := 0x2, SWP_NOACTIVATE := 0x10, SWP_NOOWNERZORDER := 0x200
+    DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", HWND_TOP, "Int", 0, "Int", 0, "Int", 0, "Int", 0
+      , "Uint", SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOOWNERZORDER)
+  }
+  static _allowSetForegroundForShell() {
+    static ASFW_ANY := 0xFFFFFFFF
+    DllCall("AllowSetForegroundWindow", "Uint", ASFW_ANY)
   }
   static MoveWindowToDesktopNum(wintitle, desktopNum) {
     found := this._tryGetValidWindow(wintitle)
