@@ -23,6 +23,9 @@ global WindowJumpRecentLabel := " [最近] "
 global shortcutsDir := ""
 global recentShortcutsDir := ""
 
+; 打开切换器之前的前台窗口句柄，ESC / 失焦取消时用于恢复焦点
+global WindowJumpPrevActiveHwnd := 0
+
 if (WindowJumpShowShortcuts || WindowJumpShowRecent) {
     InitShortcuts()
 }
@@ -181,6 +184,17 @@ WindowJump(pinyinPartialMatch := "", showShortcuts := "", showRecent := "", labe
 
     LogInfo("WindowJump 被调用", , WindowJumpDebug.mode)
 
+    ; 记录打开切换器之前的前台窗口，供 ESC / 失焦取消时恢复焦点，避免误激活其他窗口
+    global WindowJumpPrevActiveHwnd
+    try {
+        prevHwnd := WinExist("A")
+        if (prevHwnd && (!MyGui || prevHwnd != MyGui.Hwnd)) {
+            WindowJumpPrevActiveHwnd := prevHwnd
+        }
+    } catch Error as e {
+        LogError(e, , WindowJumpDebug.mode)
+    }
+
     if (MyGui) {
         global IsDarkMode, AccentColor
         currentTheme := IsDarkMode ? "dark" : "light"
@@ -205,6 +219,16 @@ WindowJump(pinyinPartialMatch := "", showShortcuts := "", showRecent := "", labe
 
         if (MyGui) {
             LogInfo("GUI 已存在，复现窗口", , WindowJumpDebug.mode)
+            ; 复用路径下重新捕获前台窗口，避免 WindowJumpPrevActiveHwnd 过期
+            ; （上次打开后用户可能已切换到其他窗口，ESC 恢复焦点应以当前前台为准）
+            try {
+                reusePrev := WinExist("A")
+                if (reusePrev && reusePrev != MyGui.Hwnd) {
+                    WindowJumpPrevActiveHwnd := reusePrev
+                }
+            } catch Error as e {
+                LogError(e, , WindowJumpDebug.mode)
+            }
             MyGui["SearchInput"].Value := ""
             MyGui["SearchInput"].Focus()
             RefreshAllWindows(MyGui["ResultList"], hIL, iconCache)
@@ -248,7 +272,7 @@ WindowJump(pinyinPartialMatch := "", showShortcuts := "", showRecent := "", labe
     ResultList.OnEvent("DoubleClick", (obj, row) => ActivateWin(obj, row))
 
     HotIfWinActive("ahk_id " . MyGui.Hwnd)
-    Hotkey("Escape", (*) => MyGui.Hide(), "On")
+    Hotkey("Escape", (*) => CancelSwitcher(MyGui), "On")
     Hotkey("Down", (*) => MoveLVSelection(MyGui["ResultList"], "Down"), "On")
     Hotkey("Up", (*) => MoveLVSelection(MyGui["ResultList"], "Up"), "On")
     Hotkey("Enter", (*) => HandleEnter(MyGui), "On")
@@ -260,9 +284,34 @@ WindowJump(pinyinPartialMatch := "", showShortcuts := "", showRecent := "", labe
 
 ; 逻辑处理函数
 
+; CancelSwitcher - 取消切换器并把前台交还给打开切换器之前的窗口
+; 用于 ESC 主动取消，避免隐藏 GUI 后 OS 把前台兜底给 Z-order 顶端的非预期窗口
+CancelSwitcher(guiObj) {
+    global WindowJumpPrevActiveHwnd
+    guiObj.Hide()
+    try {
+        if (WindowJumpPrevActiveHwnd && WinExist("ahk_id " . WindowJumpPrevActiveHwnd)
+        && WindowJumpPrevActiveHwnd != guiObj.Hwnd) {
+            ; 放行前台设置权限，规避 AHK 前台锁定超时导致 WinActivate 静默失败，
+            ; 失败后 OS 会把前台兜底给 Z-order 顶端的其它窗口（常是列表里选中的窗口）
+            DllCall("AllowSetForegroundWindow", "int", -1)
+            Sleep 50
+            WinActivate("ahk_id " . WindowJumpPrevActiveHwnd)
+            ; 前台锁偶发失败，重试一次以稳定恢复焦点
+            if (!WinActive("ahk_id " . WindowJumpPrevActiveHwnd)) {
+                Sleep 50
+                WinActivate("ahk_id " . WindowJumpPrevActiveHwnd)
+            }
+            LogInfo("ESC 取消，恢复前台窗口: " . WindowJumpPrevActiveHwnd, , WindowJumpDebug.mode)
+        }
+    } catch Error as e {
+        LogError(e, , WindowJumpDebug.mode)
+    }
+}
+
 ; CheckWinFocus - 检查窗口是否失去焦点
 ; 定时器回调函数，每 100ms 执行一次
-; 当 GUI 不再活动时自动隐藏
+; 当 GUI 不再活动时自动隐藏（用户已主动切到别的窗口，此处不强行恢复焦点）
 
 CheckWinFocus(guiObj) {
     if !WinExist("ahk_id " . guiObj.Hwnd) {
