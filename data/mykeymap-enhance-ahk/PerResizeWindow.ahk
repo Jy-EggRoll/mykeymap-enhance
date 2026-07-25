@@ -53,77 +53,18 @@ F_GetMonitorAt(x, y, default := 1) {
 ; 修复 2025-09-06：完美修复了窗口边框与显示器边框的贴合问题
 
 GetShadowThickness(hwnd) {
-    ; DWM 属性常量
-    DWMWA_EXTENDED_FRAME_BOUNDS := 9  ; 扩展框架边界
-    DWMWA_VISIBLE_FRAME_BORDER_THICKNESS := 37  ; 可见边框厚度
-
-    ; borderInfo := ""
-
+    DWMWA_EXTENDED_FRAME_BOUNDS := 9
     try {
-        ; 获取窗口的常规位置和大小
         WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
-        WinGetClientPos(&clientX, &clientY, &clientW, &clientH, "ahk_id " hwnd)
-
-        ; 获取扩展框架边界 (RECT 结构)
-        extendedRect := Buffer(16, 0)  ; RECT 结构需要 16 字节
-        result1 := DllCall("dwmapi\DwmGetWindowAttribute",
-            "ptr", hwnd,
-            "uint", DWMWA_EXTENDED_FRAME_BOUNDS,
-            "ptr", extendedRect,
-            "uint", 16,
-            "int")
-
-        if (result1 == 0) {
-            ; extLeft := NumGet(extendedRect, 0, "int")
-            ; extTop := NumGet(extendedRect, 4, "int")
-            ; extRight := NumGet(extendedRect, 8, "int")
+        extendedRect := Buffer(16, 0)
+        if (DllCall("dwmapi\DwmGetWindowAttribute", "ptr", hwnd, "uint", DWMWA_EXTENDED_FRAME_BOUNDS, "ptr", extendedRect, "uint", 16, "int") == 0) {
             extBottom := NumGet(extendedRect, 12, "int")
-            ; extWidth := extRight - extLeft
-            ; extHeight := extBottom - extTop
-
-            ; borderInfo .= "--- Window Size & Border Info ---`n"
-            ; borderInfo .= "WinGetPosSize: " winW " * " winH "`n"
-            ; borderInfo .= "WinGetClientPosSize: " clientW " * " clientH "`n"
-            ; borderInfo .= "PlusExtendedFrameSize: " extWidth " * " extHeight "`n"
-
-            ; 计算边框厚度
-            ; leftBorder := clientX - extLeft
-            ; topBorder := clientY - extTop
-            ; rightBorder := extRight - (clientX + clientW)
-            ; bottomBorder := extBottom - (clientY + clientH)
-
-            ; borderInfo .= "BorderThickness: [Left: " leftBorder "] [Top: " topBorder "] [Right: " rightBorder "] [Bottom: " bottomBorder "]`n"
-
-            ; 计算阴影厚度 (WinGet 窗口边界与扩展边界的差异)
-            ; shadowLeft := extLeft - WinX
-            ; shadowTop := extTop - WinY
-            ; shadowRight := (winX + winW) - extRight
-            shadowBottom := (winY + winH) - extBottom
-
-            ; borderInfo .= "ShadowThickness: [Left: " shadowLeft "] [Top: " shadowTop "] [Right: " shadowRight "] [Bottom: " shadowBottom "]`n"
+            return (winY + winH) - extBottom
         }
-
-        ; ; 尝试获取可见边框厚度
-        ; borderThickness := Buffer(4, 0)  ; UINT 类型需要 4 字节
-        ; result2 := DllCall("dwmapi\DwmGetWindowAttribute",
-        ;     "ptr", hwnd,
-        ;     "uint", DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
-        ;     "ptr", borderThickness,
-        ;     "uint", 4,
-        ;     "int")
-
-        ; if (result2 == 0) {
-        ;     thickness := NumGet(borderThickness, 0, "uint")
-        ;     ; borderInfo .= "VisibleFrameBorderThickness: " thickness " pixels`n"
-        ; }
-
     } catch Error as e {
-        ; borderInfo .= "--- Window Size & Border Info ---`n"
-        ; borderInfo .= "Error getting border info: " e.Message "`n"
         LogError(e, , PerResizeWindowDebug.mode)
     }
-
-    return shadowBottom  ; 返回底部阴影厚度作为结果，三个阴影的值没有见到不同的时候
+    return 0
 }
 
 ; GetBorderThickness(hwnd) {

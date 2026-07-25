@@ -10,8 +10,6 @@ class DragAndResizeWindowDebug {
 ; 设置窗口操作的延迟时间（拖动循环使用 DllCall 绕过此延迟）
 ; 详见 AltSnap 的实现：使用 SetWindowPos + SWP_ASYNCWINDOWPOS 实现非阻塞移动
 ; WinMove/WinSet 等 AHK 命令会受 SetWinDelay 影响，但 DllCall 不受此限制
-SetWinDelay 0
-
 CoordMode "Mouse"
 
 /**

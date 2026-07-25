@@ -309,5 +309,5 @@ ShowDebugTooltip() {  ; 该函数应该被加入 README 中，作为辅助调试
     SetTimer(ToolTip, -3000)  ; 防止遮挡太久
 }
 
-; 启动时自动启用该功能
-AutoActivateWindow()
+; 启动时自动启用该功能由 custom_functions.ahk 统一调用
+; AutoActivateWindow()

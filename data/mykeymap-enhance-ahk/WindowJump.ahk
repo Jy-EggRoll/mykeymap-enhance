@@ -1,7 +1,6 @@
 #WinActivateForce
 
 #Include ./LoggerLib/Logger.ahk
-#Include ./AutoActivateWindow.ahk
 #Include ./VDLib/VD.ahk
 #Include ./WindowStyleLib/WindowStyle.ahk
 

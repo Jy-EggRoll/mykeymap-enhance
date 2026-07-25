@@ -210,7 +210,8 @@ HSLtoRGB(h, s, l) {
     return { r: Round((tr + m) * 255), g: Round((tg + m) * 255), b: Round((tb + m) * 255) }
 }
 
-; 自动执行段
+; 启动时由 custom_functions.ahk 统一调用
+; AutoWindowColorBorder()
 
-AutoWindowColorBorder() ; 启动脚本即运行
-OnExit(CleanupOnExit)   ; 确保退出时清理边框
+; 退出时清理边框
+OnExit(CleanupOnExit)
