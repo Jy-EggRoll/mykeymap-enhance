@@ -2,7 +2,7 @@
 title: 项目介绍-mykeymap-enhance
 description: 我的 MyKeymap 自定义功能仓库，不依赖于 MyKeymap 就可以运行，可以视为我的自定义 AutoHotkey 库
 date: 2025-08-14
-lastmod: 2026-06-26
+lastmod: 2026-07-25
 image: 
 categories:
     - 项目
@@ -20,17 +20,21 @@ weight:
 
 下载 Release 中的 `data.zip`，解压后将各子文件放入 MyKeymap 的 `data` 目录下即可，之后各个函数可以根据您的需要被 MyKeymap 调用。
 
+> [!WARNING]
+>
+> 本项目所有脚本均需要使用 **AutoHotkey v2** 运行。
+
 > [!TIP]
 >
-> 从 1.4 版本开始，不再提供示例 json 配置，而是在 README 中提供各个函数的最佳实践的配置指导，这可以最大限度减少配置冲突的可能性，也方便您根据自己的使用习惯进行修改。
+> 从 1.4.0 版本开始，不再提供示例 json 配置，而是在 README 中提供各个函数的最佳实践的配置指导，这可以最大限度减少配置冲突的可能性，也方便您根据自己的使用习惯进行修改。
 
-`custom_function.ahk` 仅保留和官方一样的接口，负责导入各个模块，本身不提供任何实际功能，所以如果希望体验全部功能，请加入全部的 ahk 文件，若您没有自己的自定义函数，可以安全地覆盖 `custom_function.ahk`，如果您有，请自行对比两文件的差异，并将其合并。
+`custom_functions.ahk` 仅保留和官方一样的接口，负责导入各个模块，本身不提供任何实际功能（但包含显示器变化自动重载等额外逻辑），所以如果希望体验全部功能，请加入全部的 ahk 文件，若您没有自己的自定义函数，可以安全地覆盖 `custom_functions.ahk`，如果您有，请自行对比两文件的差异，并将其合并。
 
 ## 引言
 
 使用 [MyKeymap](https://github.com/xianyukang/MyKeymap) 已经有相当长一段时间了，学习了一部分 [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey) 后，我现在可以开发一些额外的功能。目前，这些脚本全部无需依赖 MyKeymap，可以直接由 AHK 调用。
 
-不过，值得注意的是，通过 MyKeymap 的强大扩展能力来使用我的函数是最佳实践。我的所有函数均未分配快捷键，若您需要直接通过 AHK 调用，请自行修改代码分配快捷键。
+不过，值得注意的是，通过 MyKeymap 的强大扩展能力来使用我的函数是最佳实践。部分函数内置了特定场景的快捷键（如窗口跳转、资源管理器切换），若您需要直接通过 AHK 调用其他函数，请自行修改代码分配快捷键。
 
 ## 自定义函数表
 
@@ -58,15 +62,21 @@ weight:
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">DragWindow()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接拖动任意窗口（无需点击标题栏），如果在最大化窗口上尝试调用该功能，窗口将被调整为占据全屏的普通窗口</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标左键（必须是左键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标左键</td>
+<td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选，吸附阈值（像素），0 表示禁用；可选，是否仅启用屏幕边缘吸附，默认 true</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接拖动任意窗口（无需点击标题栏），如果在最大化窗口上尝试调用该功能，窗口将被调整为占据全屏的普通窗口</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标左键（必须是左键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标左键</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ResizeWindow()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接调整任意窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，如果在最大化窗口上尝试调用该功能，会发出提示，用户应该先使用触发键+右键单击该窗口，使之变为占据全屏的普通窗口，再进行大小调节，这是为了避免潜在的闪烁问题</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标右键</td>
+<td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选，吸附阈值（像素），0 表示禁用；可选，是否仅启用屏幕边缘吸附，默认 true</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">直接调整任意窗口的大小（无需定位到边框），窗口会被划分为 9 个区域，拖动对应区域即可完成调节，如果在最大化窗口上尝试调用该功能，会发出提示，用户应该先使用触发键+右键单击该窗口，使之变为占据全屏的普通窗口，再进行大小调节，这是为了避免潜在的闪烁问题</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标右键</td>
+     </tr>
+    <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">ScaleWindow(percent)</td>
+<td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">缩放比例增量，如 0.1 表示放大 10%，-0.1 表示缩小 10%</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">按比例缩放当前窗口大小，以窗口中心为锚点；最大化窗口无效</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">PerCenterAndResizeWindow(percentageW, percentageH)</td>
@@ -118,9 +128,9 @@ weight:
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">WindowJump()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">窗口跳转，通过模糊搜索快速切换窗口，还可以作为快捷启动器</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>Space</kbd></td>
+<td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选，模糊匹配开关，默认空表示启用拼音部分匹配；可选，显示快捷方式开关；可选，显示最近使用项开关；可选，标签模式（"prefix" 或 "suffix"）；可选，快捷方式标签前缀；可选，最近使用项标签前缀</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">窗口跳转，通过模糊搜索快速切换窗口，还可以作为快捷启动器</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>Space</kbd></td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">QuickSwitchExplorer()</td>
@@ -130,15 +140,15 @@ weight:
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoWindowColorBorder()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数。为活动窗口添加彩色边框，置顶窗口显示特殊的 mauve 色边框。默认随 MyKeymap 启动</td>
+<td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选，轮询时间（毫秒），默认为 20</td>
+       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">开关函数。为活动窗口添加彩色边框，置顶窗口显示特殊的 mauve 色边框。默认随 MyKeymap 启动</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定一个快捷键或指令，方便随时启停</td>
-    </tr>
+     </tr>
     <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SwitchToNextColor()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换到下一个边框颜色</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">BlockSend(text)</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">文本内容</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">将文本内容写入剪贴板并粘贴到光标位置，粘贴后自动恢复剪贴板原内容</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SetTaskbarCombine(mode := "")</td>
@@ -265,7 +275,7 @@ weight:
 
 ![着色动态效果](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/着色动态效果.gif)
 
-使用 `SwitchToNextColor()` 切换颜色，颜色列表在代码中自定义。
+颜色列表在代码中自定义。
 
 ### 任务栏图标合并 SetTaskbarCombine
 
@@ -275,7 +285,7 @@ weight:
 - **Never**：从不合并图标
 - 空参数：自动翻转当前状态
 
-### 平滑滚动模拟 SmoothScrollSimulate（已有弃用趋势）
+### 平滑滚动模拟 SmoothScrollSimulate（将在之后的版本中逐步弃用）
 
 按住鼠标右键并移动，模拟现代化软件中的平滑滚动效果。支持：
 
@@ -296,9 +306,13 @@ weight:
 
 ## 额外工具
 
-### GetWindowFeature
+### GetWindowFeatureInfo & GetWindowFeatureGUI
 
-独立的窗口信息查看工具，可以查看窗口的标题、位置、类名、控件名等详细信息，用于开发和调试。
+`DebugLib` 目录下独立的窗口信息查看与调试工具集，可以查看窗口的标题、位置、类名、控件名等详细信息，用于开发和调试。
+
+> [!NOTE]
+>
+> 这些工具位于 `DebugLib/` 目录下，不包含在标准 `custom_functions.ahk` 分发中。如需使用，请在脚本中手动加载。
 
 ## 关于作者
 
