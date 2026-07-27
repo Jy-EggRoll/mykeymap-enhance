@@ -7,9 +7,8 @@ class DragAndResizeWindowDebug {
     static mode := false
 }
 
-; 设置窗口操作的延迟时间（拖动循环使用 DllCall 绕过此延迟）
-; 详见 AltSnap 的实现：使用 SetWindowPos + SWP_ASYNCWINDOWPOS 实现非阻塞移动
-; WinMove/WinSet 等 AHK 命令会受 SetWinDelay 影响，但 DllCall 不受此限制
+SetWinDelay 0
+
 CoordMode "Mouse"
 
 /**
@@ -268,9 +267,6 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
         snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
     }
 
-    lastDragX := WinX1 - 1
-    lastDragY := WinY1 - 1
-
     try {
         ; 循环执行拖动逻辑，直到按键释放
         loop {
@@ -318,18 +314,8 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
                 }
             }
 
-            ; 移动窗口到新位置（异步非阻塞，跳过无意义的重复位置）
-            if (WinX2 != lastDragX || WinY2 != lastDragY) {
-                DllCall("SetWindowPos", "Ptr", ID
-                    , "Ptr", 0           ;  hWndInsertAfter
-                    , "Int", WinX2       ;  X
-                    , "Int", WinY2       ;  Y
-                    , "Int", 0, "Int", 0 ;  cx, cy（被 SWP_NOSIZE 忽略）
-                    , "UInt", 1<<14|1<<0|1<<2|1<<4  ; SWP_ASYNCWINDOWPOS|SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE
-                    , "Ptr", 0)
-                lastDragX := WinX2
-                lastDragY := WinY2
-            }
+            ; 移动窗口到新位置（只改变位置，不改变大小）
+            WinMove WinX2, WinY2, , , ID
         }
     } catch Error as e {
         LogError(e, , DragAndResizeWindowDebug.mode)
@@ -381,11 +367,6 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
     }
 
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
-
-    lastResizeX := WinX1
-    lastResizeY := WinY1
-    lastResizeW := WinW
-    lastResizeH := WinH
 
     if (snapThreshold > 0) {  ; 只有当用户启用吸附时才收集，避免不必要的性能开销
         ; 获取当前窗口的阴影厚度
@@ -573,21 +554,8 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
                 }
             }
 
-            ; 应用调整后的窗口位置和大小（异步非阻塞）
-            if (newX != lastResizeX || newY != lastResizeY || newW != lastResizeW || newH != lastResizeH) {
-                DllCall("SetWindowPos", "Ptr", ID
-                    , "Ptr", 0           ;  hWndInsertAfter
-                    , "Int", newX        ;  X
-                    , "Int", newY        ;  Y
-                    , "Int", newW        ;  cx
-                    , "Int", newH        ;  cy
-                    , "UInt", 1<<14|1<<2|1<<4|1<<5  ; SWP_ASYNCWINDOWPOS|SWP_NOZORDER|SWP_NOACTIVATE|SWP_FRAMECHANGED
-                    , "Ptr", 0)
-                lastResizeX := newX
-                lastResizeY := newY
-                lastResizeW := newW
-                lastResizeH := newH
-            }
+            ; 应用调整后的窗口位置和大小
+            WinMove newX, newY, newW, newH, ID
 
             ; 更新初始鼠标位置为当前位置（避免累积误差）
             X1 := X2
