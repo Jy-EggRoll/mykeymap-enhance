@@ -818,9 +818,29 @@ UserRun(Target, Args := "", WorkingDir := "") {
     }
 }
 
+; 双击 Ctrl 触发窗口切换器
+; __JumpCtrlLastRelease: 最近一次 Ctrl 完整释放的时间戳，为 0 表示尚未完成一次"按-放"
+; __JumpCtrlLockUntil: 触发跳转后的冷却时点，此期间忽略释放事件，防止连按反复触发
+global __JumpCtrlLastRelease := 0
+global __JumpCtrlLockUntil := 0
+
+~Ctrl Up:: {
+    global __JumpCtrlLastRelease, __JumpCtrlLockUntil
+    if (A_TickCount < __JumpCtrlLockUntil)
+        return
+    __JumpCtrlLastRelease := A_TickCount
+}
+
 ~Ctrl:: {
-    ; 双击 Ctrl 触发窗口切换器，两次按下间隔小于 500 毫秒
-    if (ThisHotkey = A_PriorHotkey && A_TimeSincePriorHotkey < 500) {
-        WindowJump()
+    global __JumpCtrlLastRelease, __JumpCtrlLockUntil
+    if (__JumpCtrlLastRelease = 0)
+        return
+    if (A_TickCount - __JumpCtrlLastRelease > 500) {
+        __JumpCtrlLastRelease := 0
+        return
     }
+    ; 完整按-放-按 判定为双击，触发后进入冷却
+    __JumpCtrlLastRelease := 0
+    __JumpCtrlLockUntil := A_TickCount + 800
+    WindowJump()
 }
