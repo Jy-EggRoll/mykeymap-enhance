@@ -833,7 +833,7 @@ global __JumpCtrlLockUntil := 0
     global __JumpCtrlLastRelease
     if (__JumpCtrlLastRelease = 0)
         return
-    if (A_TickCount - __JumpCtrlLastRelease > 200) {  ; 200ms 内视为双击
+    if (A_TickCount - __JumpCtrlLastRelease > 500) {  ; 500ms 内视为双击
         __JumpCtrlLastRelease := 0
         return
     }
