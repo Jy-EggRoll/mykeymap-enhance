@@ -825,22 +825,19 @@ global __JumpCtrlLastRelease := 0
 global __JumpCtrlLockUntil := 0
 
 ~Ctrl Up:: {
-    global __JumpCtrlLastRelease, __JumpCtrlLockUntil
-    if (A_TickCount < __JumpCtrlLockUntil)
-        return
+    global __JumpCtrlLastRelease
     __JumpCtrlLastRelease := A_TickCount
 }
 
 ~Ctrl:: {
-    global __JumpCtrlLastRelease, __JumpCtrlLockUntil
+    global __JumpCtrlLastRelease
     if (__JumpCtrlLastRelease = 0)
         return
-    if (A_TickCount - __JumpCtrlLastRelease > 500) {
+    if (A_TickCount - __JumpCtrlLastRelease > 200) {  ; 200ms 内视为双击
         __JumpCtrlLastRelease := 0
         return
     }
-    ; 完整按-放-按 判定为双击，触发后进入冷却
+    ; 完整按-放-按 判定为双击，触发
     __JumpCtrlLastRelease := 0
-    __JumpCtrlLockUntil := A_TickCount + 800
     WindowJump()
 }
