@@ -818,26 +818,32 @@ UserRun(Target, Args := "", WorkingDir := "") {
     }
 }
 
-; 双击 Ctrl 触发窗口切换器
-; __JumpCtrlLastRelease: 最近一次 Ctrl 完整释放的时间戳，为 0 表示尚未完成一次"按-放"
-; __JumpCtrlLockUntil: 触发跳转后的冷却时点，此期间忽略释放事件，防止连按反复触发
-global __JumpCtrlLastRelease := 0
-global __JumpCtrlLockUntil := 0
-
-~Ctrl Up:: {
-    global __JumpCtrlLastRelease
-    __JumpCtrlLastRelease := A_TickCount
-}
+; 定义状态变量
+global ctrlIsPressed := false
+global lastCtrlPressTime := 0
 
 ~Ctrl:: {
-    global __JumpCtrlLastRelease
-    if (__JumpCtrlLastRelease = 0)
+    global ctrlIsPressed, lastCtrlPressTime
+
+    ; 按住期间重复触发则直接忽略
+    if (ctrlIsPressed)
         return
-    if (A_TickCount - __JumpCtrlLastRelease > 500) {  ; 500ms 内视为双击
-        __JumpCtrlLastRelease := 0
-        return
+
+    ; 释放后的首次按下
+    ctrlIsPressed := true
+
+    ; 检查是否为双击
+    if (lastCtrlPressTime
+        && A_TickCount - lastCtrlPressTime <= 500
+        && InStr(A_PriorKey, "Control")) {
+        WindowJump()
+        lastCtrlPressTime := 0  ; 清零，防止释放前再次触发
+    } else {
+        lastCtrlPressTime := A_TickCount
     }
-    ; 完整按-放-按 判定为双击，触发
-    __JumpCtrlLastRelease := 0
-    WindowJump()
+}
+
+~Ctrl Up:: {
+    global ctrlIsPressed
+    ctrlIsPressed := false
 }
