@@ -182,12 +182,12 @@ WindowJump(pinyinPartialMatch := "") {
             } catch Error as e {
                 LogError(e, , WindowJumpDebug.mode)
             }
-            MyGui["SearchInput"].Value := ""
-            MyGui["SearchInput"].Focus()
-            RefreshAllWindows(MyGui["ResultList"], hIL, iconCache)
-            MyGui.Show("Center")
-            return
-        }
+                MyGui["SearchInput"].Value := ""
+                MyGui["SearchInput"].Focus()
+                RefreshAllWindows(MyGui["ResultList"], hIL, iconCache)
+                MyGui.Show("Center")
+                return
+            }
     } else {
         global IsDarkMode, AccentColor
         lastTheme := IsDarkMode ? "dark" : "light"
@@ -643,28 +643,4 @@ MixColor(Color1, Color2, Weight) {
     g := Round(g1 + (g2 - g1) * Weight)
     b := Round(b1 + (b2 - b1) * Weight)
     return Format("{:02X}{:02X}{:02X}", r, g, b)
-}
-
-; Ctrl 双击触发
-global ctrlIsPressed := false
-global lastCtrlPressTime := 0
-
-~Ctrl:: {
-    global ctrlIsPressed, lastCtrlPressTime
-    if (ctrlIsPressed)
-        return
-    ctrlIsPressed := true
-    if (lastCtrlPressTime
-        && A_TickCount - lastCtrlPressTime <= 250
-        && InStr(A_PriorKey, "Control")) {
-        WindowJump()
-        lastCtrlPressTime := 0
-    } else {
-        lastCtrlPressTime := A_TickCount
-    }
-}
-
-~Ctrl Up:: {
-    global ctrlIsPressed
-    ctrlIsPressed := false
 }

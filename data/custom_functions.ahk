@@ -24,3 +24,53 @@ WM_DISPLAYCHANGE_Handler(wParam, lParam, msg, hwnd) {
 ; 自启动项（所有自启动函数统一在此调用，确保每个只执行一次）
 AutoActivateWindow()
 AutoWindowColorBorder()
+
+; 全局特殊热键绑定
+; Alt 双击触发
+global altIsPressed := false
+global lastAltPressTime := 0
+
+~Alt:: {
+    global altIsPressed, lastAltPressTime
+    if (altIsPressed)
+        return
+    altIsPressed := true
+    if (lastAltPressTime
+        && A_TickCount - lastAltPressTime <= 250
+        && InStr(A_PriorKey, "Alt")) {
+        WindowJump()
+        lastAltPressTime := 0
+    } else {
+        lastAltPressTime := A_TickCount
+    }
+}
+
+~Alt Up:: {
+    global altIsPressed
+    altIsPressed := false
+}
+
+; 全局特殊热键绑定
+; Ctrl 双击触发
+global ctrlIsPressed := false
+global lastCtrlPressTime := 0
+
+~Ctrl:: {
+    global ctrlIsPressed, lastCtrlPressTime
+    if (ctrlIsPressed)
+        return
+    ctrlIsPressed := true
+    if (lastCtrlPressTime
+        && A_TickCount - lastCtrlPressTime <= 250
+        && InStr(A_PriorKey, "Control")) {
+        Send("#!z")
+        lastCtrlPressTime := 0
+    } else {
+        lastCtrlPressTime := A_TickCount
+    }
+}
+
+~Ctrl Up:: {
+    global ctrlIsPressed
+    ctrlIsPressed := false
+}
