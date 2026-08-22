@@ -5,7 +5,7 @@
 #Include ./WindowStyleLib/WindowStyle.ahk
 
 class WindowJumpDebug {
-    static mode := false   ; 设为 false 可关闭调试日志
+    static mode := false
 }
 
 #Include ../mykeymap-enhance-ahk/PinYinLib/IbPinyin.ahk
@@ -22,53 +22,36 @@ global WindowJumpPrevActiveHwnd := 0
 UpdateTheme()
 InitShortcuts()
 
-; === 初始化：确保 VRTX 目录存在 ===
+; 初始化：确保 VRTX 目录存在
 InitShortcuts() {
     static initialized := false
     if initialized
         return
     initialized := true
     global VRTX_BASE
-    LogInfo("InitShortcuts: VRTX_BASE = " . VRTX_BASE, , WindowJumpDebug.mode)
     if !DirExist(VRTX_BASE) {
-        LogInfo("InitShortcuts: 目录不存在，正在创建", , WindowJumpDebug.mode)
         DirCreate(VRTX_BASE)
-    } else {
-        LogInfo("InitShortcuts: 目录已存在", , WindowJumpDebug.mode)
     }
 }
 
-; === 递归获取目录下所有 .lnk 和 .url 文件 ===
+; 递归获取目录下所有 .lnk 和 .url 文件
 GetAllShortcutFiles(dir) {
     files := []
-    LogInfo("GetAllShortcutFiles: 扫描 " . dir, , WindowJumpDebug.mode)
-    if !DirExist(dir) {
-        LogInfo("GetAllShortcutFiles: 目录不存在", , WindowJumpDebug.mode)
+    if !DirExist(dir)
         return files
-    }
-    local count := 0
-    Loop Files, dir "\*.lnk", "F" {
+    Loop Files, dir "\*.lnk", "F"
         files.Push(A_LoopFileFullPath)
-        count++
-    }
-    LogInfo("GetAllShortcutFiles: 找到 " . count . " 个 .lnk", , WindowJumpDebug.mode)
-    count := 0
-    Loop Files, dir "\*.url", "F" {
+    Loop Files, dir "\*.url", "F"
         files.Push(A_LoopFileFullPath)
-        count++
-    }
-    LogInfo("GetAllShortcutFiles: 找到 " . count . " 个 .url", , WindowJumpDebug.mode)
     Loop Files, dir "\*", "D" {
-        LogInfo("GetAllShortcutFiles: 进入子目录 " . A_LoopFileFullPath, , WindowJumpDebug.mode)
         subFiles := GetAllShortcutFiles(A_LoopFileFullPath)
         for _, f in subFiles
             files.Push(f)
     }
-    LogInfo("GetAllShortcutFiles: 总计 " . files.Length . " 个文件", , WindowJumpDebug.mode)
     return files
 }
 
-; === 搜索窗口（默认模式） ===
+; 搜索窗口（默认模式）
 SearchWindows(query) {
     results := []
     searchLower := StrLower(query)
@@ -103,23 +86,18 @@ SearchWindows(query) {
         }
     }
     A_DetectHiddenWindows := bak_DetectHiddenWindows
-    LogInfo("SearchWindows: 匹配到 " . results.Length . " 个窗口", , WindowJumpDebug.mode)
     return results
 }
 
-; === 搜索 VRTX 指定类别 ===
+; 搜索 VRTX 指定类别
 SearchVRTXCategory(query, category, label) {
     global VRTX_BASE
     results := []
     searchLower := StrLower(query)
     targetDir := VRTX_BASE "\" category
-    LogInfo("SearchVRTXCategory: 搜索 " . targetDir . ", query='" . query . "'", , WindowJumpDebug.mode)
-    if !DirExist(targetDir) {
-        LogInfo("SearchVRTXCategory: 目录不存在", , WindowJumpDebug.mode)
+    if !DirExist(targetDir)
         return results
-    }
     allFiles := GetAllShortcutFiles(targetDir)
-    LogInfo("SearchVRTXCategory: 获取到 " . allFiles.Length . " 个文件", , WindowJumpDebug.mode)
     for _, fullPath in allFiles {
         SplitPath(fullPath, &fileName)
         name := StrReplace(fileName, ".lnk", "")
@@ -149,11 +127,10 @@ SearchVRTXCategory(query, category, label) {
             })
         }
     }
-    LogInfo("SearchVRTXCategory: 匹配到 " . results.Length . " 个结果", , WindowJumpDebug.mode)
     return results
 }
 
-; === 主入口 ===
+; 主入口
 WindowJump(pinyinPartialMatch := "") {
     global WindowJumpPinyinPartialMatch
     if (pinyinPartialMatch !== "") {
@@ -168,8 +145,6 @@ WindowJump(pinyinPartialMatch := "") {
     static shortcutCache := Map()
     static lastTheme := ""
     static lastAccent := ""
-
-    LogInfo("WindowJump 被调用", , WindowJumpDebug.mode)
 
     global WindowJumpPrevActiveHwnd
     try {
@@ -229,7 +204,7 @@ WindowJump(pinyinPartialMatch := "") {
     r_phys := 20 * scaleFactor
     WinSetRegion("0-0 w" . w_phys . " h" . h_phys . " r" . r_phys . "-" . r_phys, MyGui.Hwnd)
 
-    MyGui.Add("Text", "x25 y15 h30 c" . AccentColor, "快速跳转 | b=书签  s=软件  v=VSCode")
+    MyGui.Add("Text", "x25 y15 h30 c" . AccentColor, "快速跳转 | b=书签  s=软件  v=VSCode  | Delete=关闭窗口")
 
     EditBox := MyGui.Add("Edit", "x20 y45 w560 h22 vSearchInput -E0x200 Background" . ListViewBg)
 
@@ -254,10 +229,37 @@ WindowJump(pinyinPartialMatch := "") {
     Hotkey("Down", (*) => MoveLVSelection(MyGui["ResultList"], "Down"), "On")
     Hotkey("Up", (*) => MoveLVSelection(MyGui["ResultList"], "Up"), "On")
     Hotkey("Enter", (*) => HandleEnter(MyGui), "On")
+    Hotkey("Delete", (*) => CloseSelectedWindow(MyGui["ResultList"]), "On")
 
     SetTimer () => CheckWinFocus(MyGui), 100
 
     MyGui.Show("w600 h450 Center")
+}
+
+CloseSelectedWindow(LV) {
+    row := LV.GetNext(0, "Focused")
+    if (row == 0) {
+        row := LV.GetNext(0)
+    }
+    if (row == 0 && LV.GetCount() > 0) {
+        row := 1
+    }
+    if (row > 0) {
+        hwnd := LV.GetText(row, 2)
+        isShortcut := LV.GetText(row, 3) = "1"
+        if (hwnd && !isShortcut) {
+            ; 临时开启 DetectHiddenWindows，保证可以跨虚拟桌面关闭软件窗口
+            DetectHiddenWindows(true)
+            PostMessage(0x10, 0, 0, , "ahk_id " . hwnd)
+            ; 恢复默认设置
+            DetectHiddenWindows(false)
+            LV.Delete(row)
+            if (LV.GetCount() > 0) {
+                nextRow := (row > LV.GetCount()) ? LV.GetCount() : row
+                LV.Modify(nextRow, "Select Focus Vis")
+            }
+        }
+    }
 }
 
 ScheduleSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
@@ -271,8 +273,6 @@ ScheduleSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
 UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     global WindowJumpShortcutLabel, WindowJumpBookmarkLabel, WindowJumpVSCodeLabel
     rawInput := EditObj.Value
-    LogInfo("UpdateSearch: 原始输入 = [" . rawInput . "]", , WindowJumpDebug.mode)
-
     LV.Delete()
 
     mode := "window"
@@ -282,7 +282,6 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
         if (SubStr(rawInput, 1, StrLen(prefix)) = prefix) {
             mode := m
             searchQuery := Trim(SubStr(rawInput, StrLen(prefix) + 1))
-            LogInfo("UpdateSearch: 检测到前缀 '" . prefix . "', 模式=" . mode . ", 搜索词='" . searchQuery . "'", , WindowJumpDebug.mode)
             break
         }
     }
@@ -297,8 +296,6 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     } else if (mode = "vscode") {
         results := SearchVRTXCategory(searchQuery, "VSCode", WindowJumpVSCodeLabel)
     }
-
-    LogInfo("UpdateSearch: 最终结果数=" . results.Length, , WindowJumpDebug.mode)
 
     if (results.Length > 0) {
         ; 排序
@@ -350,7 +347,6 @@ CancelSwitcher(guiObj) {
                 Sleep 50
                 WinActivate("ahk_id " . WindowJumpPrevActiveHwnd)
             }
-            LogInfo("ESC 取消，恢复前台窗口: " . WindowJumpPrevActiveHwnd, , WindowJumpDebug.mode)
         }
     } catch Error as e {
         LogError(e, , WindowJumpDebug.mode)
@@ -362,13 +358,11 @@ CheckWinFocus(guiObj) {
         return
     }
     if !WinActive("ahk_id " . guiObj.Hwnd) {
-        LogInfo("GUI 失去焦点，隐藏窗口", , WindowJumpDebug.mode)
         guiObj.Hide()
     }
 }
 
 RefreshAllWindows(LV, hIL, iconCache) {
-    LogInfo("刷新全部窗口", , WindowJumpDebug.mode)
     LV.Delete()
     windowCount := 0
     bak_DetectHiddenWindows := A_DetectHiddenWindows
@@ -390,7 +384,6 @@ RefreshAllWindows(LV, hIL, iconCache) {
         }
     }
     A_DetectHiddenWindows := bak_DetectHiddenWindows
-    LogInfo("共 " . windowCount . " 个窗口", , WindowJumpDebug.mode)
     if (LV.GetCount() > 0) {
         LV.Modify(1, "Select Focus")
     }
@@ -547,8 +540,6 @@ ActivateWin(LV, RowNumber) {
         hwnd := LV.GetText(RowNumber, 2)
         isShortcut := LV.GetText(RowNumber, 3) = "1"
         isAdmin := LV.GetText(RowNumber, 4) = "1"
-        LogInfo("激活目标: hwnd=" . hwnd . " isShortcut=" . isShortcut . " isAdmin=" . isAdmin,
-            , WindowJumpDebug.mode)
         if (hwnd) {
             if (isShortcut) {
                 if (isAdmin) {
@@ -647,7 +638,7 @@ MixColor(Color1, Color2, Weight) {
     return Format("{:02X}{:02X}{:02X}", r, g, b)
 }
 
-; === Ctrl 双击触发 ===
+; Ctrl 双击触发
 global ctrlIsPressed := false
 global lastCtrlPressTime := 0
 
