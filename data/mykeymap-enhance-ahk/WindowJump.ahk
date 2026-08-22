@@ -204,7 +204,7 @@ WindowJump(pinyinPartialMatch := "") {
     r_phys := 20 * scaleFactor
     WinSetRegion("0-0 w" . w_phys . " h" . h_phys . " r" . r_phys . "-" . r_phys, MyGui.Hwnd)
 
-    MyGui.Add("Text", "x25 y15 h30 c" . AccentColor, "快速跳转 | b=书签  s=软件  v=VSCode  | Delete=关闭窗口")
+    MyGui.Add("Text", "x25 y15 h30 c" . AccentColor, "快速跳转 | Delete 关闭窗口")
 
     EditBox := MyGui.Add("Edit", "x20 y45 w560 h22 vSearchInput -E0x200 Background" . ListViewBg)
 
@@ -275,14 +275,21 @@ UpdateSearch(EditObj, LV, hIL, &iconCache, &shortcutCache) {
     rawInput := EditObj.Value
     LV.Delete()
 
+    ; 检测 VRTX 是否可用（目录存在）
+    vrtxAvailable := DirExist(VRTX_BASE)
+
     mode := "window"
     searchQuery := rawInput
-    prefixMap := Map("b ", "bookmark", "s ", "shortcut", "v ", "vscode")
-    for prefix, m in prefixMap {
-        if (SubStr(rawInput, 1, StrLen(prefix)) = prefix) {
-            mode := m
-            searchQuery := Trim(SubStr(rawInput, StrLen(prefix) + 1))
-            break
+
+    ; 仅当 VRTX 可用时才处理前缀
+    if (vrtxAvailable) {
+        prefixMap := Map("b ", "bookmark", "s ", "shortcut", "v ", "vscode")
+        for prefix, m in prefixMap {
+            if (SubStr(rawInput, 1, StrLen(prefix)) = prefix) {
+                mode := m
+                searchQuery := Trim(SubStr(rawInput, StrLen(prefix) + 1))
+                break
+            }
         }
     }
 
