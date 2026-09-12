@@ -47,6 +47,17 @@ SetBrightness(brightness, monIndex, timeout := 1) {
     }
 }
 
+; 根据鼠标位置获取所在显示器的编号
+GetMonitorIndexAtMouse() {
+    global monitorCol
+    MouseGetPos &mx, &my
+    for info in monitorCol.EnumDisplayMonitors() {
+        if (mx >= info["Left"] && mx < info["Right"] && my >= info["Top"] && my < info["Bottom"])
+            return Integer(info["Number"])
+    }
+    return 0
+}
+
 ; 上一个显示屏
 PreviousMonitor() {
     InitMonitors()
@@ -83,6 +94,9 @@ IncBrightness(dealt) {
     global monitors
     global currentIndex
     global previousMonCount
+    currentIndex := GetMonitorIndexAtMouse()
+    if (currentIndex = 0)
+        return
     if (previousMonCount != monCount) {
         ToolTip("显示器配置变更 请立即重启 MyKeymap 以保证亮度设置正确")
         SetTimer(ToolTip, -3000)
@@ -114,6 +128,9 @@ DecBrightness(dealt) {
     global monitors
     global currentIndex
     global previousMonCount
+    currentIndex := GetMonitorIndexAtMouse()
+    if (currentIndex = 0)
+        return
     if (previousMonCount != monCount) {
         ToolTip("显示器配置变更 请立即重启 MyKeymap 以保证亮度设置正确")
         SetTimer(ToolTip, -3000)
