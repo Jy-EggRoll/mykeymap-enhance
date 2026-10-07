@@ -75,6 +75,15 @@ WriteLog(level, str, filePath, showConsole, colorAttr) {
 }
 
 /**
+ * 控制台默认属性缓存
+ * 必须在改色之前取值：ResetConsoleColor 若等到改色之后才首次取值，拿到的就是
+ * 日志等级色，会被当作"默认色"写回，控制台颜色从此不再复位。
+ */
+class ConsoleColorState {
+    static defaultAttr := ""
+}
+
+/**
  * 设置控制台前景颜色
  * @param attr 控制台颜色属性
  */
@@ -83,23 +92,26 @@ SetConsoleColor(attr) {
     if !hConsole || hConsole = -1
         return
 
-    static defaultAttr := ""
-    if (defaultAttr = "")
-        defaultAttr := GetConsoleTextAttribute()
+    ; 首次改色之前记录原始属性，供 ResetConsoleColor 还原
+    if (ConsoleColorState.defaultAttr = "")
+        ConsoleColorState.defaultAttr := GetConsoleTextAttribute()
 
     DllCall("SetConsoleTextAttribute", "ptr", hConsole, "ushort", attr)
 }
 
+/**
+ * 复位控制台前景颜色
+ * 还原的是首次改色之前捕获的默认属性，见 ConsoleColorState
+ */
 ResetConsoleColor() {
     hConsole := DllCall("GetStdHandle", "int", -11, "ptr")
     if !hConsole || hConsole = -1
         return
 
-    static defaultAttr := ""
-    if (defaultAttr = "")
-        defaultAttr := GetConsoleTextAttribute()
+    if (ConsoleColorState.defaultAttr = "")
+        ConsoleColorState.defaultAttr := GetConsoleTextAttribute()
 
-    DllCall("SetConsoleTextAttribute", "ptr", hConsole, "ushort", defaultAttr)
+    DllCall("SetConsoleTextAttribute", "ptr", hConsole, "ushort", ConsoleColorState.defaultAttr)
 }
 
 GetConsoleTextAttribute() {
@@ -107,9 +119,12 @@ GetConsoleTextAttribute() {
     if !hConsole || hConsole = -1
         return 0x07
 
+    ; CONSOLE_SCREEN_BUFFER_INFO 的布局（2 字节对齐，共 22 字节）：
+    ; dwSize(偏移 0) + dwCursorPosition(4) + wAttributes(8) + srWindow(10) + dwMaximumWindowSize(18)。
+    ; 颜色属性只占 2 字节且在偏移 8；偏移 16 落在 srWindow.Bottom 上，读出来的不是颜色。
     csbi := Buffer(22)
     if DllCall("GetConsoleScreenBufferInfo", "ptr", hConsole, "ptr", csbi) {
-        return NumGet(csbi, 16, "UShort")
+        return NumGet(csbi, 8, "UShort")
     }
 
     return 0x07
