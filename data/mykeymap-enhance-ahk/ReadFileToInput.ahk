@@ -15,7 +15,9 @@ ReadFileToInput(filePath) {
     }
 
     try {
-        fileContent := FileRead(filePath)
+        ; 必须显式指定编码：省略时按 A_FileEncoding 读取，即系统 ANSI 代码页（CP0），
+        ; 无 BOM 的 UTF-8 文本会被读成乱码再被 SendText 发出去。
+        fileContent := FileRead(filePath, "UTF-8")
         if RegExMatch(fileContent, "[\r\n]") {
             ToolTip("错误: 不允许读取含多行内容的文本")
             SetTimer(ToolTip, -1000)
