@@ -34,7 +34,7 @@ weight:
 
 使用 [MyKeymap](https://github.com/xianyukang/MyKeymap) 已经有相当长一段时间了，学习了一部分 [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey) 后，我现在可以开发一些额外的功能。目前，这些脚本全部无需依赖 MyKeymap，可以直接由 AHK 调用。
 
-不过，值得注意的是，通过 MyKeymap 的强大扩展能力来使用我的函数是最佳实践。部分函数内置了特定场景的快捷键（如窗口跳转、资源管理器切换），若您需要直接通过 AHK 调用其他函数，请自行修改代码分配快捷键。
+不过，值得注意的是，通过 MyKeymap 的强大扩展能力来使用我的函数是最佳实践。部分函数内置了特定场景的快捷键，若您需要直接通过 AHK 调用其他函数，请自行修改代码分配快捷键。
 
 ## 自定义函数表
 
@@ -127,16 +127,10 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">WindowJump()</td>
-<td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">可选，模糊匹配开关，默认空表示启用拼音部分匹配；可选，显示快捷方式开关；可选，显示最近使用项开关；可选，标签模式（"prefix" 或 "suffix"）；可选，快捷方式标签前缀；可选，最近使用项标签前缀</td>
-       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">窗口跳转，通过模糊搜索快速切换窗口，还可以作为快捷启动器</td>
-       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>Space</kbd></td>
-    </tr>
-    <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">QuickSwitchExplorer()</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">快速切换/跳转到资源管理器窗口，在打开/保存对话框中调用会弹出已打开的 Explorer 列表供选择</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键，如 <kbd>Alt</kbd> + <kbd>E</kbd></td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">快速切换/跳转到资源管理器窗口，在打开/保存对话框中调用会弹出已打开的 Explorer 列表供选择。<br>高度测试版，极不稳定，不建议使用；默认未被加载，需自行 include</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">不建议使用</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">AutoWindowColorBorder()</td>
@@ -167,26 +161,13 @@ weight:
 
 ## 功能详解
 
-### 窗口跳转 WindowJump
+### 窗口跳转（已迁出到 VRTX）
 
-![窗口跳转](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/快速跳转窗口.png)
-
-通过模糊搜索快速切换窗口，支持字母模糊匹配和中文拼音匹配（简拼/全拼）。输入关键词后，窗口会实时显示匹配的窗口列表，使用上下键选择后按回车即可切换到目标窗口。
-
-集成系统快捷方式收纳功能，可以作为快捷方式启动器使用。当输入的关键词匹配到一个快捷方式时，按回车会直接运行该快捷方式，支持普通用户身份启动和管理员身份启动。
-
-匹配方式：
-
-- **模糊匹配**：输入 "co ju" 可以匹配 "code jump"
-- **精确匹配**：输入窗口标题中的文字（如"文件"）
-- **拼音匹配**：支持简拼（如"wj"匹配"文件"）和全拼（如"wenjian"匹配"文件"）
+窗口跳转功能已迁移到独立软件 [VRTX](https://github.com/Jy-EggRoll/vrtx) 维护。本仓库在 1.16.0 之后已移除相关代码，如需该功能请前往 VRTX。
 
 > [!TIP]
 >
-> 拼音匹配功能由 [IbPinyinLib](https://github.com/Chaoses-Ib/ib-matcher) 高性能拼音库提供支持，特此致谢。
-> 虚拟桌面窗口识别功能由 [VD.ahk](https://github.com/FuPeiJiang/VD.ahk) 库提供支持，特此致谢。
->
-> **新增**：拼音匹配现已支持**部分匹配**模式，可以匹配拼音的开头部分，例如输入 `su` 可以匹配「算」（suan）。
+> 该功能的拼音匹配由 [IbPinyinLib](https://github.com/Chaoses-Ib/ib-matcher) 提供，虚拟桌面窗口识别由 [VD.ahk](https://github.com/FuPeiJiang/VD.ahk) 提供，相关代码与其依赖库已随功能一起迁往 VRTX。
 
 ### 拖动与调节 DragWindow & ResizeWindow
 
