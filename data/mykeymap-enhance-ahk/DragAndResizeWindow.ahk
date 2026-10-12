@@ -279,6 +279,9 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
         ; 获取当前窗口的阴影厚度
         shadowThickness := GetShadowThickness(ID)
 
+        ; 记录窗口当前所在显示器，循环里换屏时据此重新取阴影厚度
+        currentMonitor := F_GetMonitorAt(WinX1 + WinW / 2, WinY1 + WinH / 2)
+
         ; 收集吸附边界（在循环前只收集一次）
         snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
     }
@@ -303,6 +306,19 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
 
             ; 如果启用了吸附，计算去除阴影后的边界并检查吸附，禁用时不进行任何计算
             if (snapThreshold > 0) {
+                ; 跨到缩放不同的显示器时，系统会按 DPI 重新缩放窗口，WinGetPos 的返回值
+                ; 也随之变化，因此每帧重新取一次大小。沿用拖动开始时的尺寸，右/下边界的
+                ; 吸附坐标和窗口中心的判断都会失准，贴不住边
+                ; 位置仍以本函数上面算出的 WinX2/WinY2 为准，故前两个输出丢弃不用
+                WinGetPos &curX, &curY, &WinW, &WinH, ID
+
+                ; 窗口中心所在显示器；换屏后阴影厚度随缩放变化，需要重新取一次
+                monitorIndex := F_GetMonitorAt(WinX2 + WinW / 2, WinY2 + WinH / 2)
+                if (monitorIndex != currentMonitor) {
+                    shadowThickness := GetShadowThickness(ID)
+                    currentMonitor := monitorIndex
+                }
+
                 ; 计算去除阴影后的窗口边界
                 left := WinX2 + shadowThickness
                 top := WinY2
@@ -310,8 +326,7 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
                 bottom := WinY2 + WinH - shadowThickness
 
                 ; 只取窗口中心所在显示器的吸附线，别的屏的边不参与吸附
-                ; 每帧都要重新判断：拖动过程中窗口可能换到另一块显示器
-                lines := snapData.linesByMonitor[F_GetMonitorAt(WinX2 + WinW / 2, WinY2 + WinH / 2)]
+                lines := snapData.linesByMonitor[monitorIndex]
 
                 ; 寻找最近的吸附线（优先左边和上边，如果没有则尝试右边和下边）
                 snappedLeft := FindNearestSnapLine(left, lines.vLines, snapData.dpiThreshold)
@@ -391,6 +406,9 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
     if (snapThreshold > 0) {  ; 只有当用户启用吸附时才收集，避免不必要的性能开销
         ; 获取当前窗口的阴影厚度
         shadowThickness := GetShadowThickness(ID)
+
+        ; 记录窗口当前所在显示器，循环里换屏时据此重新取阴影厚度
+        currentMonitor := F_GetMonitorAt(WinX1 + WinW / 2, WinY1 + WinH / 2)
 
         ; 收集吸附边界（在循环前只收集一次）
         snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
@@ -503,6 +521,14 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
 
             ; 如果启用了吸附，计算去除阴影后的边界并检查吸附
             if (snapThreshold > 0) {
+                ; 窗口中心所在显示器；换屏后阴影厚度随缩放变化，需要重新取一次
+                ; （大小在这个循环里每帧都重读，见上面 WinGetPos）
+                monitorIndex := F_GetMonitorAt(newX + newW / 2, newY + newH / 2)
+                if (monitorIndex != currentMonitor) {
+                    shadowThickness := GetShadowThickness(ID)
+                    currentMonitor := monitorIndex
+                }
+
                 ; 计算去除阴影后的窗口边界
                 left := newX + shadowThickness
                 top := newY
@@ -510,8 +536,7 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
                 bottom := newY + newH - shadowThickness
 
                 ; 只取窗口中心所在显示器的吸附线，别的屏的边不参与吸附
-                ; 每帧都要重新判断：调整大小过程中窗口中心可能换到另一块显示器
-                lines := snapData.linesByMonitor[F_GetMonitorAt(newX + newW / 2, newY + newH / 2)]
+                lines := snapData.linesByMonitor[monitorIndex]
 
                 ; 根据正在调整的边来决定吸附哪些边
                 if (horizontalRegion = 1) {
