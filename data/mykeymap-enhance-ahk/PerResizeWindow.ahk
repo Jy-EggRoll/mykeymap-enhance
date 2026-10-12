@@ -38,7 +38,9 @@ F_WindowMaxOrMin(winTitle := "A") {
  * @returns {string|number} 匹配的显示器下标
  */
 F_GetMonitorAt(x, y, default := 1) {
-    m := SysGet(80)
+    ; 上界用 MonitorGetCount()，而不是 SysGet(80)：MonitorGet 的编号域是前者，
+    ; SM_CMONITORS 不含未参与桌面的显示器，两者可能不等，用它当上界会漏屏
+    m := MonitorGetCount()
     loop m {
         MonitorGet(A_Index, &l, &t, &r, &b)
         if (x >= l && x <= r && y >= t && y <= b)

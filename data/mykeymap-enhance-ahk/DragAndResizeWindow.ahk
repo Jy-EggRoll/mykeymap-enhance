@@ -12,35 +12,46 @@ SetWinDelay 0
 CoordMode "Mouse"
 
 /**
- * 收集吸附边界
+ * 收集吸附边界，按显示器分组
+ *
+ * 每条吸附线只属于它自己那块显示器。早先的实现把所有显示器的边界混进同一组，
+ * 于是尺寸不一致的多显示器布局里，小屏的边会落进大屏内部，成为并不存在的吸附线
+ * （例如小屏下边界恰好在大屏竖直中间，窗口在大屏上并未贴边也会被吸住）。
  * @param excludeHwnd 要排除的窗口句柄（当前正在操作的窗口）
  * @param snapThreshold 吸附阈值，0 表示禁用
  * @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
- * @returns {vLines: [], hLines: [], threshold: 0, dpiThreshold: 0} 垂直线和水平线数组
+ * @returns {linesByMonitor: Map, threshold: 0, dpiThreshold: 0} 显示器号到 {vLines, hLines} 的映射
  */
 CollectSnapBoundaries(excludeHwnd, snapThreshold := 0, edgeOnly := false) {
-    vLines := []  ; 垂直线（X 坐标）
-    hLines := []  ; 水平线（Y 坐标）
-
-    ; 如果阈值为 0，返回空数组
+    ; 如果阈值为 0，返回空映射
     if (snapThreshold <= 0) {
-        return { vLines: vLines, hLines: hLines, threshold: 0, dpiThreshold: 0 }
+        return { linesByMonitor: Map(), threshold: 0, dpiThreshold: 0 }
     }
 
     ; 计算 DPI 感知后的阈值
+    ; 这里取系统 DPI（主屏那一份），不是窗口所在显示器的 DPI：AHK v2 默认是 system DPI
+    ; aware，而不是 per-monitor DPI aware，副屏坐标会被系统按 DPI 缩放（见官方文档
+    ; misc/DPIScaling.htm、lib/WinGetPos.htm 的说明）。坐标空间本身不一致时，仅把这里
+    ; 换成副屏 DPI 并不能算对，要改得先决定是否启用 per-monitor DPI 感知。
     dpi := DllCall("GetDpiForSystem", "UInt")
     scaleFactor := dpi / 96.0
     dpiThreshold := Round(snapThreshold * scaleFactor)
 
+    ; 显示器号 -> {vLines: [], hLines: []}，每块显示器各有一组
+    linesByMonitor := Map()
+
     try {
-        ; 收集所有显示器工作区边界
-        monitorCount := SysGet(80)
-        loop monitorCount {
+        ; 显示器边界只进自己那一组
+        ; 上界用 MonitorGetCount()：MonitorGet* 的编号域就是它，不是 SysGet(80)
+        ; （SM_CMONITORS 不含未参与桌面的显示器，两者可能不等，用它当上界会漏屏）
+        loop MonitorGetCount() {
             MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
-            vLines.Push(l)  ; 左边界
-            vLines.Push(r)  ; 右边界
-            hLines.Push(t)  ; 上边界
-            hLines.Push(b)  ; 下边界
+            linesByMonitor[A_Index] := { vLines: [], hLines: [] }
+            bucket := linesByMonitor[A_Index]
+            bucket.vLines.Push(l)  ; 左边界
+            bucket.vLines.Push(r)  ; 右边界
+            bucket.hLines.Push(t)  ; 上边界
+            bucket.hLines.Push(b)  ; 下边界
         }
 
         if (!edgeOnly) {
@@ -87,17 +98,22 @@ CollectSnapBoundaries(excludeHwnd, snapThreshold := 0, edgeOnly := false) {
                 right := winX + winW - shadowThickness
                 bottom := winY + winH - shadowThickness
 
-                vLines.Push(left)
-                vLines.Push(right)
-                hLines.Push(top)
-                hLines.Push(bottom)
+                ; 其他窗口的边线归到它自己所在的显示器：与上面显示器边界同一个原因，
+                ; 另一块屏上的窗口不该在这块屏内部制造吸附线
+                ; 显示器号由 F_GetMonitorAt 返回，取值域与 MonitorGet* 的编号域一致，
+                ; 因此上面循环已经建好了对应的组
+                bucket := linesByMonitor[F_GetMonitorAt(winX + winW / 2, winY + winH / 2)]
+                bucket.vLines.Push(left)
+                bucket.vLines.Push(right)
+                bucket.hLines.Push(top)
+                bucket.hLines.Push(bottom)
             }
         }
     } catch Error as e {
         LogError(e, , DragAndResizeWindowDebug.mode)
     }
 
-    return { vLines: vLines, hLines: hLines, threshold: snapThreshold, dpiThreshold: dpiThreshold }
+    return { linesByMonitor: linesByMonitor, threshold: snapThreshold, dpiThreshold: dpiThreshold }
 }
 
 /**
@@ -293,11 +309,15 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
                 right := WinX2 + WinW - shadowThickness
                 bottom := WinY2 + WinH - shadowThickness
 
+                ; 只取窗口中心所在显示器的吸附线，别的屏的边不参与吸附
+                ; 每帧都要重新判断：拖动过程中窗口可能换到另一块显示器
+                lines := snapData.linesByMonitor[F_GetMonitorAt(WinX2 + WinW / 2, WinY2 + WinH / 2)]
+
                 ; 寻找最近的吸附线（优先左边和上边，如果没有则尝试右边和下边）
-                snappedLeft := FindNearestSnapLine(left, snapData.vLines, snapData.dpiThreshold)
-                snappedRight := FindNearestSnapLine(right, snapData.vLines, snapData.dpiThreshold)
-                snappedTop := FindNearestSnapLine(top, snapData.hLines, snapData.dpiThreshold)
-                snappedBottom := FindNearestSnapLine(bottom, snapData.hLines, snapData.dpiThreshold)
+                snappedLeft := FindNearestSnapLine(left, lines.vLines, snapData.dpiThreshold)
+                snappedRight := FindNearestSnapLine(right, lines.vLines, snapData.dpiThreshold)
+                snappedTop := FindNearestSnapLine(top, lines.hLines, snapData.dpiThreshold)
+                snappedBottom := FindNearestSnapLine(bottom, lines.hLines, snapData.dpiThreshold)
 
                 ; 水平方向：优先左边，如果左边没吸附则尝试右边
                 if (snappedLeft != left) {
@@ -489,17 +509,21 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
                 right := newX + newW - shadowThickness
                 bottom := newY + newH - shadowThickness
 
+                ; 只取窗口中心所在显示器的吸附线，别的屏的边不参与吸附
+                ; 每帧都要重新判断：调整大小过程中窗口中心可能换到另一块显示器
+                lines := snapData.linesByMonitor[F_GetMonitorAt(newX + newW / 2, newY + newH / 2)]
+
                 ; 根据正在调整的边来决定吸附哪些边
                 if (horizontalRegion = 1) {
                     ; 调整左边
-                    snappedLeft := FindNearestSnapLine(left, snapData.vLines, snapData.dpiThreshold)
+                    snappedLeft := FindNearestSnapLine(left, lines.vLines, snapData.dpiThreshold)
                     if (snappedLeft != left) {
                         newX := snappedLeft - shadowThickness
                         newW := newW + (left - snappedLeft)
                     }
                 } else if (horizontalRegion = 3) {
                     ; 调整右边
-                    snappedRight := FindNearestSnapLine(right, snapData.vLines, snapData.dpiThreshold)
+                    snappedRight := FindNearestSnapLine(right, lines.vLines, snapData.dpiThreshold)
                     if (snappedRight != right) {
                         newW := snappedRight - newX + shadowThickness
                     }
@@ -507,14 +531,14 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
 
                 if (verticalRegion = 1) {
                     ; 调整上边
-                    snappedTop := FindNearestSnapLine(top, snapData.hLines, snapData.dpiThreshold)
+                    snappedTop := FindNearestSnapLine(top, lines.hLines, snapData.dpiThreshold)
                     if (snappedTop != top) {
                         newY := snappedTop
                         newH := newH + (top - snappedTop)
                     }
                 } else if (verticalRegion = 3) {
                     ; 调整下边
-                    snappedBottom := FindNearestSnapLine(bottom, snapData.hLines, snapData.dpiThreshold)
+                    snappedBottom := FindNearestSnapLine(bottom, lines.hLines, snapData.dpiThreshold)
                     if (snappedBottom != bottom) {
                         newH := snappedBottom - newY + shadowThickness
                     }
@@ -524,14 +548,14 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
                 if (horizontalRegion = 2 && verticalRegion = 2) {
                     if (WinLeft == 1) {
                         ; 调整左边
-                        snappedLeft := FindNearestSnapLine(left, snapData.vLines, snapData.dpiThreshold)
+                        snappedLeft := FindNearestSnapLine(left, lines.vLines, snapData.dpiThreshold)
                         if (snappedLeft != left) {
                             newX := snappedLeft - shadowThickness
                             newW := newW + (left - snappedLeft)
                         }
                     } else {
                         ; 调整右边
-                        snappedRight := FindNearestSnapLine(right, snapData.vLines, snapData.dpiThreshold)
+                        snappedRight := FindNearestSnapLine(right, lines.vLines, snapData.dpiThreshold)
                         if (snappedRight != right) {
                             newW := snappedRight - newX + shadowThickness
                         }
@@ -539,14 +563,14 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
 
                     if (WinUp == 1) {
                         ; 调整上边
-                        snappedTop := FindNearestSnapLine(top, snapData.hLines, snapData.dpiThreshold)
+                        snappedTop := FindNearestSnapLine(top, lines.hLines, snapData.dpiThreshold)
                         if (snappedTop != top) {
                             newY := snappedTop
                             newH := newH + (top - snappedTop)
                         }
                     } else {
                         ; 调整下边
-                        snappedBottom := FindNearestSnapLine(bottom, snapData.hLines, snapData.dpiThreshold)
+                        snappedBottom := FindNearestSnapLine(bottom, lines.hLines, snapData.dpiThreshold)
                         if (snappedBottom != bottom) {
                             newH := snappedBottom - newY + shadowThickness
                         }
