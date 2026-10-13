@@ -41,12 +41,17 @@ CollectSnapBoundaries(excludeHwnd, snapThreshold := 0, edgeOnly := false) {
     linesByMonitor := Map()
 
     try {
+        ; 先给每块显示器建好空组，再往里填线。这样即使后面某一块取工作区失败，
+        ; 提前跳到 catch，调用方取组也只会拿到空组，不会因为键不存在抛错中断拖动
+        loop MonitorGetCount() {
+            linesByMonitor[A_Index] := { vLines: [], hLines: [] }
+        }
+
         ; 显示器边界只进自己那一组
         ; 上界用 MonitorGetCount()：MonitorGet* 的编号域就是它，不是 SysGet(80)
         ; （SM_CMONITORS 不含未参与桌面的显示器，两者可能不等，用它当上界会漏屏）
         loop MonitorGetCount() {
             MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
-            linesByMonitor[A_Index] := { vLines: [], hLines: [] }
             bucket := linesByMonitor[A_Index]
             bucket.vLines.Push(l)  ; 左边界
             bucket.vLines.Push(r)  ; 右边界
@@ -280,7 +285,9 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
         shadowThickness := GetShadowThickness(ID)
 
         ; 记录窗口当前所在显示器，循环里换屏时据此重新取阴影厚度
-        currentMonitor := F_GetMonitorAt(WinX1 + WinW / 2, WinY1 + WinH / 2)
+        ; 0 表示还没判断过，第一帧会先取一次；这里不调用 F_GetMonitorAt，
+        ; 避免它在 try 之外抛错时把光标样式留在拖动状态
+        currentMonitor := 0
 
         ; 收集吸附边界（在循环前只收集一次）
         snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
@@ -408,7 +415,9 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
         shadowThickness := GetShadowThickness(ID)
 
         ; 记录窗口当前所在显示器，循环里换屏时据此重新取阴影厚度
-        currentMonitor := F_GetMonitorAt(WinX1 + WinW / 2, WinY1 + WinH / 2)
+        ; 0 表示还没判断过，第一帧会先取一次；这里不调用 F_GetMonitorAt，
+        ; 避免它在 try 之外抛错时把光标样式留在拖动状态
+        currentMonitor := 0
 
         ; 收集吸附边界（在循环前只收集一次）
         snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
