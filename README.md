@@ -91,6 +91,12 @@ weight:
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键</td>
     </tr>
     <tr>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SnapWindow(edge)</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">Left、Right、Up、Down 之一，表示贴到哪条边</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">把当前窗口平移到所在显示器工作区的对应边缘（避开任务栏），只改变位置，宽高保持不变；最大化或最小化窗口无效，会提示先还原</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">绑定到前置键+<kbd>Shift</kbd>+方向键，例如 <kbd>Caps</kbd> + <kbd>Shift</kbd> + 方向键</td>
+    </tr>
+    <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">SplitScreen(gridNum, gridIndex)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">gridNum：网格数量，gridIndex：实际位置</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">根据网格数量和索引将窗口调整到屏幕对应位置，支持 2、3、4、9 格分屏</td>
@@ -216,6 +222,23 @@ weight:
 效果演示：
 
 ![命令分屏](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/命令分屏.gif)
+
+### 窗口贴边 SnapWindow
+
+把当前窗口贴到所在显示器工作区的某条边上（左右上下），**只移动位置，不改变窗口大小**。
+
+与 `Per*AndResizeWindow` 系列的区别在于：那些函数会按比例重新设定窗口的宽高，用来做分屏排版；`SnapWindow` 保留你当前调好的窗口大小，只把它推到边上，适合“窗口已经大小合适，只差挪个位置”的场景。
+
+- 贴的是**工作区边缘**，也就是已经避开任务栏的可用区域，贴上去不会压在任务栏底下
+- 四边可以分别绑定快捷键，也可以只绑其中两条
+- 目标显示器取窗口中心所在的那块屏幕，多显示器下不需要额外指定
+- 方向参数**区分大小写**，只能写成 Left、Right、Up、Down 这种首字母大写的形式，写成其他形式会提示参数错误
+- 窗口处于最大化或最小化状态时不生效，会提示先还原；之所以不自动还原，是因为还原会改变窗口尺寸，与“不改变大小”的约定冲突
+
+**最佳实践**：
+
+- 建议绑定为 前置键 + <kbd>Shift</kbd> + 方向键，与 `Per*AndResizeWindow`（建议占用 前置键 + 方向键）形成互补：前者调整大小，后者只挪位置
+- 只常用某一两条边时，可以只绑这两个方向，减少按键记忆负担
 
 ### 自动激活窗口 AutoActivateWindow
 

@@ -587,3 +587,69 @@ PerLeftAndResizeWindow(percentageW, percentageH) {
     WinMove(winX, winY, winW, winH)
     ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
 }
+
+/**
+ * 把活动窗口平移到它所在显示器工作区的某条边缘，只挪位置，不改变宽高
+ *
+ * 与上面的 Per*AndResizeWindow 系列的差别是：那些函数会按比例改写宽高，是「重新排版」；
+ * 本函数保留用户已经调好的窗口大小，只做贴边对齐，因此宽高一律不参与计算。
+ * 边缘取的是 MonitorGetWorkArea 的工作区，已经排除任务栏，所以贴上去不会压在任务栏底下。
+ *
+ * @param {string} edge 贴边方向，取 "Left" / "Right" / "Up" / "Down"
+ * @returns {void}
+ */
+SnapWindow(edge) {
+    if F_NotActiveWin() {
+        return
+    }
+
+    if F_WindowMaxOrMin() {
+        ; 最大化窗口的「位置」由系统托管，WinMove 对它的平移不会生效；
+        ; 最小化窗口虽然 WinMove 明确不支持移动，但 WinGetMinMax 返回 -1 同样为真，会落到这个分支。
+        ; 这里刻意不调用 WinRestore：还原会把宽高改回普通窗口的尺寸，与「纯平移」的约定冲突，
+        ; 所以只提示用户自己先还原，再重新触发一次贴边
+        ToolTip("窗口处于最大化或最小化状态`n请先将其还原为普通窗口，再执行贴边操作")
+        SetTimer(ToolTip, -3000)
+        return
+    }
+
+    WinGetPos(&x, &y, &w, &h)
+
+    hwnd := WinExist("A")
+    shadowThickness := GetShadowThickness(hwnd)
+
+    ; 与 Per* 系列一致，用窗口中心所在显示器作为目标显示器；
+    ; 副屏的工作区坐标可能是负数，故不假设 l、t 从 0 开始，全部用实际返回值计算
+    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
+    MonitorGetWorkArea(ms, &l, &t, &r, &b)
+
+    ; 阴影补偿沿用 Per* 系列的符号约定：DWM 的阴影画在窗口矩形之外，
+    ; 左、右、下三条边要让窗口矩形越过工作区边界一个阴影厚度，可见边框才与工作区边界对齐；
+    ; 上边沿用现有做法不加补偿。WinMove 省略宽高即不改变该维度尺寸，故这里只传 x、y 两个参数
+    ;
+    ; 合法取值的列表只在这一处 switch 里出现，校验交给 default：另写一份 if 四连判断会让
+    ; 「支持哪些方向」和「怎么判断方向」变成两份需要同步维护的列表，加方向时容易漏改一处。
+    ; 代价是取值非法时会先执行上面几句读取并把窗口位置、阴影、工作区都取出来，这些调用只读、
+    ; 无副作用，只是多算几次，比两份列表逐渐不一致更划算。
+    ; switch 省略 CaseSense 时字符串比较区分大小写，所以这里传 "left" 会走 default 提示参数错误。
+    ; default 里不抛异常，避免热键线程被中断后用户只看到「按键没反应」
+    switch edge {
+        case "Left":
+            WinMove(l - shadowThickness, y)
+        case "Right":
+            WinMove(r - w + shadowThickness, y)
+        case "Up":
+            WinMove(x, t)
+        case "Down":
+            WinMove(x, b - h + shadowThickness)
+        default:
+            ToolTip("SnapWindow 的 edge 参数只接受 Left、Right、Up、Down 之一，当前值为 " edge)
+            SetTimer(ToolTip, -3000)
+    }
+
+    ; 已知风险：WinMove 文档写明，在缩放比例不同的多显示器环境下，窗口跨屏后系统会按其
+    ; 新所在显示器的缩放重新计算位置与大小，实际落地结果可能偏离本函数的请求值。
+    ; 第一版不做移动后的二次校正，因为那需要先 WinGetPos 读回真实位置再补偿一次，
+    ; 还得判断偏差是来自 DPI 重缩放还是窗口自身限制，复杂度与收益不成比例；
+    ; 待收到混合 DPI 环境下的实际反馈后再决定是否补校正
+}
