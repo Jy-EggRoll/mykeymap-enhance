@@ -20,7 +20,6 @@ WM_DISPLAYCHANGE_Handler(wParam, lParam, msg, hwnd) {
 #Include ../data/mykeymap-enhance-ahk/AutoWindowColorBorder.ahk
 #Include ../data/mykeymap-enhance-ahk/SmoothScrollSimulate.ahk
 #Include ../data/mykeymap-enhance-ahk/BlockSend.ahk
-#Include ../data/mykeymap-enhance-ahk/ReadFileToInput.ahk
 #Include ../data/mykeymap-enhance-ahk/SetTaskbarCombine.ahk
 
 ; 自启动项（所有自启动函数统一在此调用，确保每个只执行一次）

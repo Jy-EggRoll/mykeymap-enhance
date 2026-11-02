@@ -6,29 +6,70 @@ class BlockSendDebug {
     static mode := false
 }
 
+; 返回 true/false 表示粘贴是否成功
 BlockSend(text) {
-    ; 备份当前剪贴板内容，以免丢失用户之前复制的东西
     ClipSaved := ClipboardAll()
 
     try {
-        ; 清空并设置新内容
         A_Clipboard := ""
         A_Clipboard := text
 
-        ; 等待剪贴板填充完成（防止由于写入延迟导致粘贴旧内容）
         if !ClipWait(2) {
             ToolTip("剪贴板超时，提前终止")
             SetTimer(ToolTip, -2000)
-            return
+            return false
         }
 
-        ; 执行粘贴
         Send("^v")
+        return true
     } finally {
-        ; 恢复必须放在 finally：超时的 return 或中途抛出的异常都不能跳过一次恢复，
-        ; 否则用户原有的剪贴板内容会被这次调用永久覆盖。
-        ; Sleep 是给目标程序留出读取剪贴板的时间，放在恢复之前。
         Sleep 100
         A_Clipboard := ClipSaved
+    }
+}
+
+; 读取文件并按块发送
+; maxFileBytes 为可选的文件大小上限，单位为字节，默认 10 MB（10 * 1024 * 1024）
+; 将 maxFileBytes 设为 0 表示不检查文件大小
+BlockSendFile(filePath, blockSize := 2000, interChunkDelay := 200, maxFileBytes := 10 * 1024 * 1024) {
+    if !FileExist(filePath) {
+        ToolTip("文件不存在：" filePath)
+        SetTimer(ToolTip, -2000)
+        return false
+    }
+
+    file := ""
+    try {
+        file := FileOpen(filePath, "r", "UTF-8")
+        if !file {
+            ToolTip("无法打开文件：" filePath)
+            SetTimer(ToolTip, -2000)
+            return false
+        }
+
+        ; 仅当 maxFileBytes 大于 0 时检查文件大小
+        if (maxFileBytes > 0 && file.Length > maxFileBytes) {
+            ToolTip("文件超过大小上限：" file.Length " 字节（上限 " maxFileBytes " 字节）")
+            SetTimer(ToolTip, -2000)
+            return false
+        }
+
+        while !file.AtEOF {
+            chunk := file.Read(blockSize)
+            if (chunk = "")
+                break
+
+            if !BlockSend(chunk) {
+                return false
+            }
+
+            if !file.AtEOF
+                Sleep interChunkDelay
+        }
+
+        return true
+    } finally {
+        if IsObject(file)
+            file.Close()
     }
 }
