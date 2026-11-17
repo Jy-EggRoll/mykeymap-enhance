@@ -74,17 +74,23 @@ DisplayAtMouse() {
     return ""
 }
 
-; 枚举结果来自 MonitorLib 的进程级缓存，显示器变化后要等脚本重载才会刷新。
-; SysGet(80) 是桌面上的活动屏数量，实时；缓存里的数量只反映上次枚举的结果，
-; 两者口径不同，一致才认为缓存还新鲜。不一致时放弃本次调节，这只是保守拦截，
-; 真正的修正是 data/custom_functions.ahk 在 WM_DISPLAYCHANGE 之后触发的自动重载。
-MonitorsStale() {
+; 枚举结果来自 MonitorLib 的进程级静态缓存，显示器变化后要等脚本重载才会刷新。
+; 判断缓存还新不新鲜不能拿 SysGet(80) 去比：那是 SM_CMONITORS，只数桌面上的显示监视器，
+; 与 EnumDisplayMonitors 的口径不同（后者连没参与桌面的监视器也一起枚举），复制或镜像显示等
+; 场景下两者可能永远不相等，会一直误拦。MonitorGetCount() 在 AHK 源码里就是一次 EnumDisplayMonitors
+; 调用，每次调用都重新枚举、不缓存，与 MonitorLib 走同一个口径，比它才说明缓存还对不对得上。
+; 对不上只是一次保守拦截，真正的修正是 data/custom_functions.ahk 在 WM_DISPLAYCHANGE 之后触发的自动重载。
+; 返回空串表示缓存可信，否则返回能直接展示给用户的原因。
+MonitorCacheProblem() {
     global monitorCol
     monitors := monitorCol.EnumDisplayMonitors()
     if (!IsObject(monitors)) {
-        return true
+        return "无法枚举显示器"
     }
-    return SysGet(80) != monitors.Length
+    if (MonitorGetCount() != monitors.Length) {
+        return "显示器配置刚发生变化，请稍候再试"
+    }
+    return ""
 }
 
 ; 提示文案里的短名：设备名形如 \\.\DISPLAY2，只保留末尾的 DISPLAY2。
@@ -103,8 +109,9 @@ AdjustBrightness(delta) {
     ; 读亮度、写亮度、枚举显示器都可能因驱动、COM 或系统调用失败抛错，
     ; 热键线程里未捕获的错误会弹出错误框抢走焦点，所以整段兜住，失败也只出一条提示。
     try {
-        if (MonitorsStale()) {
-            ShowBrightnessTip("显示器配置刚发生变化，请稍候再试", 3000)
+        problem := MonitorCacheProblem()
+        if (problem != "") {
+            ShowBrightnessTip(problem, 3000)
             return
         }
         Display := DisplayAtMouse()
