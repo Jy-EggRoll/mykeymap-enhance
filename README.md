@@ -111,25 +111,13 @@ weight:
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">IncBrightness(dealt)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">增加当前选中显示器的屏幕亮度</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">增加鼠标所在显示器的屏幕亮度</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">DecBrightness(dealt)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">整数，一个百分比值，如 5</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">降低当前选中显示器的屏幕亮度</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">NextMonitor()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换到下一个显示器的亮度调节</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">PreviousMonitor()</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">无参数</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">切换到上一个显示器的亮度调节</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">降低鼠标所在显示器的屏幕亮度</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">自定义为合适的快捷键或指令</td>
     </tr>
     <tr>
@@ -259,9 +247,11 @@ weight:
 
 ### 亮度调节 IncBrightness & DecBrightness
 
-不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。显示器配置变化时（如插入外接显示器）会自动重载脚本，无需手动重启。
+不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。亮度跟随鼠标所在的显示器，不需要先切换显示器。
 
-配合 `NextMonitor()` 和 `PreviousMonitor()` 可切换调节的显示器。
+调节的是显示器自身的亮度，不是软件层面的调暗。显示器不支持这类调节指令时，改为调节内置屏的背光，此时提示会说明实际调节的是内置屏。
+
+显示器配置变化时（如插入或拔掉外接显示器）脚本会自动重载（`data/custom_functions.ahk` 里监听 `WM_DISPLAYCHANGE` 的那段逻辑），无需手动重启。
 
 ### 活动窗口边框着色 AutoWindowColorBorder
 
