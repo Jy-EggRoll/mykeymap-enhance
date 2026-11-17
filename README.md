@@ -247,11 +247,13 @@ weight:
 
 ### 亮度调节 IncBrightness & DecBrightness
 
-不显示调节界面，更加沉浸。功能与 MyKeymap 自带的一致。亮度跟随鼠标所在的显示器，不需要先切换显示器。
+不显示调节界面，更加沉浸。亮度跟随鼠标所在的显示器，不需要先切换显示器。
+
+此前的 `NextMonitor()` 和 `PreviousMonitor()` 已移除。如果在 MyKeymap 里给这两个函数绑定过键位，需要删掉对应键位，否则重载后会提示找不到函数。
 
 调节的是显示器自身的亮度，不是软件层面的调暗。显示器不支持这类调节指令时，改为调节内置屏的背光，此时提示会说明实际调节的是内置屏。
 
-显示器配置变化时（如插入或拔掉外接显示器）脚本会自动重载（`data/custom_functions.ahk` 里监听 `WM_DISPLAYCHANGE` 的那段逻辑），无需手动重启。
+显示器配置变化时（如插入或拔掉外接显示器）脚本会自动重载（`data/custom_functions.ahk` 里监听 `WM_DISPLAYCHANGE` 的那段逻辑），无需手动重启。重载完成之前的短暂时间里，调节会被拦下并提示稍候再试。
 
 ### 活动窗口边框着色 AutoWindowColorBorder
 

@@ -34,19 +34,21 @@ GetBrightness(Display := "") {
 }
 
 ; 写入亮度：Display 为显示器设备名，空串表示主屏，timeout 是 WMI 回退路径的超时秒数。
-; 返回实际生效的路径 "DDC" 或 "WMI"，两条路都写不进去时返回空串。
+; 成功返回 Map（Path 为 "DDC" 或 "WMI"，Value 为实际写入的亮度），两条路都写不进去时返回空串。
 SetBrightness(brightness, Display := "", timeout := 1) {
     global monitorCol
     try {
-        monitorCol.SetBrightness(brightness, Display)
-        return "DDC"
+        ; SetSetting 会按该屏的 Minimum/Maximum 再钳制一次并回传实际写入值，
+        ; 提示要用这个值，否则数值和屏上的真实亮度对不上。
+        return Map("Path", "DDC", "Value", monitorCol.SetBrightness(brightness, Display))
     } catch Error {
         ; 同 GetBrightness，DDC/CI 不通时改走 WMI，这条回退路径只作用于内置屏。
     }
     try {
         for property in ComObjGet("winmgmts:\\.\root\WMI").ExecQuery("SELECT * FROM WmiMonitorBrightnessMethods") {
             property.WmiSetBrightness(timeout, brightness)
-            return "WMI"
+            ; WMI 写完不回读，能确定的就是传进去的值。
+            return Map("Path", "WMI", "Value", brightness)
         }
     } catch Error {
     }
@@ -72,6 +74,19 @@ DisplayAtMouse() {
     return ""
 }
 
+; 枚举结果来自 MonitorLib 的进程级缓存，显示器变化后要等脚本重载才会刷新。
+; SysGet(80) 是桌面上的活动屏数量，实时；缓存里的数量只反映上次枚举的结果，
+; 两者口径不同，一致才认为缓存还新鲜。不一致时放弃本次调节，这只是保守拦截，
+; 真正的修正是 data/custom_functions.ahk 在 WM_DISPLAYCHANGE 之后触发的自动重载。
+MonitorsStale() {
+    global monitorCol
+    monitors := monitorCol.EnumDisplayMonitors()
+    if (!IsObject(monitors)) {
+        return true
+    }
+    return SysGet(80) != monitors.Length
+}
+
 ; 提示文案里的短名：设备名形如 \\.\DISPLAY2，只保留末尾的 DISPLAY2。
 DisplayLabel(Display) {
     return RegExReplace(Display, "^.*\\", "")
@@ -85,29 +100,39 @@ ShowBrightnessTip(text, delay := 1000) {
 
 ; 加减亮度共用同一条路径，delta 的符号决定方向。
 AdjustBrightness(delta) {
-    Display := DisplayAtMouse()
-    if (Display = "") {
-        ShowBrightnessTip("鼠标不在任何显示器上，无法调节亮度", 3000)
-        return
+    ; 读亮度、写亮度、枚举显示器都可能因驱动、COM 或系统调用失败抛错，
+    ; 热键线程里未捕获的错误会弹出错误框抢走焦点，所以整段兜住，失败也只出一条提示。
+    try {
+        if (MonitorsStale()) {
+            ShowBrightnessTip("显示器配置刚发生变化，请稍候再试", 3000)
+            return
+        }
+        Display := DisplayAtMouse()
+        if (Display = "") {
+            ShowBrightnessTip("鼠标不在任何显示器上，无法调节亮度", 3000)
+            return
+        }
+        label := DisplayLabel(Display)
+        setting := GetBrightness(Display)
+        if (!IsObject(setting)) {
+            ShowBrightnessTip("读不到 " label " 的亮度，可能不支持 DDC/CI", 3000)
+            return
+        }
+        target := Max(setting["Minimum"], Min(setting["Current"] + delta, setting["Maximum"]))
+        result := SetBrightness(target, Display)
+        if (!IsObject(result)) {
+            ShowBrightnessTip("写入 " label " 的亮度失败，可能不支持 DDC/CI", 3000)
+            return
+        }
+        if (result["Path"] = "WMI") {
+            ; 回退改的是内置屏的背光，此时报出鼠标所在屏的设备名会误导用户。
+            ShowBrightnessTip("亮度 " result["Value"] "（WMI 回退，实际调节内置屏）")
+            return
+        }
+        ShowBrightnessTip("亮度 " result["Value"] "（" label "）")
+    } catch Error as e {
+        ShowBrightnessTip("亮度调节失败：" e.Message, 3000)
     }
-    label := DisplayLabel(Display)
-    setting := GetBrightness(Display)
-    if (!IsObject(setting)) {
-        ShowBrightnessTip("读不到 " label " 的亮度，可能不支持 DDC/CI", 3000)
-        return
-    }
-    target := Max(setting["Minimum"], Min(setting["Current"] + delta, setting["Maximum"]))
-    writePath := SetBrightness(target, Display)
-    if (writePath = "") {
-        ShowBrightnessTip("写入 " label " 的亮度失败，可能不支持 DDC/CI", 3000)
-        return
-    }
-    if (writePath = "WMI") {
-        ; 回退改的是内置屏的背光，此时报出鼠标所在屏的设备名会误导用户。
-        ShowBrightnessTip("亮度 " target "（WMI 回退，实际调节内置屏）")
-        return
-    }
-    ShowBrightnessTip("亮度 " target "（" label "）")
 }
 
 IncBrightness(dealt) {
