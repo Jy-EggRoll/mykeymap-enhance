@@ -132,8 +132,9 @@ AdjustBrightness(delta) {
             return
         }
         if (result["Path"] = "WMI") {
-            ; 回退改的是内置屏的背光，此时报出鼠标所在屏的设备名会误导用户。
-            ShowBrightnessTip("亮度 " result["Value"] "（WMI 回退，实际调节内置屏）")
+            ; WMI 亮度接口只能控制内置屏的背光，这里写“内置屏”而不是鼠标所在屏的设备名，
+            ; 否则用户会以为调的是那块外接屏。也不写“回退”，那种措辞容易被读成掉到了别的屏上。
+            ShowBrightnessTip("亮度 " result["Value"] "（内置屏）")
             return
         }
         ShowBrightnessTip("亮度 " result["Value"] "（" label "）")
