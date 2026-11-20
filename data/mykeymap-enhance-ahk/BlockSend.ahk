@@ -6,7 +6,7 @@ class BlockSendDebug {
     static mode := false
 }
 
-; 返回 true/false 表示粘贴是否成功
+; 返回 true 表示粘贴成功，false 表示等待剪贴板超时
 BlockSend(text) {
     ClipSaved := ClipboardAll()
 
@@ -28,9 +28,9 @@ BlockSend(text) {
     }
 }
 
-; 读取文件并按块发送
-; maxFileBytes 为可选的文件大小上限，单位为字节，默认 10 MB（10 * 1024 * 1024）
-; 将 maxFileBytes 设为 0 表示不检查文件大小
+; 按 blockSize 分块读取文件并逐块粘贴，块与块之间留出 interChunkDelay 的间隔，
+; 给目标窗口留出处理上一块的时间
+; maxFileBytes 是文件大小上限，单位为字节，默认 10 MiB（10485760 字节），设为 0 表示不检查
 BlockSendFile(filePath, blockSize := 2000, interChunkDelay := 200, maxFileBytes := 10 * 1024 * 1024) {
     if !FileExist(filePath) {
         ToolTip("文件不存在：" filePath)
@@ -47,7 +47,6 @@ BlockSendFile(filePath, blockSize := 2000, interChunkDelay := 200, maxFileBytes 
             return false
         }
 
-        ; 仅当 maxFileBytes 大于 0 时检查文件大小
         if (maxFileBytes > 0 && file.Length > maxFileBytes) {
             ToolTip("文件超过大小上限：" file.Length " 字节（上限 " maxFileBytes " 字节）")
             SetTimer(ToolTip, -2000)

@@ -9,11 +9,12 @@ class SmoothScrollSimulateDebug {
 LastMouseX := 0
 LastMouseY := 0
 
-; 滚轮消息发送函数，在大多数软件中有效，部分软件无效，如文件资源管理器
+; 直接投递滚轮消息，而不是用 Send 或 Click：不需要目标窗口先获得焦点，
+; 位移量由消息参数给出，支持像素滚动的窗口因此能平滑滚动
 PostMW(deltay, deltax := 0) {
     MouseGetPos(&x, &y, &id, &control)
 
-    ; 计算修饰键状态
+    ; 滚轮消息带按键标志位，目标软件靠它区分按住 Ctrl、Shift 滚动这类操作
     Modifiers := 0x8 * (GetKeyState("Ctrl") ? 1 : 0)
     | 0x1 * (GetKeyState("LButton") ? 1 : 0)
     | 0x10 * (GetKeyState("MButton") ? 1 : 0)
@@ -30,7 +31,7 @@ PostMW(deltay, deltax := 0) {
     }
 }
 
-; 精确滚动函数
+; 按住右键拖动时，把每一帧的鼠标位移换算成滚轮消息
 SmoothScrollSimulate() {
     global LastMouseX, LastMouseY
 
@@ -47,20 +48,20 @@ SmoothScrollSimulate() {
             deltaY := currentY - LastMouseY
 
             if (Abs(deltaX) >= 1 || Abs(deltaY) >= 1) {
-                ; Y轴移动控制垂直滚动
+                ; Y 轴移动控制垂直滚动
                 if (Abs(deltaY) >= 1) {
                     PostMW(deltaY)
                 }
-                ; X轴移动控制水平滚动
+                ; X 轴移动控制水平滚动
                 if (Abs(deltaX) >= 1) {
-                    PostMW(0, -deltaX)  ;使水平方向滚动也和直觉一致
+                    PostMW(0, -deltaX)  ; 取反：鼠标右移时内容跟着右移，与纵向滚动的方向一致
                 }
 
                 LastMouseX := currentX
                 LastMouseY := currentY
             }
 
-            Sleep(10)  ; 添加适当延时控制响应频率
+            Sleep(10)  ; 每帧都发消息会让目标窗口的消息队列堆积，留出间隔让它处理完
         }
     } catch Error as e {
         LogError(e, , SmoothScrollSimulateDebug.mode)
