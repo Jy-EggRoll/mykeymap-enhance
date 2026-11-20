@@ -106,7 +106,7 @@
 
 ## 1.6.3
 
-重大 bug 修复，推荐所有用户升级。
+修复问题，推荐所有用户升级。
 
 - 🐛 修复自动激活导致的闪烁问题 <https://www.autohotkey.com/docs/v2/lib/_WinActivateForce.htm>
 
