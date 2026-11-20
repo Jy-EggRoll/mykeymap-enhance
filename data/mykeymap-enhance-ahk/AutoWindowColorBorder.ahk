@@ -1,13 +1,13 @@
 #Requires AutoHotkey v2.0
 
-; 库包含 (请确保路径正确)
+; 本文件依赖的库
 
 #Include ./LoggerLib/Logger.ahk
 #Include ./ThemeAndColorLib/ThemeAndColor.ahk
 #Include ./AutoActivateWindow.ahk
 #Include ./WindowStyleLib/WindowStyle.ahk
 
-; 全局常量与状态管理
+; 常量与全局状态
 
 class AutoWindowColorBorderDebug {
     static mode := false
@@ -22,14 +22,14 @@ WM_SETTINGCHANGE := 0x001A
 borderEnabled := false      ; 功能开关状态
 lastActiveWindow := 0       ; 上一个获得焦点的窗口句柄
 windowStates := Map()       ; 存储窗口访问状态 {mouseVisited: bool}
-cachedHsl := { h: 0, s: 0, l: 0 } ; 内存颜色缓存，避免高频 I/O
+cachedHsl := { h: 0, s: 0, l: 0 } ; 缓存强调色，避免每次轮询都读注册表
 
 ; 初始化与系统事件监听
 
-; 1. 启动时初始化缓存
+; 启动时先取一次强调色，否则第一次轮询用的是缓存的初始值
 RefreshColorCache()
 
-; 2. 监听系统设置变更（如更改主题色、深浅色模式）
+; 用户改强调色或深浅色模式时不会重启脚本，靠这条消息重新取色
 OnMessage(WM_SETTINGCHANGE, SystemSettingChanged)
 
 SystemSettingChanged(wParam, lParam, msg, hwnd) {
@@ -45,7 +45,7 @@ SystemSettingChanged(wParam, lParam, msg, hwnd) {
 RefreshColorCache() {
     global cachedHsl
     try {
-        ; 读取 Windows 强调色 (ABGR 格式)
+        ; 读取 Windows 强调色（ABGR 格式）
         rawColor := RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "AccentColor")
         r := rawColor & 0xFF
         g := (rawColor >> 8) & 0xFF
@@ -59,23 +59,24 @@ RefreshColorCache() {
 ; 核心逻辑函数
 
 /**
- * 获取动态边框颜色 (BGR 格式)
- * 逻辑：(置顶 || 未访问) ? 补色 : 主题色
+ * 获取动态边框颜色（BGR 格式）
+ *
+ * 置顶窗口、抢占焦点的弹出窗口与未访问窗口共用补色分支。补色与强调色相差 180 度，
+ * 让这些窗口和已访问的普通窗口一眼就能分开；饱和度与亮度取满，只让色相跟随系统强调色
  */
 GetDynamicBorderColor(hwnd) {
     global cachedHsl, windowStates
 
-    ; 状态检测
+    ; mouseVisited 为 true 表示鼠标已经移入过这个窗口
     isVisited := (windowStates.Has(hwnd) && windowStates[hwnd].mouseVisited)
 
-    ; 颜色分支计算
     if (IsTopmost(hwnd) || IsPopUp(hwnd) || !isVisited) {
-        targetH := Mod(cachedHsl.h + 180, 360) ; 高对比补色
+        targetH := Mod(cachedHsl.h + 180, 360) ; 色相转 180 度得到补色
     } else {
-        targetH := cachedHsl.h ; 系统主题荧光色
+        targetH := cachedHsl.h ; 强调色的色相，饱和度与亮度取满
     }
 
-    ; 转回 RGB 并输出 BGR
+    ; DWM 的边框颜色按 BGR 顺序取分量，因此这里按 b、g、r 打包
     rgb := HSLtoRGB(targetH, 1.0, 0.5)
     return (rgb.b << 16) | (rgb.g << 8) | rgb.r
 }
@@ -106,11 +107,11 @@ UpdateWindowBorder() {
         ; 处理焦点切换时的边框清除
         if (currentActiveWindow != lastActiveWindow && lastActiveWindow != 0) {
             if WinExist(lastActiveWindow) {
-                ; 失去焦点时，若非置顶窗口则还原边框
+                ; 失去焦点时，非置顶窗口要清除边框
                 if !IsTopmost(lastActiveWindow) {
                     ClearWindowBorder(lastActiveWindow)
                 } else {
-                    ; 置顶窗口保持边框
+                    ; 置顶窗口保留边框，但要按新状态重算颜色
                     SetWindowBorder(lastActiveWindow, GetDynamicBorderColor(lastActiveWindow))
                 }
             }
@@ -128,13 +129,13 @@ UpdateWindowBorder() {
     }
 }
 
-; 工具函数 (DWM & 颜色数学)
+; 工具函数（DWM 与颜色换算）
 
 SetWindowBorder(hwnd, color) {
     try {
         if !hwnd || !WinExist(hwnd)
             return false
-        ; DwmSetWindowAttribute 返回 0 表示成功
+        ; `DwmSetWindowAttribute` 返回 0 表示成功，取反后转成布尔值
         return !DllCall("dwmapi\DwmSetWindowAttribute", "ptr", hwnd, "uint", DWMWA_BORDER_COLOR, "uint*", color, "uint",
             4, "int")
     } catch

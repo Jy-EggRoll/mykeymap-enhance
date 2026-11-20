@@ -5,10 +5,10 @@
 class PerResizeWindowDebug {
     static mode := false
 }
-; F 开头的函数是内置于 MyKeymap 的函数，为了保持本脚本独立性且避免函数冲突，故采用这样的方式，没有额外的意义
+; F_ 前缀用于避开 MyKeymap 内置函数的同名冲突，本身没有其他含义
 
 /**
- * 没有活动窗口或是桌面返回 true，不是则反之返回 false
+ * 活动窗口不存在或是桌面时返回 true，否则返回 false
  */
 F_NotActiveWin() {
     return F_IsDesktop() || not WinExist("A")
@@ -22,23 +22,23 @@ F_IsDesktop() {
 }
 
 /**
- * 当前窗口是最大化还是最小化
+ * 查询窗口的最大化或最小化状态，参数写法与 `WinGetMinMax` 一致
  * @param {string} winTitle AHK 中的 WinTitle
- * @returns {number} 
+ * @returns {number} 0 表示普通窗口，1 表示最大化，-1 表示最小化
  */
 F_WindowMaxOrMin(winTitle := "A") {
     return WinGetMinMax(winTitle)
 }
 
 /**
- * 获取当前焦点在哪个显示器上
- * @param x 窗口 x 轴的长度
- * @param y 窗口 y 轴的长度
- * @param {number} default 显示器下标
- * @returns {string|number} 匹配的显示器下标
+ * 返回给定坐标落在哪台显示器上
+ * @param x 屏幕横坐标
+ * @param y 屏幕纵坐标
+ * @param {number} default 坐标不在任何显示器内时返回的编号
+ * @returns {number} 显示器编号
  */
 F_GetMonitorAt(x, y, default := 1) {
-    ; 上界用 MonitorGetCount()，而不是 SysGet(80)：MonitorGet 的编号域是前者，
+    ; 上界用 `MonitorGetCount()`，而不是 `SysGet(80)`：`MonitorGet` 的编号域是前者，
     ; SM_CMONITORS 不含未参与桌面的显示器，两者可能不等，用它当上界会漏屏
     m := MonitorGetCount()
     loop m {
@@ -49,7 +49,7 @@ F_GetMonitorAt(x, y, default := 1) {
     return default
 }
 
-; DWM 的阴影画在窗口矩形之外，若直接按工作区尺寸摆放，可见边框会与屏幕边缘差一个阴影厚度。
+; DWM 的阴影画在窗口矩形之外，若直接按工作区尺寸摆放，可见边框会与工作区边界差一个阴影厚度。
 ; GetShadowThickness 量出这段厚度，摆放函数据此让窗口矩形在左、右、下三边各向外多撑一点，
 ; 可见边框因此贴着工作区边界；上边沿用不加补偿的做法
 
@@ -69,25 +69,17 @@ GetShadowThickness(hwnd) {
 }
 
 /**
- * 根据指定的网格数量和网格索引，将当前活动窗口调整到屏幕对应位置并设置相应大小
- * 支持多种分屏布局（2 格、3 格、4 格、9 格），不同网格数量对应不同的屏幕分割方式
- * @param {number} gridNum - 网格数量，决定分屏布局模式，支持的值：2、3、4、9
- * 
- * 2：两格布局，支持水平分割（h1 左半屏、h2 右半屏）和垂直分割（v1 上半屏、v2 下半屏）
- * 
- * 3：三格布局，支持水平分割（h1 左 1/3、h2 中 1/3、h3 右 1/3）和垂直分割（v1 上 1/3、v2 中 1/3、v3 下 1/3）
- * 
- * 4：四格布局（2 * 2 网格），索引 1-4 分别对应左上、右上、左下、右下
- * 
- * 9：九格布局（3 * 3 网格），索引 1-9 对应从左上到右下的 3 * 3 网格位置
- * 
- * @param {number|string} gridIndex - 网格索引，标识窗口在当前网格布局中的位置
- * 
- * 当 gridNum 为 4 或 9 时，取值为数字 1-4 或 1-9，对应网格中的具体位置
- * 
- * 当 gridNum 为 2 时，取值为字符串 "h1"、"h2"（水平分割）或 "v1"、"v2"（垂直分割）
- * 
- * 当 gridNum 为 3 时，取值为字符串 "h1"、"h2"、"h3"（水平分割）或 "v1"、"v2"、"v3"（垂直分割）
+ * 按网格数量与网格索引，把活动窗口摆到工作区对应的位置
+ *
+ * @param {number} gridNum 网格数量，取 2、3、4、9
+ * 2：水平分屏（h1 左半屏、h2 右半屏）或垂直分屏（v1 上半屏、v2 下半屏）
+ * 3：水平分屏（h1、h2、h3 各占左中右 1/3）或垂直分屏（v1、v2、v3 各占上中下 1/3）
+ * 4：2 × 2 网格，索引 1-4 依次为左上、右上、左下、右下
+ * 9：3 × 3 网格，索引 1-9 从左上到右下逐行排列
+ * @param {number|string} gridIndex 网格索引，标识窗口落在网格中的哪一格
+ * gridNum 为 4 或 9 时取数字 1-4 或 1-9
+ * gridNum 为 2 时取 "h1"、"h2" 或 "v1"、"v2"
+ * gridNum 为 3 时取 "h1"、"h2"、"h3" 或 "v1"、"v2"、"v3"
  */
 SplitScreen(gridNum, gridIndex) {
     switch gridNum {
@@ -233,7 +225,7 @@ class SplitAnchor {
  * 也清空，避免 1/3、1/9 分屏与四分之一屏互相干扰
  */
 class SplitChain {
-    ; 两次按键之间允许的最大间隔，单位毫秒，改为 0 即关闭组合
+    ; 两次半屏按键之间允许的最大间隔，单位毫秒，改为 0 即关闭组合
     static timeoutMs := 2000
     static hwnd := 0
     static axis := ""
@@ -248,7 +240,7 @@ class SplitChain {
      * @param {string} vSide 本次调用的纵向边，取 Up、Center、Down
      * @param percentageW 本次调用的宽度比例
      * @param percentageH 本次调用的高度比例
-     * @returns {object|string} 命中组合时返回 [横向边, 纵向边]，否则返回空字符串
+     * @returns {object|string} 命中组合时返回由横向边与纵向边组成的数组，否则返回空字符串
      */
     static Combine(hwnd, hSide, vSide, percentageW, percentageH) {
         if (SplitChain.timeoutMs <= 0) {
@@ -272,7 +264,7 @@ class SplitChain {
             return ""
         }
 
-        ; 文档只说明 A_TickCount 是系统启动以来的毫秒数、上限 49.7 天，没有约定回绕之后
+        ; 文档只说明 `A_TickCount` 是系统启动以来的毫秒数、上限 49.7 天，没有约定回绕之后
         ; 怎么取值。多一层 now >= tick 的比较，是为了在计数器回绕时不把过期状态当成有效状态：
         ; 回绕之后 now 小于记下的 tick，这一条不成立，本次按键就按未命中处理
         now := A_TickCount
@@ -311,7 +303,7 @@ class SplitChain {
  *
  * 九个公开函数只负责给出锚点，算式集中在这里维护
  *
- * @param {string} anchor 锚点名，取 SplitAnchor.edges 的键
+ * @param {string} anchor 锚点名，取 `SplitAnchor.edges` 的键
  * @param percentageW 目标宽度占工作区的比例
  * @param percentageH 目标高度占工作区的比例
  * @returns {void}
@@ -321,7 +313,7 @@ PerResizeApplyLayout(anchor, percentageW, percentageH) {
         return
     }
 
-    ; 组合判定只需要窗口句柄，不需要位置，所以刻意放在 WinRestore 之前：
+    ; 组合判定只需要窗口句柄，不需要位置，所以刻意放在 `WinRestore` 之前：
     ; 最大化、最小化的窗口也能参与组合，不必先还原再判断
     hwnd := WinExist("A")
     edges := SplitAnchor.edges[anchor]
@@ -349,9 +341,9 @@ PerResizeApplyLayout(anchor, percentageW, percentageH) {
 
     hSide := edges[1]
     vSide := edges[2]
-    ; case 与 SplitAnchor.edges 必须一一对应。锚点表里加了新的边名却忘了加 case 时，
-    ; 直接抛错比让 winX、winY 以「变量未赋值」的形式在 WinMove 处报错更容易定位；
-    ; 这里是代码内部的不变式被破坏，与 SnapWindow 那种用户传参错误不同，故不做 ToolTip 提示
+    ; case 与 `SplitAnchor.edges` 必须一一对应。锚点表里加了新的边名却忘了加 case 时，
+    ; 直接抛错比让 winX、winY 以「变量未赋值」的形式在 `WinMove` 处报错更容易定位；
+    ; 这里是代码内部的不变式被破坏，与 `SnapWindow` 那种用户传参错误不同，故不做 ToolTip 提示
     switch hSide {
         case "Left":
             winX := l - shadowThickness
@@ -376,65 +368,40 @@ PerResizeApplyLayout(anchor, percentageW, percentageH) {
     WinMove(winX, winY, winW, winH)
 }
 
-/**
- * 窗口左上并修改其大小
- */
+; 以下九个函数是给外部调用的摆放接口，只把锚点名转交给 `PerResizeApplyLayout`。
+; 两个参数是目标宽高占工作区的比例，调用会直接改写窗口大小，与只挪位置的 `SnapWindow` 不同
 PerLeftUpAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("LeftUp", percentageW, percentageH)
 }
 
-/**
- * 窗口上中并修改其大小
- */
 PerUpAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Up", percentageW, percentageH)
 }
 
-/**
- * 窗口右上并修改其大小
- */
 PerRightUpAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("RightUp", percentageW, percentageH)
 }
 
-/**
- * 窗口左中并修改其大小
- */
 PerLeftAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Left", percentageW, percentageH)
 }
 
-/**
- * 窗口居中并修改其大小
- */
 PerCenterAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Center", percentageW, percentageH)
 }
 
-/**
- * 窗口右中并修改其大小
- */
 PerRightAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Right", percentageW, percentageH)
 }
 
-/**
- * 窗口左下并修改其大小
- */
 PerLeftDownAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("LeftDown", percentageW, percentageH)
 }
 
-/**
- * 窗口下中并修改其大小
- */
 PerDownAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Down", percentageW, percentageH)
 }
 
-/**
- * 窗口右下并修改其大小
- */
 PerRightDownAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("RightDown", percentageW, percentageH)
 }
@@ -444,7 +411,7 @@ PerRightDownAndResizeWindow(percentageW, percentageH) {
  *
  * 与上面的 Per*AndResizeWindow 系列的差别是：那些函数会按比例改写宽高，是「重新排版」；
  * 本函数保留用户已经调好的窗口大小，只做贴边对齐，因此宽高一律不参与计算。
- * 边缘取的是 MonitorGetWorkArea 的工作区，已经排除任务栏，所以贴上去不会压在任务栏底下。
+ * 边缘取的是 `MonitorGetWorkArea` 的工作区，已经排除任务栏，所以贴上去不会压在任务栏底下。
  *
  * @param {string} edge 贴边方向，取 "Left" / "Right" / "Up" / "Down"
  * @returns {void}
@@ -455,9 +422,9 @@ SnapWindow(edge) {
     }
 
     if F_WindowMaxOrMin() {
-        ; 最大化窗口的「位置」由系统托管，WinMove 对它的平移不会生效；
-        ; 最小化窗口虽然 WinMove 明确不支持移动，但 WinGetMinMax 返回 -1 同样为真，会落到这个分支。
-        ; 这里刻意不调用 WinRestore：还原会把宽高改回普通窗口的尺寸，与「纯平移」的约定冲突，
+        ; 最大化窗口的「位置」由系统托管，`WinMove` 对它的平移不会生效；
+        ; 最小化窗口虽然 `WinMove` 明确不支持移动，但 `WinGetMinMax` 返回 -1 同样为真，会落到这个分支。
+        ; 这里刻意不调用 `WinRestore`：还原会把宽高改回普通窗口的尺寸，与「纯平移」的约定冲突，
         ; 所以只提示用户自己先还原，再重新触发一次贴边
         ToolTip("窗口处于最大化或最小化状态`n请先将其还原为普通窗口，再执行贴边操作")
         SetTimer(ToolTip, -3000)
@@ -470,13 +437,13 @@ SnapWindow(edge) {
     shadowThickness := GetShadowThickness(hwnd)
 
     ; 与 Per* 系列一致，用窗口中心所在显示器作为目标显示器；
-    ; 副屏的工作区坐标可能是负数，故不假设 l、t 从 0 开始，全部用实际返回值计算
+    ; 副显示器的工作区坐标可能是负数，故不假设 l、t 从 0 开始，全部用实际返回值计算
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
     MonitorGetWorkArea(ms, &l, &t, &r, &b)
 
     ; 阴影补偿沿用 Per* 系列的符号约定：DWM 的阴影画在窗口矩形之外，
     ; 左、右、下三条边要让窗口矩形越过工作区边界一个阴影厚度，可见边框才与工作区边界对齐；
-    ; 上边沿用现有做法不加补偿。WinMove 省略宽高即不改变该维度尺寸，故这里只传 x、y 两个参数
+    ; 上边沿用现有做法不加补偿。`WinMove` 省略宽高即不改变该维度尺寸，故这里只传 x、y 两个参数
     ;
     ; 合法取值的列表只在这一处 switch 里出现，校验交给 default：另写一份 if 四连判断会让
     ; 「支持哪些方向」和「怎么判断方向」变成两份需要同步维护的列表，加方向时容易漏改一处。
@@ -498,9 +465,8 @@ SnapWindow(edge) {
             SetTimer(ToolTip, -3000)
     }
 
-    ; 已知风险：WinMove 文档写明，在缩放比例不同的多显示器环境下，窗口跨屏后系统会按其
-    ; 新所在显示器的缩放重新计算位置与大小，实际落地结果可能偏离本函数的请求值。
-    ; 第一版不做移动后的二次校正，因为那需要先 WinGetPos 读回真实位置再补偿一次，
-    ; 还得判断偏差是来自 DPI 重缩放还是窗口自身限制，复杂度与收益不成比例；
-    ; 待收到混合 DPI 环境下的实际反馈后再决定是否补校正
+    ; 已知风险：`WinMove` 文档写明，缩放比例不同的多显示器环境下，窗口跨屏后系统会按新所在
+    ; 显示器的缩放重算位置与大小，实际落地结果可能偏离本函数的请求值。
+    ; 这里不做移动后的二次校正：那需要先 `WinGetPos` 读回真实位置再补偿一次，还得判断偏差
+    ; 来自 DPI 重缩放还是窗口自身限制，改造成本高于当前收益
 }

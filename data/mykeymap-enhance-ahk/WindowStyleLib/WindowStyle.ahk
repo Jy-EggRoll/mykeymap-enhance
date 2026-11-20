@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 /**
- * 判断窗口是否为有效的可激活窗口
+ * 判断窗口是否属于可以自动激活的有效窗口
  */
 IsValidWindow(hwnd) {
     static WS_POPUP := 0x80000000
@@ -29,27 +29,26 @@ IsValidWindow(hwnd) {
     try {
         style := WinGetStyle(hwnd)
 
-        ; 基础过滤：如果不可见，或者如果是子窗口，排除
+        ; 不可见或属于子窗口的一律排除
         if !(style & WS_VISIBLE) || (style & WS_CHILD)
             return false
 
-        ; 如果没有标题，排除
+        ; 标题为空的窗口没有可供用户识别的标志，排除
         if (WinGetTitle(hwnd) == "")
             return false
 
-        ; 精细化处理 Cloak 状态
+        ; 读取 DWM 的 cloak 值
         cloakVal := GetCloakValue(hwnd)
 
-        ; 如果 cloaked == 1 (DWM_CLOAKED_APP)，说明是程序启动后的预加载/后台隐藏（如命令面板）
-        ; 这种窗口通常无论你在哪个桌面，它都不会显示出来，应该排除
+        ; 1（DWM_CLOAKED_APP）表示窗口被程序自己隐藏，例如预加载、收起的命令面板，
+        ; 这类窗口在任何桌面上都不显示，排除
         if (cloakVal == 1)
             return false
 
-        ; 注意：如果在当前桌面，cloakVal 是 0
-        ; 如果在其他桌面，cloakVal 是 2 DWM_CLOAKED_SHELL
-        ; 这两种情况都视为“有效窗口”
+        ; 0 表示窗口就在当前桌面，2（DWM_CLOAKED_SHELL）表示它在别的虚拟桌面上；
+        ; 后者切回那个桌面就能看到，仍算有效窗口
 
-        ; 样式过滤，必须可调大小，或者至少两个按钮（即使是隐藏的）
+        ; 可调整大小的窗口，或同时带最大化与最小化按钮样式的窗口，才算有效
         return (style & WS_SIZEBOX) || ((style & WS_MAXIMIZEBOX) && (style & WS_MINIMIZEBOX))
     } catch {
         return false
@@ -64,7 +63,11 @@ GetCloakValue(hwnd) {
 }
 
 /**
- * 如果活动窗口【具有 WS_POPUP 样式同时不能调节窗口大小】或者【具有 WS_POPUPWINDOW 样式且不能调整大小】，则是一个抢夺了焦点的弹出窗口，通常，这些窗口具有提示、警告作用，或者是部分高优先级系统组件菜单，又或是一些具有奇怪逻辑的组件（比如微信、微信的的表情面板）。当它们出现并抢夺了焦点时，自动激活功能应该停止，以确保这些窗口出现在前台，让用户处理
+ * 判断活动窗口是不是抢占了焦点的弹出窗口
+ *
+ * 判定条件是带 WS_POPUP 样式且不能调整大小，或带 WS_POPUPWINDOW 样式且不能调整大小。
+ * 这类窗口多为提示与警告，也可能是系统组件菜单，或微信表情面板这类行为特殊的窗口。
+ * 它们抢到焦点时应当暂停自动激活，先把焦点留给用户处理当前窗口。
  */
 ActiveWindowIsPopUp() {
     activeStyle := WinGetStyle("A")
@@ -74,7 +77,7 @@ ActiveWindowIsPopUp() {
 }
 
 /**
- * 判断 hwnd 是否是弹出窗口
+ * 判断指定窗口是不是抢占焦点的弹出窗口，判定条件与 ActiveWindowIsPopUp 相同
  */
 IsPopUp(hwnd) {
     style := WinGetStyle(hwnd)

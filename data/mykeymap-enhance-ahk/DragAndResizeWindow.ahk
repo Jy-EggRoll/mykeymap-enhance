@@ -14,41 +14,41 @@ CoordMode "Mouse"
 /**
  * 收集吸附边界，按显示器分组
  *
- * 每条吸附线只属于它自己那块显示器。早先的实现把所有显示器的边界混进同一组，
- * 于是尺寸不一致的多显示器布局里，小屏的边会落进大屏内部，成为并不存在的吸附线
- * （例如小屏下边界恰好在大屏竖直中间，窗口在大屏上并未贴边也会被吸住）。
+ * 每条吸附线只属于它自己那台显示器：混进同一组的话，尺寸不一致的多显示器布局里，
+ * 小显示器的边会落进大显示器内部，变成并不存在的吸附线
+ * （小显示器下边界恰好落在大显示器竖直中间时，窗口明明没有贴边也会被吸住）。
  * @param excludeHwnd 要排除的窗口句柄（当前正在操作的窗口）
- * @param snapThreshold 吸附阈值，0 表示禁用
- * @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
+ * @param snapThreshold 吸附阈值，0 表示关闭吸附
+ * @param edgeOnly 只吸附工作区边缘，不收集其他窗口的边界
  * @returns {linesByMonitor: Map, threshold: 0, dpiThreshold: 0} 显示器号到 {vLines, hLines} 的映射
  */
 CollectSnapBoundaries(excludeHwnd, snapThreshold := 0, edgeOnly := false) {
-    ; 如果阈值为 0，返回空映射
+    ; 阈值为 0 表示关闭吸附，直接返回空映射
     if (snapThreshold <= 0) {
         return { linesByMonitor: Map(), threshold: 0, dpiThreshold: 0 }
     }
 
-    ; 计算 DPI 感知后的阈值
-    ; 这里取系统 DPI（主屏那一份），不是窗口所在显示器的 DPI：AHK v2 默认是 system DPI
-    ; aware，而不是 per-monitor DPI aware，副屏坐标会被系统按 DPI 缩放（见官方文档
-    ; misc/DPIScaling.htm、lib/WinGetPos.htm 的说明）。坐标空间本身不一致时，仅把这里
-    ; 换成副屏 DPI 并不能算对，要改得先决定是否启用 per-monitor DPI 感知。
+    ; 计算按 DPI 缩放后的阈值
+    ; 这里取系统 DPI（主显示器那一份），不是窗口所在显示器的 DPI：AHK v2 默认是
+    ; system DPI aware，而不是 per-monitor DPI aware，副显示器坐标会被系统按 DPI 缩放
+    ; （见官方文档 misc/DPIScaling.htm、lib/WinGetPos.htm 的说明）。坐标空间本身不一致时，
+    ; 只把这里换成副显示器的 DPI 并不能算对，要改得先决定是否启用 per-monitor DPI 感知。
     dpi := DllCall("GetDpiForSystem", "UInt")
     scaleFactor := dpi / 96.0
     dpiThreshold := Round(snapThreshold * scaleFactor)
 
-    ; 显示器号 -> {vLines: [], hLines: []}，每块显示器各有一组
+    ; 显示器编号到 {vLines, hLines} 的映射，每台显示器各有一组
     linesByMonitor := Map()
 
     try {
-        ; 先给每块显示器建好空组，再往里填线。这样即使后面某一块取工作区失败，
+        ; 先给每台显示器建好空组，再往里填线。这样即使后面某一台取工作区失败，
         ; 提前跳到 catch，调用方取组也只会拿到空组，不会因为键不存在抛错中断拖动
         loop MonitorGetCount() {
             linesByMonitor[A_Index] := { vLines: [], hLines: [] }
         }
 
         ; 显示器边界只进自己那一组
-        ; 上界用 MonitorGetCount()：MonitorGet* 的编号域就是它，不是 SysGet(80)
+        ; 上界用 `MonitorGetCount()`：`MonitorGet` 系列的编号域就是它，不是 `SysGet(80)`
         ; （SM_CMONITORS 不含未参与桌面的显示器，两者可能不等，用它当上界会漏屏）
         loop MonitorGetCount() {
             MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
@@ -75,21 +75,18 @@ CollectSnapBoundaries(excludeHwnd, snapThreshold := 0, edgeOnly := false) {
                     continue
                 }
 
-                ; 检查是否最小化
                 if (WinGetMinMax(hwnd) == -1) {
                     continue
                 }
 
-                ; 检查窗口样式：可调整大小的窗口
+                ; 只有带 WS_THICKFRAME 的窗口才有可拖动的边框
                 style := WinGetStyle(hwnd)
                 if (!(style & 0x40000)) {
                     continue
                 }
 
-                ; 获取窗口位置
                 WinGetPos(&winX, &winY, &winW, &winH, hwnd)
 
-                ; 获取阴影厚度
                 shadowThickness := GetShadowThickness(hwnd)
 
                 ; 计算去除阴影后的边界
@@ -105,7 +102,7 @@ CollectSnapBoundaries(excludeHwnd, snapThreshold := 0, edgeOnly := false) {
 
                 ; 其他窗口的边线归到它自己所在的显示器：与上面显示器边界同一个原因，
                 ; 另一块屏上的窗口不该在这块屏内部制造吸附线
-                ; 显示器号由 F_GetMonitorAt 返回，取值域与 MonitorGet* 的编号域一致，
+                ; 显示器号由 `F_GetMonitorAt` 返回，取值域与 `MonitorGet` 系列的编号域一致，
                 ; 因此上面循环已经建好了对应的组
                 bucket := linesByMonitor[F_GetMonitorAt(winX + winW / 2, winY + winH / 2)]
                 bucket.vLines.Push(left)
@@ -178,21 +175,21 @@ class CursorManager {
     ; 保存当前每个类型的光标句柄
     static SaveCurrentCursors() {
         if !CursorManager.isSaved {
-            ; 遍历每种光标类型，保存当前实际使用的光标句柄
+            ; 逐个类型取当前句柄，其他软件替换过的光标也一并存下来
             for name, id in CursorManager.SystemCursorIDs {
-                ; 使用 LoadImage 获取当前系统中该类型光标的句柄
+                ; 使用 `LoadImage` 获取当前系统中该类型光标的句柄
                 ; 这样可以获取到 InputTip 等软件设置的光标
                 hCursor := DllCall("LoadImage"
                     , "Ptr", 0                    ; hInst = NULL (系统光标)
                     , "Ptr", id                   ; 光标资源 ID
                     , "UInt", 2                   ; IMAGE_CURSOR
-                    , "Int", 0                    ; 宽度(0=默认)
-                    , "Int", 0                    ; 高度(0=默认)
+                    , "Int", 0                    ; 宽度，0 表示取默认值
+                    , "Int", 0                    ; 高度，0 表示取默认值
                     , "UInt", 0x8000              ; LR_SHARED
                     , "Ptr")
 
                 if (hCursor != 0) {
-                    ; 复制光标句柄以保存
+                    ; 复制一份再存：设置系统光标时系统会销毁传入的句柄，原件不能留着复用
                     CursorManager.savedCursors[name] := DllCall("CopyIcon", "Ptr", hCursor, "Ptr")
                 }
             }
@@ -200,15 +197,15 @@ class CursorManager {
         }
     }
 
-    ; 恢复到保存的光标状态（不调用系统恢复，保持兼容性）
+    ; 恢复保存下来的光标
     static RestoreCursors() {
         if CursorManager.isSaved && CursorManager.savedCursors.Count > 0 {
-            ; 使用保存的光标句柄恢复，而不是调用系统恢复 API
+            ; 逐个写回保存的句柄，而不是让系统整体重载光标
             for name, id in CursorManager.SystemCursorIDs {
                 if CursorManager.savedCursors.Has(name) {
                     hSaved := CursorManager.savedCursors[name]
                     if (hSaved != 0) {
-                        ; 复制句柄并设置
+                        ; 每次设置都要传新句柄，先把存下来的那份复制一个出去
                         DllCall("SetSystemCursor", "Ptr", DllCall("CopyIcon", "Ptr", hSaved, "Ptr"), "UInt", id)
                     }
                 }
@@ -247,10 +244,9 @@ SetSystemCursor(Cursor := "") {
         ; 首次设置光标时，保存当前状态（包括其他软件设置的光标，如 InputTip）
         CursorManager.SaveCurrentCursors()
 
-        ; 直接设置新光标，不调用系统恢复
         hCursor := DllCall("LoadCursor", "Ptr", 0, "Ptr", SystemCursors[Cursor], "Ptr")
         if (hCursor != 0) {
-            ; 为所有光标类型设置相同的光标
+            ; 所有光标类型都换成同一个：拖动时光标移到哪都是这个形状
             for id in SystemCursors {
                 DllCall("SetSystemCursor", "Ptr", DllCall("CopyIcon", "Ptr", hCursor, "Ptr"), "UInt", SystemCursors[id])
             }
@@ -258,68 +254,61 @@ SetSystemCursor(Cursor := "") {
     }
 }
 
-; 窗口拖动函数：按住指定按键时拖动窗口
-; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
-; @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
+/**
+ * 按住左键拖动窗口，只改位置，不改大小
+ *
+ * 最大化窗口没法直接拖动：系统会接管它的位置，所以先换成占满工作区的普通窗口。
+ * 这里不调用 `WinRestore`，因为它会把窗口缩回最大化之前的大小。
+ * @param snapThreshold 吸附阈值（像素），0 表示关闭吸附，默认 0
+ * @param edgeOnly 只吸附工作区边缘，不收集其他窗口的边界
+ */
 DragWindow(snapThreshold := 0, edgeOnly := true) {
-    ; 获取初始鼠标位置和当前鼠标所在窗口的 ID
     MouseGetPos &X1, &Y1, &ID
 
-    ; 检查鼠标下窗口是否处于最大化状态
-    ; 如果是最大化，将其恢复为占满全屏的窗口化状态，而不是恢复到之前的小窗口
     if WinGetMinMax(ID) {
-        ; 先激活窗口，确保后续操作针对正确的窗口
         WinActivate("ahk_id " ID)
-        ; 调用 PerCenterAndResizeWindow(1, 1) 将窗口设置为占满整个工作区的窗口化状态
         PerCenterAndResizeWindow(1, 1)
     }
 
-    ; 设置四向移动光标
+    ; 整个窗口都可拖动，光标统一显示为移动样式
     SetSystemCursor("SIZEALL")
 
-    ; 获取窗口初始位置和大小
     WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
-    if (snapThreshold > 0) {  ; 只有当用户启用吸附时才收集，避免不必要的性能开销
-        ; 获取当前窗口的阴影厚度
+    if (snapThreshold > 0) {  ; 只有启用吸附才收集，收集要遍历所有窗口，开销不小
         shadowThickness := GetShadowThickness(ID)
 
-        ; 记录窗口当前所在显示器，循环里换屏时据此重新取阴影厚度
-        ; 0 表示还没判断过，第一帧会先取一次；这里不调用 F_GetMonitorAt，
+        ; 记录窗口当前所在显示器，跨显示器后据此重新取阴影厚度
+        ; 0 表示还没判断过，第一帧会先取一次；这里不调用 `F_GetMonitorAt`，
         ; 避免它在 try 之外抛错时把光标样式留在拖动状态
         currentMonitor := 0
 
-        ; 收集吸附边界（在循环前只收集一次）
+        ; 吸附线只在操作开始时收集一次，不必为移动中的窗口每帧重建
         snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
     }
 
     try {
-        ; 循环执行拖动逻辑，直到按键释放
         loop {
-            ; 检查按键是否仍被按住，若释放则退出循环
             if !GetKeyState("LButton", "P")
                 break
 
-            ; 获取当前鼠标位置
             MouseGetPos &X2, &Y2
 
-            ; 计算鼠标相对于初始位置的偏移量
             X2 -= X1
             Y2 -= Y1
 
-            ; 根据初始窗口位置和鼠标偏移量，计算窗口新位置
             WinX2 := WinX1 + X2
             WinY2 := WinY1 + Y2
 
-            ; 如果启用了吸附，计算去除阴影后的边界并检查吸附，禁用时不进行任何计算
+            ; 关闭吸附时整段跳过，不做任何计算
             if (snapThreshold > 0) {
-                ; 跨到缩放不同的显示器时，系统会按 DPI 重新缩放窗口，WinGetPos 的返回值
+                ; 跨到缩放不同的显示器时，系统会按 DPI 重新缩放窗口，`WinGetPos` 的返回值
                 ; 也随之变化，因此每帧重新取一次大小。沿用拖动开始时的尺寸，右/下边界的
                 ; 吸附坐标和窗口中心的判断都会失准，贴不住边
                 ; 位置仍以本函数上面算出的 WinX2/WinY2 为准，故前两个输出丢弃不用
                 WinGetPos &curX, &curY, &WinW, &WinH, ID
 
-                ; 窗口中心所在显示器；换屏后阴影厚度随缩放变化，需要重新取一次
+                ; 窗口中心所在的显示器；跨显示器后阴影厚度随缩放变化，需要重新取一次
                 monitorIndex := F_GetMonitorAt(WinX2 + WinW / 2, WinY2 + WinH / 2)
                 if (monitorIndex != currentMonitor) {
                     shadowThickness := GetShadowThickness(ID)
@@ -332,10 +321,10 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
                 right := WinX2 + WinW - shadowThickness
                 bottom := WinY2 + WinH - shadowThickness
 
-                ; 只取窗口中心所在显示器的吸附线，别的屏的边不参与吸附
+                ; 只取窗口中心所在显示器的吸附线，别的显示器的边不参与吸附
                 lines := snapData.linesByMonitor[monitorIndex]
 
-                ; 寻找最近的吸附线（优先左边和上边，如果没有则尝试右边和下边）
+                ; 四条边各找最近的吸附线，用哪条由下面的优先级决定
                 snappedLeft := FindNearestSnapLine(left, lines.vLines, snapData.dpiThreshold)
                 snappedRight := FindNearestSnapLine(right, lines.vLines, snapData.dpiThreshold)
                 snappedTop := FindNearestSnapLine(top, lines.hLines, snapData.dpiThreshold)
@@ -356,7 +345,7 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
                 }
             }
 
-            ; 移动窗口到新位置（只改变位置，不改变大小）
+            ; 宽高留空，`WinMove` 因此只改位置
             WinMove WinX2, WinY2, , , ID
         }
     } catch Error as e {
@@ -368,40 +357,40 @@ DragWindow(snapThreshold := 0, edgeOnly := true) {
     }
 }
 
-; 窗口调整大小函数：按住指定按键时调整窗口大小
-; @param snapThreshold 吸附阈值（像素），0 表示禁用吸附，正值表示启用并设置阈值，默认为 0
-; @param edgeOnly 仅启用屏幕边缘吸附，不收集其他窗口网格边界
+/**
+ * 按住右键拖动窗口边缘调整大小，拖哪条边由按下时鼠标所在的区域决定
+ * @param snapThreshold 吸附阈值（像素），0 表示关闭吸附，默认 0
+ * @param edgeOnly 只吸附工作区边缘，不收集其他窗口的边界
+ */
 ResizeWindow(snapThreshold := 0, edgeOnly := true) {
     MouseGetPos &X1, &Y1, &ID
 
-    ; 如果窗口是最大化状态
     if WinGetMinMax(ID) {
-        ; 等待一小段时间，通过鼠标移动判断是单击还是拖动
+        ; 最大化窗口不能直接调整大小，先看这一下是单击还是拖动
         initialX := X1
         initialY := Y1
-        Sleep 100  ; 等待 100ms
+        Sleep 100  ; 给用户留出移动鼠标的时间
 
         MouseGetPos &X2, &Y2
         mouseMoved := (Abs(X2 - initialX) > 5 || Abs(Y2 - initialY) > 5)
 
-        ; 检查按键是否还在按下
         if GetKeyState("RButton", "P") {
             if !mouseMoved {
-                ; 按键按下但鼠标未移动：等待释放，这是单击
+                ; 按住没动就当成单击，等按键释放后再说
                 KeyWait "RButton"  ; 等待右键释放
 
-                ; 单击：将最大化窗口转换为全屏窗口化
+                ; 单击：把最大化窗口改成占满工作区的普通窗口
                 WinActivate("ahk_id " ID)
                 PerCenterAndResizeWindow(1, 1)
                 return
             } else {
-                ; 按键按下且鼠标移动了：这是拖动，提示用户
+                ; 已经在拖动，这时改窗口大小会闪烁，只能提示用户先松开
                 ToolTip("窗口处于最大化状态`n为避免闪烁 请先单击（触发键+右键）将其转为窗口化再执行拖动操作")
                 SetTimer(ToolTip, -3000)
                 return
             }
         } else {
-            ; 按键已释放：单击
+            ; 按键已释放，按单击处理
             WinActivate("ahk_id " ID)
             PerCenterAndResizeWindow(1, 1)
             return
@@ -414,12 +403,12 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
         ; 获取当前窗口的阴影厚度
         shadowThickness := GetShadowThickness(ID)
 
-        ; 记录窗口当前所在显示器，循环里换屏时据此重新取阴影厚度
-        ; 0 表示还没判断过，第一帧会先取一次；这里不调用 F_GetMonitorAt，
+        ; 记录窗口当前所在显示器，跨显示器后据此重新取阴影厚度
+        ; 0 表示还没判断过，第一帧会先取一次；这里不调用 `F_GetMonitorAt`，
         ; 避免它在 try 之外抛错时把光标样式留在拖动状态
         currentMonitor := 0
 
-        ; 收集吸附边界（在循环前只收集一次）
+        ; 吸附线只在操作开始时收集一次，不必为移动中的窗口每帧重建
         snapData := CollectSnapBoundaries(ID, snapThreshold, edgeOnly)
     }
 
@@ -427,7 +416,7 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
     thirdW := WinW / 3
     thirdH := WinH / 3
 
-    ; 确定鼠标所在的水平区域 (1 = 左, 2 = 中, 3 = 右)
+    ; 鼠标落在窗口的哪一列（1 表示左、2 表示中、3 表示右）
     if (X1 < WinX1 + thirdW)
         horizontalRegion := 1
     else if (X1 < WinX1 + 2 * thirdW)
@@ -435,7 +424,7 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
     else
         horizontalRegion := 3
 
-    ; 确定鼠标所在的垂直区域 (1 = 上, 2 = 中, 3 = 下)
+    ; 鼠标落在窗口的哪一行（1 表示上、2 表示中、3 表示下）
     if (Y1 < WinY1 + thirdH)
         verticalRegion := 1
     else if (Y1 < WinY1 + 2 * thirdH)
@@ -461,77 +450,69 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
         cursorType := "SIZEALL"
     }
 
-    ; 设置光标
     SetSystemCursor(cursorType)
 
     try {
-        ; 循环执行调整大小逻辑，直到按键释放
         loop {
-            ; 检查按键是否仍被按住，若释放则退出循环
             if !GetKeyState("RButton", "P")
                 break
 
-            ; 获取当前鼠标位置
             MouseGetPos &X2, &Y2
-            ; 获取窗口当前的位置和大小（避免因其他操作导致的位置偏差）
+            ; 每帧以窗口当前的位置为基准：上一帧刚改过大小，沿用旧值会算错
             WinGetPos &WinX1, &WinY1, &WinW, &WinH, ID
 
-            ; 计算鼠标相对于初始位置的偏移量
             deltaX := X2 - X1
             deltaY := Y2 - Y1
 
-            ; 根据所在区域确定调整方式
             newX := WinX1
             newY := WinY1
             newW := WinW
             newH := WinH
 
-            ; 根据 9 个区域的不同逻辑进行调整
             if (horizontalRegion = 1) {
-                ; 左区域：调整左边框
+                ; 拖左边：右边界固定，左边界与宽度随鼠标一起变
                 newX := WinX1 + deltaX
                 newW := WinW - deltaX
             }
             else if (horizontalRegion = 3) {
-                ; 右区域：调整右边框
+                ; 拖右边：左边界固定，只改宽度
                 newW := WinW + deltaX
             }
 
             if (verticalRegion = 1) {
-                ; 上区域：调整上边框
+                ; 拖上边：下边界固定，上边界与高度随鼠标一起变
                 newY := WinY1 + deltaY
                 newH := WinH - deltaY
             }
             else if (verticalRegion = 3) {
-                ; 下区域：调整下边框
+                ; 拖下边：上边界固定，只改高度
                 newH := WinH + deltaY
             }
 
-            ; 中间区域四区逻辑
+            ; 中间区域：鼠标在中心的哪一侧，就往哪一侧缩放
             if (horizontalRegion = 2 && verticalRegion = 2) {
-                ; 判断鼠标在中间区域的左右（用于确定宽度调整方向）
+                ; 鼠标偏左时移动左边、右边不动；偏右时移动右边
                 if (X1 < WinX1 + WinW / 2)
                     WinLeft := 1
                 else
                     WinLeft := -1
 
-                ; 判断鼠标在中间区域的上下（用于确定高度调整方向）
+                ; 鼠标偏上时移动上边、下边不动；偏下时移动下边
                 if (Y1 < WinY1 + WinH / 2)
                     WinUp := 1
                 else
                     WinUp := -1
 
-                ; 应用四区逻辑
                 newX := WinX1 + (WinLeft + 1) / 2 * deltaX
                 newY := WinY1 + (WinUp + 1) / 2 * deltaY
                 newW := WinW - WinLeft * deltaX
                 newH := WinH - WinUp * deltaY
             }
 
-            ; 如果启用了吸附，计算去除阴影后的边界并检查吸附
+            ; 关闭吸附时整段跳过
             if (snapThreshold > 0) {
-                ; 窗口中心所在显示器；换屏后阴影厚度随缩放变化，需要重新取一次
-                ; （大小在这个循环里每帧都重读，见上面 WinGetPos）
+                ; 窗口中心所在的显示器；跨显示器后阴影厚度随缩放变化，需要重新取一次
+                ; （大小在这个循环里每帧都重读，见上面 `WinGetPos`）
                 monitorIndex := F_GetMonitorAt(newX + newW / 2, newY + newH / 2)
                 if (monitorIndex != currentMonitor) {
                     shadowThickness := GetShadowThickness(ID)
@@ -544,7 +525,7 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
                 right := newX + newW - shadowThickness
                 bottom := newY + newH - shadowThickness
 
-                ; 只取窗口中心所在显示器的吸附线，别的屏的边不参与吸附
+                ; 只取窗口中心所在显示器的吸附线，别的显示器的边不参与吸附
                 lines := snapData.linesByMonitor[monitorIndex]
 
                 ; 根据正在调整的边来决定吸附哪些边
@@ -612,10 +593,9 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
                 }
             }
 
-            ; 应用调整后的窗口位置和大小
             WinMove newX, newY, newW, newH, ID
 
-            ; 更新初始鼠标位置为当前位置（避免累积误差）
+            ; 更新基准位置，避免偏移量一次次累加
             X1 := X2
             Y1 := Y2
         }
@@ -629,33 +609,30 @@ ResizeWindow(snapThreshold := 0, edgeOnly := true) {
 }
 
 /**
- * 鼠标滚轮缩放窗口函数
- * @param percent 缩放比例增量
+ * 以窗口中心为基准缩放窗口
+ * @param {number} percent 缩放比例增量，0.1 表示放大一成
  */
 ScaleWindow(percent) {
     activeHwnd := WinExist("A")
     if !activeHwnd
         return
 
-    ; 排除最大化窗口
+    ; 最大化窗口的宽高由系统决定，缩放没有意义
     if (WinGetMinMax(activeHwnd) != 0)
         return
 
-    ; 获取当前状态
     WinGetPos &x, &y, &w, &h, activeHwnd
 
     centerX := x + (w / 2)
     centerY := y + (h / 2)
 
-    ; 计算新尺寸 (使用 Round 确保整数)
+    ; 取整：窗口坐标只接受整数，小数会被截断，宽高在相邻两个像素间来回跳会看到抖动
     newW := Round(Max(100, w * (1 + percent)))
     newH := Round(Max(100, h * (1 + percent)))
 
-    ; 根据锁定的中心点计算坐标
-    ; 窗口左上角 = 中心点 - (新尺寸 / 2)
+    ; 缩放时中心点不动，由新尺寸反推左上角
     newX := Round(centerX - (newW / 2))
     newY := Round(centerY - (newH / 2))
 
-    ; 执行移动和调整大小
     WinMove newX, newY, newW, newH, activeHwnd
 }
