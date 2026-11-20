@@ -49,10 +49,9 @@ F_GetMonitorAt(x, y, default := 1) {
     return default
 }
 
-; 注意：以下各函数不能保证窗口的边框紧贴显示器边框，这是 Windows 的已知问题
-; 修复是可行的，请查找 WinMoveEx()，但是受限于各种窗口的实现方式有区别，缩放的处理也不太统一，这不是完美的解决方案
-
-; 修复 2025-09-06：完美修复了窗口边框与显示器边框的贴合问题
+; DWM 的阴影画在窗口矩形之外，若直接按工作区尺寸摆放，可见边框会与屏幕边缘差一个阴影厚度。
+; GetShadowThickness 量出这段厚度，摆放函数据此让窗口矩形在左、右、下三边各向外多撑一点，
+; 可见边框因此贴着工作区边界；上边沿用不加补偿的做法
 
 GetShadowThickness(hwnd) {
     DWMWA_EXTENDED_FRAME_BOUNDS := 9
@@ -68,79 +67,6 @@ GetShadowThickness(hwnd) {
     }
     return 0
 }
-
-; GetBorderThickness(hwnd) {
-;     ; DWM 属性常量
-;     DWMWA_EXTENDED_FRAME_BOUNDS := 9  ; 扩展框架边界
-;     DWMWA_VISIBLE_FRAME_BORDER_THICKNESS := 37  ; 可见边框厚度
-
-;     ; borderInfo := ""
-
-;     try {
-;         ; 获取窗口的常规位置和大小
-;         WinGetPos(&winX, &winY, &winW, &winH, "ahk_id " hwnd)
-;         WinGetClientPos(&clientX, &clientY, &clientW, &clientH, "ahk_id " hwnd)
-
-;         ; 获取扩展框架边界 (RECT 结构)
-;         extendedRect := Buffer(16, 0)  ; RECT 结构需要 16 字节
-;         result1 := DllCall("dwmapi\DwmGetWindowAttribute",
-;             "ptr", hwnd,
-;             "uint", DWMWA_EXTENDED_FRAME_BOUNDS,
-;             "ptr", extendedRect,
-;             "uint", 16,
-;             "int")
-
-;         if (result1 == 0) {
-;             ; extLeft := NumGet(extendedRect, 0, "int")
-;             ; extTop := NumGet(extendedRect, 4, "int")
-;             ; extRight := NumGet(extendedRect, 8, "int")
-;             extBottom := NumGet(extendedRect, 12, "int")
-;             ; extWidth := extRight - extLeft
-;             ; extHeight := extBottom - extTop
-
-;             ; borderInfo .= "--- Window Size & Border Info ---`n"
-;             ; borderInfo .= "WinGetPosSize: " winW " * " winH "`n"
-;             ; borderInfo .= "WinGetClientPosSize: " clientW " * " clientH "`n"
-;             ; borderInfo .= "PlusExtendedFrameSize: " extWidth " * " extHeight "`n"
-
-;             ; 计算边框厚度
-;             ; leftBorder := clientX - extLeft
-;             ; topBorder := clientY - extTop
-;             ; rightBorder := extRight - (clientX + clientW)
-;             bottomBorder := extBottom - (clientY + clientH)
-
-;             ; borderInfo .= "BorderThickness: [Left: " leftBorder "] [Top: " topBorder "] [Right: " rightBorder "] [Bottom: " bottomBorder "]`n"
-
-;             ; 计算阴影厚度 (WinGet 窗口边界与扩展边界的差异)
-;             ; shadowLeft := extLeft - WinX
-;             ; shadowTop := extTop - WinY
-;             ; shadowRight := (winX + winW) - extRight
-;             ; shadowBottom := (winY + winH) - extBottom
-
-;             ; borderInfo .= "ShadowThickness: [Left: " shadowLeft "] [Top: " shadowTop "] [Right: " shadowRight "] [Bottom: " shadowBottom "]`n"
-;         }
-
-;         ; ; 尝试获取可见边框厚度
-;         ; borderThickness := Buffer(4, 0)  ; UINT 类型需要 4 字节
-;         ; result2 := DllCall("dwmapi\DwmGetWindowAttribute",
-;         ;     "ptr", hwnd,
-;         ;     "uint", DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
-;         ;     "ptr", borderThickness,
-;         ;     "uint", 4,
-;         ;     "int")
-
-;         ; if (result2 == 0) {
-;         ;     thickness := NumGet(borderThickness, 0, "uint")
-;         ;     ; borderInfo .= "VisibleFrameBorderThickness: " thickness " pixels`n"
-;         ; }
-
-;     } catch Error as e {
-;         ; borderInfo .= "--- Window Size & Border Info ---`n"
-;         ; borderInfo .= "Error getting border info: " e.Message "`n"
-;     }
-
-;     return bottomBorder  ; 返回底部边框厚度作为结果，三个边框的值没有见到不同的时候
-; }
 
 /**
  * 根据指定的网格数量和网格索引，将当前活动窗口调整到屏幕对应位置并设置相应大小
