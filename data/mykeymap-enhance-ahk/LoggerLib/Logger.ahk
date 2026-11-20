@@ -77,7 +77,7 @@ WriteLog(level, str, filePath, showConsole, colorAttr) {
 /**
  * 控制台默认属性缓存
  * 必须在改色之前取值：ResetConsoleColor 若等到改色之后才首次取值，拿到的就是
- * 日志等级色，会被当作"默认色"写回，控制台颜色从此不再复位。
+ * 日志等级色，会被当作“默认色”写回，控制台颜色从此不再复位。
  */
 class ConsoleColorState {
     static defaultAttr := ""
