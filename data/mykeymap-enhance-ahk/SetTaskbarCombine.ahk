@@ -1,9 +1,8 @@
 #Requires AutoHotkey v2.0
 
 /**
- * @function SetTaskbarCombine
- * @description 切换所有显示器的任务栏图标合并状态。
- * @param {String} mode - 可选值："Always"（始终合并）、"Never"（从不合并）。为空则翻转当前状态。
+ * 切换所有显示器的任务栏图标合并状态
+ * @param {string} mode 可选值："Always"（始终合并）、"Never"（从不合并），留空则翻转当前状态
  */
 SetTaskbarCombine(mode := "") {
     ; `TaskbarGlomLevel` 管主显示器，`MMTaskbarGlomLevel` 管所有副显示器；

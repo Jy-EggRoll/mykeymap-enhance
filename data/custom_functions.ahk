@@ -6,7 +6,7 @@
 OnMessage(0x007E, WM_DISPLAYCHANGE_Handler)
 
 WM_DISPLAYCHANGE_Handler(wParam, lParam, msg, hwnd) {
-    ; 显示器切换后系统还要重新排布窗口，先等 5 秒再重载，避免重载时显示器仍在变化
+    ; 显示器变化后等 5 秒再重载，避免在显示器状态还没稳定时重新加载
     SetTimer(MyKeymapReload, -5000)
     ; 这里不能写 return 0：OnMessage 回调返回整数会被立刻当作消息回复，
     ; 消息不再继续处理，注册在同一消息号上的其他回调（包括宿主 MyKeymap 的）会被挡掉；
@@ -23,6 +23,6 @@ WM_DISPLAYCHANGE_Handler(wParam, lParam, msg, hwnd) {
 #Include ../data/mykeymap-enhance-ahk/BlockSend.ahk
 #Include ../data/mykeymap-enhance-ahk/SetTaskbarCombine.ahk
 
-; 需要随机启动的功能集中在此调用，保证每项只启动一次
+; 脚本加载时要一并启动的功能集中在此调用，保证每项只启动一次
 AutoActivateWindow()
 AutoWindowColorBorder()

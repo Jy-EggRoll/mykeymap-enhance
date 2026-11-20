@@ -41,7 +41,7 @@ GetBrightness(Display := "") {
 SetBrightness(brightness, Display := "", timeout := 1) {
     global monitorCol
     try {
-        ; `SetBrightness` 内部经 `SetSetting` 把数值限制在显示器支持的亮度区间内，并返回实际生效值
+        ; `monitorCol.SetBrightness` 内部经 `SetSetting` 把数值限制在显示器支持的亮度区间内，并返回实际生效值
         ; 展示时必须用这个返回值，否则提示里的数值会和显示器的真实亮度不一致
         return Map("Path", "DDC", "Value", monitorCol.SetBrightness(brightness, Display))
     } catch Error {

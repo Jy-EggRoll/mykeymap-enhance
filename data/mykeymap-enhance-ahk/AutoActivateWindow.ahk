@@ -15,8 +15,8 @@ class AutoActivateWindowDebug {
 autoActivateEnabled := false
 windowStates := Map()  ; 窗口句柄到 WindowState 的映射
 mousePos := [0, 0]  ; 上一次参与判定的鼠标坐标
-pendingActivation := false  ; 本轮移动条件已满足，允许进入激活判定
-lastActiveWindowClass := ""  ; 上一次激活窗口的类名，切换功能时清空
+pendingActivation := false  ; 本轮输入空闲与位移条件是否已满足
+lastActiveWindowClass := ""  ; 上一次激活窗口的类名
 
 /**
  * 窗口状态类，用于记录每个窗口的信息
@@ -149,7 +149,9 @@ MaintainWindowStates() {
 }
 
 /**
- * 有未访问窗口时返回 false，此时整个自动激活停用，直到用户把鼠标移到那个窗口上
+ * 有未访问窗口时返回 false，此时整个自动激活停用
+ *
+ * 未访问标记在鼠标移入该窗口、或该窗口不再处于前台时解除
  */
 CheckForUnvisitedWindows() {
     global windowStates, autoActivateEnabled

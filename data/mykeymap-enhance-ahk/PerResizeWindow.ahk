@@ -342,7 +342,7 @@ PerResizeApplyLayout(anchor, percentageW, percentageH) {
     hSide := edges[1]
     vSide := edges[2]
     ; case 与 `SplitAnchor.edges` 必须一一对应。锚点表里加了新的边名却忘了加 case 时，
-    ; 直接抛错比让 winX、winY 以「变量未赋值」的形式在 `WinMove` 处报错更容易定位；
+    ; 直接抛错比让 winX、winY 以“变量未赋值”的形式在 `WinMove` 处报错更容易定位；
     ; 这里是代码内部的不变式被破坏，与 `SnapWindow` 那种用户传参错误不同，故不做 ToolTip 提示
     switch hSide {
         case "Left":
@@ -368,40 +368,67 @@ PerResizeApplyLayout(anchor, percentageW, percentageH) {
     WinMove(winX, winY, winW, winH)
 }
 
-; 以下九个函数是给外部调用的摆放接口，只把锚点名转交给 `PerResizeApplyLayout`。
-; 两个参数是目标宽高占工作区的比例，调用会直接改写窗口大小，与只挪位置的 `SnapWindow` 不同
+; 以下九个函数是给外部调用的摆放接口，只把锚点名转交给 `PerResizeApplyLayout`
+
+/**
+ * 摆到工作区左上角：窗口的上边、左边对齐工作区，宽高比例分别向右、向下延伸
+ */
 PerLeftUpAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("LeftUp", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区上边并水平居中：高度比例从上边向下量，宽度比例以中线为准向两侧对称展开
+ */
 PerUpAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Up", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区右上角：窗口的上边、右边对齐工作区，宽高比例分别向左、向下延伸
+ */
 PerRightUpAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("RightUp", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区左边并垂直居中：宽度比例从左边向右量，高度比例以中线为准上下对称展开
+ */
 PerLeftAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Left", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区正中：宽高比例决定窗口尺寸，左右与上下的剩余空间各自均分到两侧
+ */
 PerCenterAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Center", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区右边并垂直居中：宽度比例从右边向左量，高度比例以中线为准上下对称展开
+ */
 PerRightAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Right", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区左下角：窗口的下边、左边对齐工作区，宽高比例分别向右、向上延伸
+ */
 PerLeftDownAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("LeftDown", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区下边并水平居中：高度比例从下边向上量，宽度比例以中线为准向两侧对称展开
+ */
 PerDownAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("Down", percentageW, percentageH)
 }
 
+/**
+ * 摆到工作区右下角：窗口的下边、右边对齐工作区，宽高比例分别向左、向上延伸
+ */
 PerRightDownAndResizeWindow(percentageW, percentageH) {
     PerResizeApplyLayout("RightDown", percentageW, percentageH)
 }
@@ -409,7 +436,7 @@ PerRightDownAndResizeWindow(percentageW, percentageH) {
 /**
  * 把活动窗口平移到它所在显示器工作区的某条边缘，只挪位置，不改变宽高
  *
- * 与上面的 Per*AndResizeWindow 系列的差别是：那些函数会按比例改写宽高，是「重新排版」；
+ * 与上面的 Per*AndResizeWindow 系列的差别是：那些函数会按比例改写宽高，是“重新排版”；
  * 本函数保留用户已经调好的窗口大小，只做贴边对齐，因此宽高一律不参与计算。
  * 边缘取的是 `MonitorGetWorkArea` 的工作区，已经排除任务栏，所以贴上去不会压在任务栏底下。
  *
@@ -422,9 +449,9 @@ SnapWindow(edge) {
     }
 
     if F_WindowMaxOrMin() {
-        ; 最大化窗口的「位置」由系统托管，`WinMove` 对它的平移不会生效；
+        ; 最大化窗口的“位置”由系统托管，`WinMove` 对它的平移不会生效；
         ; 最小化窗口虽然 `WinMove` 明确不支持移动，但 `WinGetMinMax` 返回 -1 同样为真，会落到这个分支。
-        ; 这里刻意不调用 `WinRestore`：还原会把宽高改回普通窗口的尺寸，与「纯平移」的约定冲突，
+        ; 这里刻意不调用 `WinRestore`：还原会把宽高改回普通窗口的尺寸，与“纯平移”的约定冲突，
         ; 所以只提示用户自己先还原，再重新触发一次贴边
         ToolTip("窗口处于最大化或最小化状态`n请先将其还原为普通窗口，再执行贴边操作")
         SetTimer(ToolTip, -3000)
@@ -446,11 +473,11 @@ SnapWindow(edge) {
     ; 上边沿用现有做法不加补偿。`WinMove` 省略宽高即不改变该维度尺寸，故这里只传 x、y 两个参数
     ;
     ; 合法取值的列表只在这一处 switch 里出现，校验交给 default：另写一份 if 四连判断会让
-    ; 「支持哪些方向」和「怎么判断方向」变成两份需要同步维护的列表，加方向时容易漏改一处。
+    ; “支持哪些方向”和“怎么判断方向”变成两份需要同步维护的列表，加方向时容易漏改一处。
     ; 代价是取值非法时会先执行上面几句读取并把窗口位置、阴影、工作区都取出来，这些调用只读、
     ; 无副作用，只是多算几次，比两份列表逐渐不一致更划算。
     ; switch 省略 CaseSense 时字符串比较区分大小写，所以这里传 "left" 会走 default 提示参数错误。
-    ; default 里不抛异常，避免热键线程被中断后用户只看到「按键没反应」
+    ; default 里不抛异常，避免热键线程被中断后用户只看到“按键没反应”
     switch edge {
         case "Left":
             WinMove(l - shadowThickness, y)

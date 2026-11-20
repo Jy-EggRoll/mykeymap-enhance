@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2.0
 
-; 本文件依赖的库
+; 本文件依赖以下库，注意相对路径是否正确
 
 #Include ./LoggerLib/Logger.ahk
 #Include ./ThemeAndColorLib/ThemeAndColor.ahk
@@ -62,7 +62,7 @@ RefreshColorCache() {
  * 获取动态边框颜色（BGR 格式）
  *
  * 置顶窗口、抢占焦点的弹出窗口与未访问窗口共用补色分支。补色与强调色相差 180 度，
- * 让这些窗口和已访问的普通窗口一眼就能分开；饱和度与亮度取满，只让色相跟随系统强调色
+ * 让这些窗口和已访问的普通窗口一眼就能分开；饱和度固定为 1、亮度固定为 0.5，只有色相跟随强调色
  */
 GetDynamicBorderColor(hwnd) {
     global cachedHsl, windowStates
@@ -73,7 +73,7 @@ GetDynamicBorderColor(hwnd) {
     if (IsTopmost(hwnd) || IsPopUp(hwnd) || !isVisited) {
         targetH := Mod(cachedHsl.h + 180, 360) ; 色相转 180 度得到补色
     } else {
-        targetH := cachedHsl.h ; 强调色的色相，饱和度与亮度取满
+        targetH := cachedHsl.h ; 强调色的色相，饱和度固定为 1、亮度固定为 0.5
     }
 
     ; DWM 的边框颜色按 BGR 顺序取分量，因此这里按 b、g、r 打包
