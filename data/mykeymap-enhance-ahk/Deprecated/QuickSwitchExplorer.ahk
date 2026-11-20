@@ -14,13 +14,13 @@ global quickSwitchItemNum := 0
 global targetDialogHwnd := 0
 
 /**
- * 主功能：获取资源管理器路径并弹出菜单
+ * 列出已打开的文件夹并弹出菜单，选中一项即跳转过去
  */
 QuickSwitchExplorer() {
     global
 
     try {
-        ; 检查当前是否为标准 Windows 对话框 (Class #32770)
+        ; 标准文件对话框的窗口类是 #32770，其他窗口不处理
         if (WinGetClass("A") != "#32770") {
             ToolTip("仅在打开/保存对话框是焦点时可调用")
             SetTimer(ToolTip, -2000)
@@ -34,12 +34,12 @@ QuickSwitchExplorer() {
     ; 锁定当前对话框句柄，防止菜单弹出时失去焦点
     targetDialogHwnd := WinExist("A")
 
-    ; 重置菜单状态
+    ; 每次调用都重建菜单，避免上一轮的目录项残留
     quickSwitchItemNum := 0
     quickSwitchItemMap := Map()
     QuickSwitchMenu := Menu()
 
-    ; 临时数组用于存放抓取到的路径，以便后续反转顺序
+    ; 先收集再倒序添加，让最近打开的文件夹排在菜单最上面
     folderList := []
 
     try {
@@ -50,7 +50,7 @@ QuickSwitchExplorer() {
                 folder := window.Document.Folder.Self.Path
                 ; 仅允许以驱动器盘符或网络共享路径开头的路径
                 if (folder && (RegExMatch(folder, "S)^.:\\") || RegExMatch(folder, "S)^\\\\"))) {
-                    ; 数组去重检查
+                    ; 同一个文件夹可能被多个窗口打开，去重后只留一项
                     isDup := false
                     for addedPath in folderList {
                         if (addedPath = folder) {
@@ -84,7 +84,7 @@ QuickSwitchExplorer() {
 }
 
 /**
- * 向菜单中添加文件夹项
+ * 添加一个文件夹项，条目开头的 & 是 Alt 快捷键标记，同时充当序号
  */
 QuickSwitchAddItem(folder, menuIcon, menuIconNum := 1) {
     global
@@ -96,17 +96,17 @@ QuickSwitchAddItem(folder, menuIcon, menuIconNum := 1) {
 }
 
 /**
- * 菜单回调包装器：提取路径并执行跳转
+ * 菜单回调：条目名里带着序号前缀，先取回路径再跳转
  */
 QuickSwitchNavigateWrapper(ItemName, ItemPos, MyMenu) {
-    ; 正则去除前缀的 "&1 " 等快捷键标识
+    ; 去掉 `&1` 这类 Alt 快捷键前缀，剩下的才是路径
     folderPath := RegExReplace(ItemName, "S)^&\d+  ")
     QuickSwitchNavigate(folderPath)
     QuickSwitchMenu.Delete()
 }
 
 /**
- * 核心执行：操作对话框跳转路径
+ * 在文件对话框中填入目标路径并回车
  */
 QuickSwitchNavigate(folderPath) {
     global targetDialogHwnd
@@ -116,9 +116,9 @@ QuickSwitchNavigate(folderPath) {
     }
 
     hwnd := targetDialogHwnd
-    edit1Control := 0  ; 文件输入控件，老控件
-    edit2Control := 0  ; 地址输入控件，必须先激活
-    toolBarWindow323Control := 0  ; Edit2 的外层封装
+    edit1Control := 0  ; 旧式文件输入框，没有地址栏时用它
+    edit2Control := 0  ; 地址输入框，需要先激活地址栏才会出现
+    toolBarWindow323Control := 0  ; 地址栏容器控件，装 Edit2 的外层
 
     ; 重新激活目标对话框
     WinActivate hwnd
@@ -146,9 +146,9 @@ QuickSwitchNavigate(folderPath) {
                     LogInfo("尝试激活地址栏以获取 Edit2 控件", , QuickSwitchExplorerDebug.mode)
                     w := 0, h := 0
                     ControlGetPos(, , &w, &h, "ToolbarWindow323", hwnd)
-                    ControlClick("ToolbarWindow323", hwnd, , "Left", 1, "x" . w . " y" . h)  ; 实际点击了控件的最右下角，激活率几乎 100% 且不会误触其他按钮
+                    ControlClick("ToolbarWindow323", hwnd, , "Left", 1, "x" . w . " y" . h)  ; 点在控件右下角：该处没有其他按钮，不会误触
                     LogInfo("已发送点击指令以激活地址栏", , QuickSwitchExplorerDebug.mode)
-                    Sleep 100  ; 尝试延长等待时间，加强 Edit2 出现的稳定性
+                    Sleep 100  ; 地址栏展开是异步的，等它把 Edit2 建出来
                     LogInfo("尝试获取 Edit2 控件", , QuickSwitchExplorerDebug.mode)
                     edit2Control := ControlGetHwnd("Edit2", hwnd)
                 } catch {
@@ -197,7 +197,7 @@ RButton::
 {
     QuickSwitchExplorer()
 }
-; HotIf 在读到另一个 HotIf 时，状态会被重置
+; 不带条件的 #HotIf 结束上面的判定，否则后面的热键会沿用
 #HotIf
 
 /**

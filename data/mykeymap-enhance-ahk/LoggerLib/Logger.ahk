@@ -3,8 +3,8 @@
 /**
  * 记录信息日志
  * @param str 要记录的日志内容
- * @param filePath 日志文件路径，默认 "*" 表示写入控制台
- * @param showConsole 如果控制台未打开，是否打开控制台
+ * @param filePath 日志文件路径，传入 "*" 时输出到控制台
+ * @param showConsole 传入 true 时，若控制台尚未打开则先打开
  */
 LogInfo(str, filePath := "*", showConsole := false) {
     WriteLog("info", str, filePath, showConsole, 0x07)
@@ -13,8 +13,8 @@ LogInfo(str, filePath := "*", showConsole := false) {
 /**
  * 记录警告日志
  * @param str 要记录的日志内容
- * @param filePath 日志文件路径，默认 "*" 表示写入控制台
- * @param showConsole 如果控制台未打开，是否打开控制台
+ * @param filePath 日志文件路径，传入 "*" 时输出到控制台
+ * @param showConsole 传入 true 时，若控制台尚未打开则先打开
  */
 LogWarn(str, filePath := "*", showConsole := false) {
     WriteLog("warn", str, filePath, showConsole, 0x0E)
@@ -23,8 +23,8 @@ LogWarn(str, filePath := "*", showConsole := false) {
 /**
  * 记录错误日志
  * @param ErrorObj 错误对象
- * @param filePath 日志文件路径，默认 "*" 表示写入控制台
- * @param showConsole 如果控制台未打开，是否打开控制台
+ * @param filePath 日志文件路径，传入 "*" 时输出到控制台
+ * @param showConsole 传入 true 时，若控制台尚未打开则先打开
  */
 LogError(ErrorObj, filePath := "*", showConsole := false) {
     if showConsole {
@@ -52,7 +52,7 @@ LogError(ErrorObj, filePath := "*", showConsole := false) {
 }
 
 /**
- * 记录日志并在 CMD 控制台中设置颜色
+ * 写入日志，并在控制台中设置颜色
  */
 WriteLog(level, str, filePath, showConsole, colorAttr) {
     if showConsole {
@@ -92,7 +92,7 @@ SetConsoleColor(attr) {
     if !hConsole || hConsole = -1
         return
 
-    ; 首次改色之前记录原始属性，供 ResetConsoleColor 还原
+    ; 首次改色之前记录原始属性，供 `ResetConsoleColor` 恢复
     if (ConsoleColorState.defaultAttr = "")
         ConsoleColorState.defaultAttr := GetConsoleTextAttribute()
 
@@ -101,7 +101,7 @@ SetConsoleColor(attr) {
 
 /**
  * 复位控制台前景颜色
- * 还原的是首次改色之前捕获的默认属性，见 ConsoleColorState
+ * 恢复的是首次改色之前捕获的默认属性，见 ConsoleColorState
  */
 ResetConsoleColor() {
     hConsole := DllCall("GetStdHandle", "int", -11, "ptr")
@@ -120,8 +120,9 @@ GetConsoleTextAttribute() {
         return 0x07
 
     ; CONSOLE_SCREEN_BUFFER_INFO 的布局（2 字节对齐，共 22 字节）：
-    ; dwSize(偏移 0) + dwCursorPosition(4) + wAttributes(8) + srWindow(10) + dwMaximumWindowSize(18)。
-    ; 颜色属性只占 2 字节且在偏移 8；偏移 16 落在 srWindow.Bottom 上，读出来的不是颜色。
+    ; dwSize 占 0-3，dwCursorPosition 占 4-7，wAttributes 占 8-9，
+    ; srWindow 占 10-17，dwMaximumWindowSize 占 18-21。
+    ; 颜色属性只占 2 字节且在偏移 8；偏移 16 落在 srWindow.Bottom 上，读出来的不是颜色
     csbi := Buffer(22)
     if DllCall("GetConsoleScreenBufferInfo", "ptr", hConsole, "ptr", csbi) {
         return NumGet(csbi, 8, "UShort")
@@ -131,7 +132,7 @@ GetConsoleTextAttribute() {
 }
 
 /**
- * 打开控制台（如果尚未打开）
+ * 控制台尚未打开时分配一个
  */
 OpenConsole() {
     handle := DllCall("GetStdHandle", "int", -11, "ptr")
@@ -142,7 +143,7 @@ OpenConsole() {
 /**
  * 限制日志文件大小，超过指定大小则删除
  * @param filePath 日志文件路径
- * @param maxSizeInBytes 最大允许的文件大小，默认 1MiB，超过则删除
+ * @param maxSizeInBytes 最大允许的文件大小，默认 1 MiB，超过则删除
  */
 LimitFileSize(filePath, maxSizeInBytes := 1024 * 1024) {
     if FileExist(filePath) {

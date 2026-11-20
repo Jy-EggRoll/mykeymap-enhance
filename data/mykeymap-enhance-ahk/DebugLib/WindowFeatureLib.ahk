@@ -2,8 +2,8 @@
 
 ; -----------------------------------------------------------------------------
 ; WindowFeatureLib.ahk
-; 负责独立的窗口特征信息获取函数。
-; 可作为插件被 GUI 脚本引入，而不包含任何 GUI 或自动执行逻辑。
+; 收集窗口特征信息的函数集合
+; 可被 GUI 脚本当作库引入：本文件不含 GUI 代码，加载时也不执行任何动作
 ; -----------------------------------------------------------------------------
 
 GetWindowFeatureInfo(hwnd, bSlow := false) {
@@ -122,7 +122,7 @@ WinGetTextFast(hwnd, detect_hidden := false) {
         return ""
     }
 
-    static WINDOW_TEXT_SIZE := 32767 ; Defined in AutoHotkey source.
+    static WINDOW_TEXT_SIZE := 32767 ; 取自 AutoHotkey 源码，窗口文本的长度上限
     buf := Buffer(WINDOW_TEXT_SIZE * 2, 0)
     text := ""
 
