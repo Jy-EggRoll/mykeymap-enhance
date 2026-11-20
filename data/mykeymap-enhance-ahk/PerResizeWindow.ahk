@@ -281,25 +281,136 @@ SplitScreen(gridNum, gridIndex) {
 }
 
 /**
- * 窗口居中并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
+ * 九个锚点与各自对应的两条工作区边
+ *
+ * 锚点名沿用公开函数的叫法：只写一条边表示另一个方向居中（"Left" 即左中，"Up" 即上中），
+ * 两条都写表示角落。横向边决定 winX，纵向边决定 winY，九个位置因此共用一份算式
  */
-PerCenterAndResizeWindow(percentageW, percentageH) {
+class SplitAnchor {
+    static edges := Map(
+        "LeftUp", ["Left", "Up"],
+        "Up", ["Center", "Up"],
+        "RightUp", ["Right", "Up"],
+        "Left", ["Left", "Center"],
+        "Center", ["Center", "Center"],
+        "Right", ["Right", "Center"],
+        "LeftDown", ["Left", "Down"],
+        "Down", ["Center", "Down"],
+        "RightDown", ["Right", "Down"]
+    )
+}
+
+/**
+ * 两次半屏按键之间的衔接状态
+ *
+ * 只记上一次半屏调用：组成四分之一屏后立即清空，所以最多接两步；不参与组合的调用
+ * 也清空，避免 1/3、1/9 分屏与四分之一屏互相干扰
+ */
+class SplitChain {
+    ; 两次按键之间允许的最大间隔，单位毫秒，改为 0 即关闭组合
+    static timeoutMs := 2000
+    static hwnd := 0
+    static axis := ""
+    static side := ""
+    static tick := 0
+
+    /**
+     * 判断本次按键能否与上一次半屏调用组成四分之一屏，并维护衔接状态
+     *
+     * @param {integer} hwnd 活动窗口句柄，换了窗口就不组合
+     * @param {string} hSide 本次调用的横向边，取 Left、Center、Right
+     * @param {string} vSide 本次调用的纵向边，取 Up、Center、Down
+     * @param percentageW 本次调用的宽度比例
+     * @param percentageH 本次调用的高度比例
+     * @returns {object|string} 命中组合时返回 [横向边, 纵向边]，否则返回空字符串
+     */
+    static Combine(hwnd, hSide, vSide, percentageW, percentageH) {
+        if (SplitChain.timeoutMs <= 0) {
+            SplitChain.Clear()
+            return ""
+        }
+
+        ; 只有给了整条边的半屏调用参与组合，判定依据是比例而不是锚点名；
+        ; 锚点落在中线上时没有边可以记进状态，一并不参与
+        axis := ""
+        side := ""
+        if (percentageW = 0.5 && percentageH = 1 && hSide != "Center") {
+            axis := "h"
+            side := hSide
+        } else if (percentageW = 1 && percentageH = 0.5 && vSide != "Center") {
+            axis := "v"
+            side := vSide
+        }
+        if (axis = "") {
+            SplitChain.Clear()
+            return ""
+        }
+
+        ; 文档只说明 A_TickCount 是系统启动以来的毫秒数、上限 49.7 天，没有约定回绕之后
+        ; 怎么取值。多一层 now >= tick 的比较，是为了在计数器回绕时不把过期状态当成有效状态：
+        ; 回绕之后 now 小于记下的 tick，这一条不成立，本次按键就按未命中处理
+        now := A_TickCount
+        if (SplitChain.hwnd = hwnd && SplitChain.axis != axis
+            && now >= SplitChain.tick && now - SplitChain.tick <= SplitChain.timeoutMs) {
+            ; 先按下的那条边决定另一个方向，后按下的决定本方向，顺序因此无关：
+            ; 先左后上与先上后左都落在左上
+            if (axis = "h") {
+                combo := [side, SplitChain.side]
+            } else {
+                combo := [SplitChain.side, side]
+            }
+            SplitChain.Clear()
+            return combo
+        }
+
+        ; 没命中组合：同轴重复、超出间隔、换了窗口都落到这里。本次仍按绝对半屏摆放，
+        ; 状态改为记下本次按键，新的两步组合从这一下重新计时
+        SplitChain.hwnd := hwnd
+        SplitChain.axis := axis
+        SplitChain.side := side
+        SplitChain.tick := now
+        return ""
+    }
+
+    static Clear() {
+        SplitChain.hwnd := 0
+        SplitChain.axis := ""
+        SplitChain.side := ""
+        SplitChain.tick := 0
+    }
+}
+
+/**
+ * 按比例把活动窗口摆到工作区的某个锚点上
+ *
+ * 九个公开函数只负责给出锚点，算式集中在这里维护
+ *
+ * @param {string} anchor 锚点名，取 SplitAnchor.edges 的键
+ * @param percentageW 目标宽度占工作区的比例
+ * @param percentageH 目标高度占工作区的比例
+ * @returns {void}
+ */
+PerResizeApplyLayout(anchor, percentageW, percentageH) {
     if F_NotActiveWin() {
         return
     }
 
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
+    ; 组合判定只需要窗口句柄，不需要位置，所以刻意放在 WinRestore 之前：
+    ; 最大化、最小化的窗口也能参与组合，不必先还原再判断
+    hwnd := WinExist("A")
+    edges := SplitAnchor.edges[anchor]
+    combo := SplitChain.Combine(hwnd, edges[1], edges[2], percentageW, percentageH)
+    if IsObject(combo) {
+        edges := combo
+        percentageW := 0.5
+        percentageH := 0.5
+    }
 
     if (F_WindowMaxOrMin())
         WinRestore
 
     WinGetPos(&x, &y, &w, &h)
 
-    hwnd := WinExist("A")
     shadowThickness := GetShadowThickness(hwnd)
 
     ms := F_GetMonitorAt(x + w / 2, y + h / 2)
@@ -309,283 +420,97 @@ PerCenterAndResizeWindow(percentageW, percentageH) {
 
     winW := percentageW * w + 2 * shadowThickness
     winH := percentageH * h + shadowThickness
-    winX := l + (w - winW) / 2
-    winY := t + (h - winH + shadowThickness) / 2
+
+    hSide := edges[1]
+    vSide := edges[2]
+    ; case 与 SplitAnchor.edges 必须一一对应。锚点表里加了新的边名却忘了加 case 时，
+    ; 直接抛错比让 winX、winY 以「变量未赋值」的形式在 WinMove 处报错更容易定位；
+    ; 这里是代码内部的不变式被破坏，与 SnapWindow 那种用户传参错误不同，故不做 ToolTip 提示
+    switch hSide {
+        case "Left":
+            winX := l - shadowThickness
+        case "Center":
+            winX := l + (w - winW) / 2
+        case "Right":
+            winX := r - winW + shadowThickness
+        default:
+            throw Error("SplitAnchor.edges 的横向边只能取 Left、Center、Right，当前为 " hSide)
+    }
+    switch vSide {
+        case "Up":
+            winY := t
+        case "Center":
+            winY := t + (h - winH + shadowThickness) / 2
+        case "Down":
+            winY := b - winH + shadowThickness
+        default:
+            throw Error("SplitAnchor.edges 的纵向边只能取 Up、Center、Down，当前为 " vSide)
+    }
 
     WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
 }
 
 /**
  * 窗口左上并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
  */
 PerLeftUpAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
-
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
-
-    WinGetPos(&x, &y, &w, &h)
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
-
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := l - shadowThickness  ; 左对齐
-    winY := t  ; 上对齐
-
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
-}
-
-/**
- * 窗口左下并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
- */
-PerLeftDownAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
-
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
-
-    WinGetPos(&x, &y, &w, &h)
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
-
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := l - shadowThickness  ; 左对齐
-    winY := b - winH + shadowThickness  ; 下对齐
-
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
-}
-
-/**
- * 窗口右上并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
- */
-PerRightUpAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
-
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
-
-    WinGetPos(&x, &y, &w, &h)
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
-
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := r - winW + shadowThickness ; 右对齐
-    winY := t  ; 上对齐
-
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
-}
-
-/**
- * 窗口右下并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
- */
-PerRightDownAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
-
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
-
-    WinGetPos(&x, &y, &w, &h)
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
-
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := r - winW + shadowThickness  ; 右对齐
-    winY := b - winH + shadowThickness  ; 下对齐
-
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+    PerResizeApplyLayout("LeftUp", percentageW, percentageH)
 }
 
 /**
  * 窗口上中并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
  */
 PerUpAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
-
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
-
-    WinGetPos(&x, &y, &w, &h)
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
-
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := l + (w - winW) / 2  ; 水平居中
-    winY := t  ; 上对齐
-
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+    PerResizeApplyLayout("Up", percentageW, percentageH)
 }
 
 /**
- * 窗口右中并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
+ * 窗口右上并修改其大小
  */
-PerRightAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
-
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
-
-    WinGetPos(&x, &y, &w, &h)
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
-
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := r - winW + shadowThickness  ; 右对齐
-    winY := t + (h - winH + shadowThickness) / 2  ; 垂直居中
-
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
-}
-
-/**
- * 窗口下中并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
- */
-PerDownAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
-
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
-
-    WinGetPos(&x, &y, &w, &h)
-
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
-
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := l + (w - winW) / 2  ; 水平居中
-    winY := b - winH + shadowThickness ; 下对齐
-
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+PerRightUpAndResizeWindow(percentageW, percentageH) {
+    PerResizeApplyLayout("RightUp", percentageW, percentageH)
 }
 
 /**
  * 窗口左中并修改其大小
- * @param percentageW
- * @param percentageH
- * @returns {void} 
  */
 PerLeftAndResizeWindow(percentageW, percentageH) {
-    if F_NotActiveWin() {
-        return
-    }
+    PerResizeApplyLayout("Left", percentageW, percentageH)
+}
 
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -1, "ptr")
-    ; borderThickness := GetBorderThickness(hwnd)
-    if (F_WindowMaxOrMin())
-        WinRestore
+/**
+ * 窗口居中并修改其大小
+ */
+PerCenterAndResizeWindow(percentageW, percentageH) {
+    PerResizeApplyLayout("Center", percentageW, percentageH)
+}
 
-    WinGetPos(&x, &y, &w, &h)
+/**
+ * 窗口右中并修改其大小
+ */
+PerRightAndResizeWindow(percentageW, percentageH) {
+    PerResizeApplyLayout("Right", percentageW, percentageH)
+}
 
-    hwnd := WinExist("A")
-    shadowThickness := GetShadowThickness(hwnd)
-    ms := F_GetMonitorAt(x + w / 2, y + h / 2)
-    MonitorGetWorkArea(ms, &l, &t, &r, &b)
-    w := r - l
-    h := b - t
+/**
+ * 窗口左下并修改其大小
+ */
+PerLeftDownAndResizeWindow(percentageW, percentageH) {
+    PerResizeApplyLayout("LeftDown", percentageW, percentageH)
+}
 
-    winW := percentageW * w + 2 * shadowThickness
-    winH := percentageH * h + shadowThickness
-    winX := l - shadowThickness ; 左对齐
-    winY := t + (h - winH + shadowThickness) / 2  ; 垂直居中
+/**
+ * 窗口下中并修改其大小
+ */
+PerDownAndResizeWindow(percentageW, percentageH) {
+    PerResizeApplyLayout("Down", percentageW, percentageH)
+}
 
-    WinMove(winX, winY, winW, winH)
-    ; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
+/**
+ * 窗口右下并修改其大小
+ */
+PerRightDownAndResizeWindow(percentageW, percentageH) {
+    PerResizeApplyLayout("RightDown", percentageW, percentageH)
 }
 
 /**

@@ -87,7 +87,7 @@ weight:
     <tr>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">Per*AndResizeWindow(percentageW, percentageH)</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">小数，宽度占屏幕的比例（0-1），高度占屏幕的比例（0-1）</td>
-      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">* 替换为 Left、Down、Right、Up、LeftUp、LeftDown、RightUp、RightDown，负责分屏和边角</td>
+      <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">* 替换为 Left、Down、Right、Up、LeftUp、LeftDown、RightUp、RightDown，负责分屏和边角；左右半屏与上下半屏连着按两次会合成四分之一屏，详见下文「半屏组合成四分之一屏」</td>
       <td style="padding: 10px; border: 2px solid; overflow-wrap: anywhere;">前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键</td>
     </tr>
     <tr>
@@ -210,6 +210,19 @@ weight:
 效果演示：
 
 ![命令分屏](https://raw.githubusercontent.com/Jy-EggRoll/mykeymap-enhance/refs/heads/main/README/命令分屏.gif)
+
+### 半屏组合成四分之一屏
+
+左右半屏与上下半屏可以像系统自带的窗口吸附那样连着按：先按左右中的一边，再按上下中的一边，窗口就会落在那一半里的四分之一角落；反过来先按上下再按左右也一样。落点固定是工作区的一半宽、一半高。
+
+- `SplitScreen(2, "h1")`、`"h2"`、`"v1"`、`"v2"` 与 `Per*AndResizeWindow` 里的左右、上下半屏是同一件事，都会参与组合
+- 先左后上与先上后左都得到左上，其余三个角落同理，与按键顺序无关
+- 两次按键默认要在 2 秒内完成，超时就当两次互不相关的半屏
+- 只对同一个窗口生效，中间换成别的窗口就不会组合
+- 只有铺满整条边的半屏参与组合；1/3、1/9、4 格这类分屏不参与，仍然直接定位到对应格子，同时会清掉已经开始的序列
+- 组合只看按键序列：中途用 `SnapWindow` 贴边、或用鼠标拖动普通窗口，都不会打断已经开始的序列
+- 连按两次就结束，合成四分之一屏之后再按方向键，又回到普通的半屏
+- 间隔时间由代码里的 `SplitChain.timeoutMs` 控制，单位毫秒，改成 0 即关闭组合
 
 ### 窗口贴边 SnapWindow
 
