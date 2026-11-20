@@ -42,23 +42,23 @@ weight:
 
 | 函数名 | 参数 | 功能 | 最佳实践 |
 | --- | --- | --- | --- |
-| `SmoothScrollSimulate()` | 无参数 | 模拟平滑滚动，触发时以像素为单位滚动，效果接近触摸板或触摸屏，支持左右移动与对角线移动。浏览器等多数现代软件可用，Windows 文件资源管理器等少数软件不支持 | 绑定到前置键 + 鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Win</kbd> + 鼠标右键 |
-| `DragWindow(snapThreshold := 0, edgeOnly := true)` | `snapThreshold`：吸附阈值，单位像素，0 表示关闭吸附<br>`edgeOnly`：是否只吸附工作区边缘，默认 true | 按住触发键在任何位置点击即可拖动窗口，无需点击标题栏。在最大化窗口上调用时，窗口先变为占满整个工作区的普通窗口 | 绑定到前置键 + 鼠标左键（必须是左键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标左键 |
-| `ResizeWindow(snapThreshold := 0, edgeOnly := true)` | `snapThreshold`：吸附阈值，单位像素，0 表示关闭吸附<br>`edgeOnly`：是否只吸附工作区边缘，默认 true | 无需定位到边框就能调整窗口大小，窗口分为 9 个区域，拖动对应区域完成调节。在最大化窗口上单击（不移动鼠标）会先变为占满工作区的普通窗口；按住并拖动则提示先单击，避免闪烁 | 绑定到前置键 + 鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标右键 |
-| `ScaleWindow(percent)` | 缩放比例增量，如 0.1 表示放大 10%，-0.1 表示缩小 10% | 按比例缩放当前窗口，以窗口中心为基准。最大化或最小化窗口不生效 | 自定义为合适的快捷键 |
-| `PerCenterAndResizeWindow(percentageW, percentageH)` | 小数，宽度占工作区的比例（0-1），高度占工作区的比例（0-1） | 按工作区比例设置窗口大小并居中，换分辨率后视觉效果一致 | 自定义快捷键 |
-| `Per*AndResizeWindow(percentageW, percentageH)` | 小数，宽度占工作区的比例（0-1），高度占工作区的比例（0-1） | `*` 替换为 Left、Down、Right、Up、LeftUp、LeftDown、RightUp、RightDown，负责分屏与边角摆放；左右半屏与上下半屏连着按两次会合成四分之一屏，详见下文“半屏组合成四分之一屏” | 前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键 |
-| `SnapWindow(edge)` | Left、Right、Up、Down 之一，表示贴到哪条边 | 把当前窗口平移到所在显示器工作区的对应边缘（已避开任务栏），只改变位置，宽高保持不变。最大化或最小化窗口不生效，会提示先还原 | 绑定到前置键 + <kbd>Shift</kbd> + 方向键，例如 <kbd>Caps</kbd> + <kbd>Shift</kbd> + 方向键 |
-| `SplitScreen(gridNum, gridIndex)` | `gridNum`：网格数量，取 2、3、4、9<br>`gridIndex`：网格索引，取值见下文 | 按网格数量与索引把窗口摆到工作区的对应位置并设置大小，支持 2、3、4、9 格分屏 | 使用 MyKeymap 的命令实现分屏，如 41、92 |
-| `AutoActivateWindow(pollingTime := 20)` | `pollingTime`：轮询时间（毫秒），默认 20 | 开关函数。鼠标移动后停下即激活所在窗口，无需点击。默认随 MyKeymap 启动 | 绑定一个快捷键或指令，方便随时启停 |
-| `IncBrightness(delta)` | 亮度增量，整数，如 5 表示在当前亮度上提高 5 个百分点 | 提高鼠标所在显示器的亮度 | 自定义为合适的快捷键或指令 |
-| `DecBrightness(delta)` | 亮度增量，整数，如 5 表示在当前亮度上降低 5 个百分点 | 降低鼠标所在显示器的亮度 | 自定义为合适的快捷键或指令 |
-| `QuickSwitchExplorer()` | 无参数 | 快速切换或跳转到资源管理器窗口，在打开、保存对话框中调用会弹出已打开的 Explorer 列表供选择。<br>实验性功能，稳定性未经验证，不建议日常使用；默认未加载，需自行 `#Include` | 不建议使用 |
-| `AutoWindowColorBorder(pollingTime := 20)` | `pollingTime`：轮询时间（毫秒），默认 20 | 开关函数。为活动窗口添加彩色边框：未访问、置顶与弹出窗口用强调色的补色，已访问的普通窗口用强调色。默认随 MyKeymap 启动 | 绑定一个快捷键或指令，方便随时启停 |
-| `BlockSend(text)` | 文本内容 | 将文本写入剪贴板并粘贴到光标位置，粘贴后恢复剪贴板的原内容 | 自定义为合适的快捷键 |
-| `BlockSendFile(filePath, blockSize := 2000, interChunkDelay := 200, maxFileBytes := 10 * 1024 * 1024)` | `blockSize`：每块字符数，默认 2000<br>`interChunkDelay`：块与块之间的间隔（毫秒），默认 200<br>`maxFileBytes`：文件大小上限（字节），默认 10 MB，传 0 表示不检查 | 按块读取文件内容并逐块粘贴到光标位置，块与块之间按间隔等待；文件按 UTF-8 读取，文件不存在、无法打开或超过大小上限时提示并终止 | 自定义为合适的快捷键 |
-| `SetTaskbarCombine(mode := "")` | 可选 `"Always"`（始终合并）或 `"Never"`（从不合并），为空则自动翻转 | 切换所有显示器的任务栏图标合并状态，无需重启资源管理器 | 自定义为合适的快捷键或指令 |
-| `ReadFileToInput(filePath)` | 文件路径 | 读取文件内容并输入到光标位置，适用于密码这类不便直接粘贴的文本；要求单行文本，不超过 10 KB。位于 `Deprecated/` 目录下，默认未加载，需自行 `#Include` | 自定义为合适的快捷键 |
+| `SmoothScrollSimulate` | 无参数 | 模拟平滑滚动，触发时以像素为单位滚动，效果接近触摸板或触摸屏，支持左右移动与对角线移动。浏览器等多数现代软件可用，Windows 文件资源管理器等少数软件不支持 | 绑定到前置键 + 鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Win</kbd> + 鼠标右键 |
+| `DragWindow` | `snapThreshold`：吸附阈值（像素），默认 0 表示关闭吸附<br>`edgeOnly`：是否只吸附工作区边缘，默认 true | 按住触发键在任何位置点击即可拖动窗口，无需点击标题栏。在最大化窗口上调用时，窗口先变为占满整个工作区的普通窗口 | 绑定到前置键 + 鼠标左键（必须是左键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标左键 |
+| `ResizeWindow` | `snapThreshold`：吸附阈值（像素），默认 0 表示关闭吸附<br>`edgeOnly`：是否只吸附工作区边缘，默认 true | 无需定位到边框就能调整窗口大小，窗口分为 9 个区域，拖动对应区域完成调节。在最大化窗口上单击（不移动鼠标）会先变为占满工作区的普通窗口；按住并拖动则提示先单击，避免闪烁 | 绑定到前置键 + 鼠标右键（必须是右键，否则需要修改代码），例如 <kbd>Caps</kbd> + 鼠标右键 |
+| `ScaleWindow` | `percent`：缩放比例增量，如 0.1 表示放大 10%，-0.1 表示缩小 10% | 按比例缩放当前窗口，以窗口中心为基准。最大化或最小化窗口不生效 | 自定义为合适的快捷键 |
+| `PerCenterAndResizeWindow` | `percentageW`：宽度占工作区的比例（0-1）<br>`percentageH`：高度占工作区的比例（0-1） | 按工作区比例设置窗口大小并居中，换分辨率后视觉效果一致 | 自定义快捷键 |
+| `Per*AndResizeWindow` | `percentageW`：宽度占工作区的比例（0-1）<br>`percentageH`：高度占工作区的比例（0-1） | `*` 替换为 Left、Down、Right、Up、LeftUp、LeftDown、RightUp、RightDown，负责分屏与边角摆放；左右半屏与上下半屏连着按两次会合成四分之一屏，详见下文“半屏组合成四分之一屏” | 前四个功能完全替换默认的 <kbd>Win</kbd> + 方向键，后四个替换为合适的快捷键 |
+| `SnapWindow` | `edge`：Left、Right、Up、Down 之一，表示贴到哪条边 | 把当前窗口平移到所在显示器工作区的对应边缘（已避开任务栏），只改变位置，宽高保持不变。最大化或最小化窗口不生效，会提示先还原 | 绑定到前置键 + <kbd>Shift</kbd> + 方向键，例如 <kbd>Caps</kbd> + <kbd>Shift</kbd> + 方向键 |
+| `SplitScreen` | `gridNum`：网格数量，取 2、3、4、9<br>`gridIndex`：网格索引，取值见下文 | 按网格数量与索引把窗口摆到工作区的对应位置并设置大小，支持 2、3、4、9 格分屏 | 使用 MyKeymap 的命令实现分屏，如 41、92 |
+| `AutoActivateWindow` | `pollingTime`：轮询时间（毫秒），默认 20 | 开关函数。鼠标移动后停下即激活所在窗口，无需点击。默认随 MyKeymap 启动 | 绑定一个快捷键或指令，方便随时启停 |
+| `IncBrightness` | `delta`：亮度增量，整数，如 5 表示在当前亮度上提高 5 个百分点 | 提高鼠标所在显示器的亮度 | 自定义为合适的快捷键或指令 |
+| `DecBrightness` | `delta`：亮度增量，整数，如 5 表示在当前亮度上降低 5 个百分点 | 降低鼠标所在显示器的亮度 | 自定义为合适的快捷键或指令 |
+| `QuickSwitchExplorer` | 无参数 | 快速切换或跳转到资源管理器窗口，在打开、保存对话框中调用会弹出已打开的 Explorer 列表供选择。<br>实验性功能，稳定性未经验证，不建议日常使用；默认未加载，需自行 `#Include` | 不建议使用 |
+| `AutoWindowColorBorder` | `pollingTime`：轮询时间（毫秒），默认 20 | 开关函数。为活动窗口添加彩色边框：未访问、置顶与弹出窗口用强调色的补色，已访问的普通窗口用强调色。默认随 MyKeymap 启动 | 绑定一个快捷键或指令，方便随时启停 |
+| `BlockSend` | `text`：文本内容 | 将文本写入剪贴板并粘贴到光标位置，粘贴后恢复剪贴板的原内容 | 自定义为合适的快捷键 |
+| `BlockSendFile` | `filePath`：文件路径<br>`blockSize`：每块字符数，默认 2000<br>`interChunkDelay`：块间间隔（毫秒），默认 200<br>`maxFileBytes`：文件大小上限（字节），默认 10 MB，传 0 不检查 | 按块读取文件内容并逐块粘贴到光标位置，块与块之间按间隔等待；文件按 UTF-8 读取，文件不存在、无法打开或超过大小上限时提示并终止 | 自定义为合适的快捷键 |
+| `SetTaskbarCombine` | `mode`：可选 `"Always"`（始终合并）或 `"Never"`（从不合并），默认为空时自动翻转 | 切换所有显示器的任务栏图标合并状态，无需重启资源管理器 | 自定义为合适的快捷键或指令 |
+| `ReadFileToInput` | `filePath`：文件路径 | 读取文件内容并输入到光标位置，适用于密码这类不便直接粘贴的文本；要求单行文本，不超过 10 KB。位于 `Deprecated/` 目录下，默认未加载，需自行 `#Include` | 自定义为合适的快捷键 |
 
 ## 功能详解
 
