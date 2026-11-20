@@ -23,7 +23,7 @@ jobs:
               id: get_version
               run: |
                   if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-                    # 手动运行时，使用当前日期作为版本标识
+                    # 手动运行时，使用当前日期与时间作为版本标识
                     VERSION="dev-$(date +%Y%m%d-%H%M%S)"
                     echo "Manual run - using timestamp version: $VERSION"
                   else
@@ -34,7 +34,7 @@ jobs:
                   echo "version=$VERSION" >> $GITHUB_OUTPUT
               shell: bash
 
-            - name: Get build time
+            - name: Package data directory
               id: get_build_time
               run: |
                   if (Test-Path -Path "data") {

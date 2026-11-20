@@ -79,7 +79,7 @@ jobs:
                   echo "## 提交记录" >> release_notes.md
                   echo "" >> release_notes.md
 
-                  # 生成提交记录（保留开发版本相关的提交）
+                  # 生成提交记录，跳过合并提交
                   if [ -z "$PREVIOUS_TAG" ]; then
                     echo "生成从初始提交到 $CURRENT_TAG 的提交记录"
                     git log --pretty=format:"- %s (%h)" --no-merges >> release_notes.md
@@ -88,7 +88,7 @@ jobs:
                     git log "$PREVIOUS_TAG..$CURRENT_TAG" --pretty=format:"- %s (%h)" --no-merges >> release_notes.md
                   fi
 
-                  # 如果没有提交记录，添加默认信息
+                  # 若发布说明不足 5 行，补一条默认条目
                   if [ ! -s release_notes.md ] || [ $(wc -l < release_notes.md) -le 5 ]; then
                     echo "- 版本发布" >> release_notes.md
                   fi
