@@ -39,7 +39,6 @@ QuickSwitchExplorer() {
     quickSwitchItemMap := Map()
     QuickSwitchMenu := Menu()
 
-    ; 先收集再倒序添加，把资源管理器里已打开的文件夹列进菜单
     folderList := []
 
     try {

@@ -6,7 +6,7 @@
 OnMessage(0x007E, WM_DISPLAYCHANGE_Handler)
 
 WM_DISPLAYCHANGE_Handler(wParam, lParam, msg, hwnd) {
-    ; 显示器变化后等 5 秒再重载，避免在显示器状态还没稳定时重新加载
+    ; 显示器变化后等 5 秒再重载，避开状态尚未稳定的这段时间
     SetTimer(MyKeymapReload, -5000)
     ; 这里不能写 return 0：OnMessage 回调返回整数会被立刻当作消息回复，
     ; 消息不再继续处理，注册在同一消息号上的其他回调（包括宿主 MyKeymap 的）会被挡掉；
