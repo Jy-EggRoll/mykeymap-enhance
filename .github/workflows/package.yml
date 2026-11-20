@@ -35,7 +35,7 @@ jobs:
               shell: bash
 
             - name: Package data directory
-              id: get_build_time
+              id: package_data
               run: |
                   if (Test-Path -Path "data") {
                       Compress-Archive -Path data\* -DestinationPath data.zip
